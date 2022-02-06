@@ -1,5 +1,4 @@
 from .mobile import Mobile
-from .FSM import KirbyState
 
 import pygame
 
@@ -39,7 +38,7 @@ class Kirby(Mobile):
       
       self.transitionState("falling")
    
-   def handleEvent(self, event):
+   def handleEvent(self, event: pygame.event.Event):
       if event.type == pygame.KEYDOWN:
             
          if event.key == pygame.K_UP:
