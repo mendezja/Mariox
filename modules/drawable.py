@@ -18,7 +18,20 @@ class BasicState(object):
 
 class Drawable(object):
 
-    def __init__(self, imageName, position: tuple, offset=None):
+    CAM_OFFSET = Vector2(0,0)
+   
+    @classmethod
+    def updateOffset(cls, tracked, screenSize, worldSize):
+        position = tracked.getPosition()
+        size = tracked.getSize()
+        cls.CAM_OFFSET = Vector2(min(max(0, position[0] + (size[0] // 2) - (screenSize[0] // 2)),
+                                               worldSize[0] - screenSize[0]),
+                                 min(max(0, position[1] + (size[1] // 2) - (screenSize[1] // 2)),
+                                               worldSize[1] - screenSize[1]))
+   
+
+
+    def __init__(self, imageName, position: tuple, offset = None):
         self._imageName = imageName
 
         # Let frame manager handle loading the image
@@ -48,5 +61,6 @@ class Drawable(object):
 
         if self._state.getFacing() == "left":
             blitImage = pygame.transform.flip(self._image, True, False)
-
-        surface.blit(blitImage, (self._position[0], self._position[1]))
+        
+        surface.blit(blitImage, (int (self._position[0] - Drawable.CAM_OFFSET[0]), 
+                                 int (self._position[1] - Drawable.CAM_OFFSET[1])))
