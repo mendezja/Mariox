@@ -36,7 +36,10 @@ class FrameManager(object):
         _FRAME_SIZES = {
             "flowers-color-key.png":  (114, 116),
             "water-lilly.png": (47, 49),
-            "kirby.png": (16, 16)
+            "kirby.png": (16, 16),
+            "mario.png": (16,17),
+            "brick.png": (16,16),
+            "background.png": (2624,240)
         }
 
         # A default frame size
@@ -47,7 +50,7 @@ class FrameManager(object):
 
         # A list of images that require to be loaded with a color key
         _COLOR_KEY = ["flowers-color-key.png",
-                      "water-lilly.png", "star.png", "kirby.png"]
+                      "water-lilly.png", "mario.png","star.png", "kirby.png"]
 
         def __init__(self):
             # Stores the surfaces indexed based on file name

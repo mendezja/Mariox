@@ -5,8 +5,8 @@ from modules.vector2D import Vector2
 from modules.drawable import Drawable
 from modules.player import Player
 
-
-SCREEN_SIZE = Vector2(150, 200)
+WORLD_SIZE = Vector2(2624,240)
+SCREEN_SIZE = Vector2(WORLD_SIZE.y, WORLD_SIZE.y)
 SCALE = 4
 UPSCALED_SCREEN_SIZE = SCREEN_SIZE * SCALE
 
@@ -23,13 +23,15 @@ def main():
 
     drawSurface = pygame.Surface(list(SCREEN_SIZE))
 
+    background = Drawable("background.png", (0,0))
+    
     floorTiles: list[Drawable] = []
 
-    for x in range(0, SCREEN_SIZE.x, 16):
+    for x in range(0, WORLD_SIZE.x, 16):
         floorTiles.append(
             Drawable("brick.png", Vector2(x, SCREEN_SIZE.y - 32)))
 
-    kirby = Player("kirby.png", SCREEN_SIZE // 2)
+    mario = Player("mario.png", SCREEN_SIZE // 2)
 
     # Make a game clock for nice, smooth animations
     gameClock = pygame.time.Clock()
@@ -41,10 +43,12 @@ def main():
     while RUNNING:
 
         # Draw everything
-        drawSurface.fill((50, 50, 50))
+        # drawSurface.fill((92,148,252))
+        background.draw(drawSurface)
+
         for floor in floorTiles:
             floor.draw(drawSurface)
-        kirby.draw(drawSurface)
+        mario.draw(drawSurface)
 
         pygame.transform.scale(drawSurface, list(UPSCALED_SCREEN_SIZE), screen)
 
@@ -58,16 +62,17 @@ def main():
                 # change the value to False, to exit the main loop
                 RUNNING = False
 
-            kirby.handleEvent(event)
+            mario.handleEvent(event)
 
         # Update everything
+        Drawable.updateOffset(mario, SCREEN_SIZE, WORLD_SIZE)
 
         # Detect the floor collision
         for floor in floorTiles:
-            clipRect = kirby.getCollisionRect().clip(floor.getCollisionRect())
+            clipRect = mario.getCollisionRect().clip(floor.getCollisionRect())
 
             if clipRect.width > 0:
-                kirby.collideGround(clipRect.height)
+                mario.collideGround(clipRect.height)
                 break
 
         # Let our game clock tick at 60 fps
@@ -80,7 +85,7 @@ def main():
 
         if seconds < 0.05:
 
-            kirby.update(seconds)
+            mario.update(seconds)
 
 
 if __name__ == "__main__":

@@ -9,7 +9,7 @@ class Player(Mobile):
    def __init__(self, imageName, position):
       super().__init__(imageName, position)
 
-      self._jumpTime = 0.5
+      self._jumpTime = 0.05
       self._vSpeed = 50
       self._jSpeed = 100
 
@@ -17,24 +17,28 @@ class Player(Mobile):
       self._framesPerSecond = 2
 
       self._nFramesList = {
-         "walking": 4,
-         "falling": 4,
-         "jumping": 1,
-         "standing": 2
+         "walking": 2,
+         "falling": 1,
+         "jumping": 6,
+         "standing": 1,
+         "Dying": 1
       }
 
       self._rowList = {
-         "walking": 1,
+         "walking": 0,
          "jumping": 2,
-         "falling": 4,
-         "standing": 0
+         "falling": 2,
+         "standing": 3,
+         "Dying":1 # delay when switching from left/right walking, based on acceleration
       }
 
       self._framesPerSecondList = {
          "walking": 8,
          "standing": 2,
          "jumping": 1,
-         "falling": 8
+         "falling": 8,
+         "transition": 1#will likely depend on acceleration
+
       }
 
       self._state = PlayerState()
@@ -80,7 +84,6 @@ class Player(Mobile):
    def collideGround(self, yClip):
       self._state.manageState("ground", self)
       self._position.y -= yClip
-    
    
   
 class PlayerState(object):
