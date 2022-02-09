@@ -8,7 +8,7 @@ from pygame.joystick import Joystick
 
 
 class Player(Mobile):
-    def __init__(self, imageName: str, position: Vector2, joystick: Joystick):
+    def __init__(self, imageName: str, position: Vector2, joystick: Joystick = None):
         super().__init__(imageName, position)
         self._joystick = joystick
         self._jumpTime = 0.05
