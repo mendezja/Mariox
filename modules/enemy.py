@@ -1,47 +1,52 @@
-
 from .mobile import Mobile
 
 import pygame
 from pygame.event import Event
 
 
-class Player(Mobile):
-   def __init__(self, imageName, position):
-      super().__init__(imageName, position)
-
-      self._jumpTime = 0.05
+class Enemy(Mobile):
+   def __init__(self, enemyName, position):
+      super().__init__(enemyName, position)
+      
+      self._jumpTime = 0.1
       self._vSpeed = 50
       self._jSpeed = 100
 
       self._nFrames = 2
       self._framesPerSecond = 2
+      
+      #self._image = FrameManager.getInstance().getFrame(self._imageName, offset)
+      
+      self._enemyTypeRow = {
+          "turtle": 1,
+          "redTurtle": 2,
+          "mushroom": 3
+      }
 
       self._nFramesList = {
          "walking": 2,
          "falling": 1,
          "jumping": 6,
          "standing": 1,
-         "dead": 1
+         "dying": 1
       }
 
       self._rowList = {
          "walking": 0,
-         "jumping": 2,
          "falling": 2,
-         "standing": 3,
-         "dead":1 # delay when switching from left/right walking, based on acceleration
+         "standing": 1,
+         "dying": 1 
       }
 
       self._framesPerSecondList = {
          "walking": 8,
-         "standing": 2,
-         "jumping": 1,
          "falling": 8,
-         "dead": 1#will likely depend on acceleration
+         "standing": 1,
+         "dying": 1
 
       }
 
-      self._state = PlayerState()
+      self._state = EnemyState()
       self.transitionState("falling")
 
    def updateVelocity(self, seconds):
@@ -49,48 +54,21 @@ class Player(Mobile):
 
        if self._state.getState() == "standing":
             self._velocity.y = 0
-       elif self._state.getState() == "jumping":
-            self._velocity.y = -self._jSpeed
-            self._jumpTimer -= seconds
-            if self._jumpTimer < 0:
-                self._state.manageState("fall", self)
        elif self._state.getState() == "falling":
             self._velocity.y += self._jSpeed * seconds
-
    
-   def handleEvent(self, event: Event):
-      if event.type == pygame.KEYDOWN:
-            
-         if event.key == pygame.K_UP:
-            self._state.manageState("jump", self)
-            
-         elif event.key == pygame.K_LEFT:
-            self._state.manageState("left", self)
-            
-         elif event.key == pygame.K_RIGHT:
-            self._state.manageState("right", self)
-      
-      elif event.type == pygame.KEYUP:
-            
-         if event.key == pygame.K_UP:
-            self._state.manageState("fall", self)
-            
-         elif event.key == pygame.K_LEFT:
-            self._state.manageState("stopleft", self)
-            
-         elif event.key == pygame.K_RIGHT:
-            self._state.manageState("stopright", self)
-   
+       
    def collideGround(self, yClip):
+      self._state.manageState("left",self)
       self._state.manageState("ground", self)
       self._position.y -= yClip
-    
-   def kill(self):
-       print("you dead son")
-       #self._state.manageState("dead", self)
    
+   #def kill (self):
+    #   self._state.manageState("kill", self)
+
+
   
-class PlayerState(object):
+class EnemyState(object):
     def __init__(self, state="falling"):
         self._state = state
 
@@ -115,12 +93,13 @@ class PlayerState(object):
 
         return self._lastFacing
 
-    def manageState(self, action: str, player: Player):
+    def manageState(self, action: str, enemy: Enemy):
+
         if action in self._movement.keys():
             if self._movement[action] == False:
                 self._movement[action] = True
                 if self._state == "standing":
-                    player.transitionState("walking")
+                    enemy.transitionState("walking")
 
         elif action.startswith("stop") and action[4:] in self._movement.keys():
             direction = action[4:]
@@ -132,28 +111,22 @@ class PlayerState(object):
                         allStop = False
                         break
 
-                if allStop and self._state not in ["falling", "jumping"]:
-                    player.transitionState(self._state)
+                if allStop and self._state not in ["falling"]:
+                    enemy.transitionState(self._state)
 
-        elif action == "jump" and self._state == "standing":
-            self._state = "jumping"
-            player.transitionState(self._state)
 
         elif action == "fall" and self._state != "falling":
             self._state = "falling"
-            player.transitionState(self._state)
+            enemy.transitionState(self._state)
 
         elif action == "ground" and self._state == "falling":
 
             self._state = "standing"
 
             if self.isMoving():
-                player.transitionState("walking")
+                enemy.transitionState("walking")
             else:
-                player.transitionState(self._state)
+                enemy.transitionState(self._state)
 
     def getState(self):
         return self._state
-
-      
-   

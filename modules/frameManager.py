@@ -34,24 +34,26 @@ class FrameManager(object):
 
         # Static information about the frame sizes of particular image sheets.
         _FRAME_SIZES = {
-            "flowers-color-key.png":  (114, 116),
-            "water-lilly.png": (47, 49),
-            "kirby.png": (16, 16),
             "mario.png": (16,17),
             "brick.png": (16,16),
-            "background.png": (2624,240)
+            "background.png": (2624,240),
+            "enemy.png": (10,10)
         }
 
         # A default frame size
         _DEFAULT_FRAME = (32, 32)
 
         # A list of images that require to be loaded with transparency
-        _TRANSPARENCY = ["flowers-transparent.png"]
+        _TRANSPARENCY = []
 
         # A list of images that require to be loaded with a color key
-        _COLOR_KEY = ["flowers-color-key.png",
-                      "water-lilly.png", "mario.png","star.png", "kirby.png"]
-
+        _COLOR_KEY = [ "enemy.png", "mario.png"]
+        
+        #@classmethod
+        #def setFrameSize(cls, spriteSheetName: str, newSize: tuple):
+        #    cls._FRAME_SIZES[spriteSheetName] = newSize
+        
+        
         def __init__(self):
             # Stores the surfaces indexed based on file name
             # The values in _surfaces can be a single Surface
@@ -62,7 +64,7 @@ class FrameManager(object):
             return self._surfaces[key]
 
         def __setitem__(self, key, item):
-            self._surfaces[key] = item
+            self._surfaces[key] = item        
 
         def getFrame(self, fileName, offset=None) -> Surface:
             # If this frame has not already been loaded, load the image from memory
