@@ -34,7 +34,7 @@ def main():
 
 
     mario = Player("mario.png", (35,200)) # position set to castle door
-    enemies: list [Enemy] = [Enemy("enemies.png", list(SCREEN_SIZE//2))]
+    enemies: list [Enemy] = [Enemy("enemies.png", list(WORLD_SIZE//x), "gumba") for x in range (2,16,2)]
 
     # Make a game clock for nice, smooth animations
     gameClock = pygame.time.Clock()

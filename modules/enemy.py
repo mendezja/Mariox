@@ -5,8 +5,13 @@ from pygame.event import Event
 
 
 class Enemy(Mobile):
-   def __init__(self, enemyName, position):
-      super().__init__(enemyName, position)
+
+   _ENEMY_ROWS = { "gTurtle": 2,
+                  "rTurtle": 3,
+                    "gumba": 4}
+
+   def __init__(self, enemyName, position, enemy):
+      super().__init__(enemyName, position, (0,enemy in Enemy._ENEMY_ROWS))
       
       self._jumpTime = 0.1
       self._vSpeed = 50
@@ -17,11 +22,11 @@ class Enemy(Mobile):
       
       #self._image = FrameManager.getInstance().getFrame(self._imageName, offset)
       
-      self._enemyTypeRow = {
-          "turtle": 1,
-          "redTurtle": 2,
-          "mushroom": 3
-      }
+    #   self._enemyTypeRow = {
+    #       "turtle": 1,
+    #       "redTurtle": 2,
+    #       "mushroom": 3
+    #   }
 
       self._nFramesList = {
          "walking": 2,
@@ -31,7 +36,7 @@ class Enemy(Mobile):
          "dying": 1
       }
 
-      self._rowList = {
+      self._List = {
          "walking": 0,
          "falling": 2,
          "standing": 1,
@@ -63,9 +68,6 @@ class Enemy(Mobile):
       self._state.manageState("ground", self)
       self._position.y -= yClip
    
-   #def kill (self):
-    #   self._state.manageState("kill", self)
-
 
   
 class EnemyState(object):

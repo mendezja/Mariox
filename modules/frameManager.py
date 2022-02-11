@@ -37,7 +37,7 @@ class FrameManager(object):
             "mario.png": (16,17),
             "brick.png": (16,16),
             "background.png": (2624,240),
-            "enemy.png": (10,10)
+            "enemies.png": (30,30)
         }
 
         # A default frame size
@@ -47,7 +47,7 @@ class FrameManager(object):
         _TRANSPARENCY = []
 
         # A list of images that require to be loaded with a color key
-        _COLOR_KEY = [ "enemy.png", "mario.png"]
+        _COLOR_KEY = [ "enemies.png", "mario.png"]
         
         #@classmethod
         #def setFrameSize(cls, spriteSheetName: str, newSize: tuple):

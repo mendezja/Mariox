@@ -7,7 +7,7 @@ from pygame.event import Event
 
 class Player(Mobile):
    def __init__(self, imageName, position):
-      super().__init__(imageName, position)
+      super().__init__(imageName, position, (0,0))
 
       self._jumpTime = 0.05
       self._vSpeed = 50

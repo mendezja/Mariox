@@ -5,8 +5,8 @@ from .frameManager import FrameManager
 
 
 class Mobile(Animated):
-    def __init__(self, imageName, position):
-        super().__init__(imageName, position)
+    def __init__(self, imageName, position, offset = None):
+        super().__init__(imageName, position, offset)
         self._velocity = Vector2(0, 0)
         self._jumpTimer = 0
         self._jSpeed = 0
@@ -47,7 +47,7 @@ class Mobile(Animated):
 
         self._nFrames = self._nFramesList[state]
         self._frame = 0
-        self._row = self._rowList[state]
+        self._row = self._rowList[state]    #has to be refactored possibly use columns instead of rows and just keep those
         self._framesPerSecond = self._framesPerSecondList[state]
         self._animationTimer = 0
         self.setImage(FrameManager.getInstance().getFrame(
