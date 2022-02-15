@@ -60,27 +60,27 @@ class Player(Mobile):
             self._velocity.y += self._jSpeed * seconds
 
     def handleEvent(self, event: Event):
-        if event.type == pygame.KEYDOWN:
 
-            if event.key == pygame.K_UP:
+        if event.type == pygame.JOYBUTTONDOWN:
+            if event.button == 2 and event.joy == self._joystick.get_id():
                 self._state.manageState("jump", self)
 
-            elif event.key == pygame.K_LEFT:
-                self._state.manageState("left", self)
+        elif event.type == pygame.JOYBUTTONUP:
 
-            elif event.key == pygame.K_RIGHT:
-                self._state.manageState("right", self)
-
-        elif event.type == pygame.KEYUP:
-
-            if event.key == pygame.K_UP:
+            if event.button == 0:
                 self._state.manageState("fall", self)
 
-            elif event.key == pygame.K_LEFT:
-                self._state.manageState("stopleft", self)
-
-            elif event.key == pygame.K_RIGHT:
-                self._state.manageState("stopright", self)
+        elif event.type == pygame.JOYAXISMOTION:
+            if event.axis == 0 and event.joy == self._joystick.get_id():
+                if abs(event.value) < 0.1:
+                    self._state.manageState("stopleft", self)
+                    self._state.manageState("stopright", self)
+                elif event.value < 0:
+                    self._state.manageState("left", self)
+                    self._state.manageState("stopright", self)
+                elif event.value > 0:
+                    self._state.manageState("right", self)
+                    self._state.manageState("stopleft", self)
 
     def collideGround(self, yClip):
         self._state.manageState("ground", self)
