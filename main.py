@@ -7,7 +7,7 @@ from modules.player import Player
 
 WORLD_SIZE = Vector2(2624, 240)
 SCREEN_SIZE = Vector2(WORLD_SIZE.y, WORLD_SIZE.y)
-SCALE = 4
+SCALE = 3
 UPSCALED_SCREEN_SIZE = SCREEN_SIZE * SCALE
 
 
@@ -31,13 +31,7 @@ def main():
         floorTiles.append(
             Drawable("brick.png", Vector2(x, SCREEN_SIZE.y - 32)))
 
-    pygame.joystick.init()
-    joysticks = [pygame.joystick.Joystick(
-        x) for x in range(2)]
-
-    players: list[Player] = []
-    players.append(Player("mario.png", SCREEN_SIZE // 2, joysticks[0]))
-    # players.append(Player("mario.png", SCREEN_SIZE // 2, joysticks[1]))
+    player = Player("mario.png", SCREEN_SIZE // 2)
 
     # Make a game clock for nice, smooth animations
     gameClock = pygame.time.Clock()
@@ -49,14 +43,12 @@ def main():
     while RUNNING:
 
         # Draw everything
-        # drawSurface.fill((92,148,252))
         background.draw(drawSurface)
 
         for floor in floorTiles:
             floor.draw(drawSurface)
 
-        for player in players:
-            player.draw(drawSurface)
+        player.draw(drawSurface)
 
         pygame.transform.scale(drawSurface, list(UPSCALED_SCREEN_SIZE), screen)
 
@@ -70,21 +62,18 @@ def main():
                 # change the value to False, to exit the main loop
                 RUNNING = False
 
-            for player in players:
-                player.handleEvent(event)
+            player.handleEvent(event)
 
         # Update everything
-        for player in players:
-            Drawable.updateOffset(player, SCREEN_SIZE, WORLD_SIZE)
+        Drawable.updateOffset(player, SCREEN_SIZE, WORLD_SIZE)
 
         # Detect the floor collision
         for floor in floorTiles:
-            for player in players:
-                clipRect = player.getCollisionRect().clip(floor.getCollisionRect())
+            clipRect = player.getCollisionRect().clip(floor.getCollisionRect())
 
-                if clipRect.width > 0:
-                    player.collideGround(clipRect.height)
-                    break
+            if clipRect.width > 0:
+                player.collideGround(clipRect.height)
+                break
 
         # Let our game clock tick at 60 fps
         gameClock.tick(60)
@@ -96,8 +85,7 @@ def main():
 
         if seconds < 0.05:
 
-            for player in players:
-                player.update(seconds)
+            player.update(seconds)
 
 
 if __name__ == "__main__":
