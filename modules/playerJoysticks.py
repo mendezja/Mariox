@@ -23,7 +23,7 @@ class Player(Mobile):
             "falling": 1,
             "jumping": 6,
             "standing": 1,
-            "Dying": 1
+            "dead": 2
         }
 
         self._rowList = {
@@ -31,7 +31,7 @@ class Player(Mobile):
             "jumping": 2,
             "falling": 2,
             "standing": 3,
-            "Dying": 1  # delay when switching from left/right walking, based on acceleration
+            "dead": 1  # delay when switching from left/right walking, based on acceleration
         }
 
         self._framesPerSecondList = {
@@ -39,7 +39,7 @@ class Player(Mobile):
             "standing": 2,
             "jumping": 1,
             "falling": 8,
-            "transition": 1  # will likely depend on acceleration
+            "dead": 10  # will likely depend on acceleration
 
         }
 
@@ -52,12 +52,12 @@ class Player(Mobile):
         if self._state.getState() == "standing":
             self._velocity.y = 0
         elif self._state.getState() == "jumping":
-            self._velocity.y = -self._jSpeed
+            self._velocity.y = -self._jSpeed//1.5
             self._jumpTimer -= seconds
             if self._jumpTimer < 0:
                 self._state.manageState("fall", self)
         elif self._state.getState() == "falling":
-            self._velocity.y += self._jSpeed * seconds
+            self._velocity.y += self._jSpeed * seconds*1.5
 
     def handleEvent(self, event: Event):
 
@@ -85,6 +85,10 @@ class Player(Mobile):
     def collideGround(self, yClip):
         self._state.manageState("ground", self)
         self._position.y -= yClip
+
+    def kill(self):
+       #print("you dead son")
+       self._state.manageState("dead", self)
 
 
 class PlayerState(object):
@@ -118,6 +122,11 @@ class PlayerState(object):
                 self._movement[action] = True
                 if self._state == "standing":
                     player.transitionState("walking")
+
+        elif action == "dead":
+            self._state = "dead"
+            player.transitionState(self._state)
+            
 
         elif action.startswith("stop") and action[4:] in self._movement.keys():
             direction = action[4:]

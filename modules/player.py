@@ -23,7 +23,7 @@ class Player(Mobile):
          "walking": 2,
          "falling": 1,
          "jumping": 6,
-         "standing": 1,
+         "standing": 2,
          "dead": 1
       }
 
@@ -40,7 +40,7 @@ class Player(Mobile):
          "standing": 2,
          "jumping": 1,
          "falling": 8,
-         "dead": 1#will likely depend on acceleration
+         "dead": 8 #will likely depend on acceleration
 
       }
       self._state = PlayerState()
@@ -88,7 +88,7 @@ class Player(Mobile):
     
     def kill(self):
        print("you dead son")
-       #self._state.manageState("dead", self)
+       self._state.manageState("dead", self)
 
 
 class PlayerState(object):
@@ -122,6 +122,9 @@ class PlayerState(object):
                 self._movement[action] = True
                 if self._state == "standing":
                     player.transitionState("walking")
+        
+        elif action == "dead":
+            print("dead")
 
         elif action.startswith("stop") and action[4:] in self._movement.keys():
             direction = action[4:]

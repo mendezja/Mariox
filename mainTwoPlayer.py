@@ -1,8 +1,10 @@
 import pygame
+import time
 import os
 from modules.vector2D import Vector2
 from modules.drawable import Drawable
 from modules.playerJoysticks import Player
+from modules.enemy import Enemy
 
 WORLD_SIZE = Vector2(2624, 240)
 SCREEN_SIZE = Vector2(WORLD_SIZE.y * 2, WORLD_SIZE.y * 2)
@@ -44,8 +46,9 @@ def main():
 
     players: list[Player] = []
     players.append(Player("mario.png", (15, WORLD_SIZE.y - 48), joysticks[0]))
-    players.append(
-        Player("mario.png", (15, WORLD_SIZE.y - 48), joysticks[1]))
+    players.append(Player("mario.png", (35,200), joysticks[1]))
+
+    enemies: list [Enemy] = [Enemy("enemies.png", list(WORLD_SIZE//x)) for x in range (2,16,2)]
 
     # Make a game clock for nice, smooth animations
     gameClock = pygame.time.Clock()
@@ -71,6 +74,10 @@ def main():
 
             for floor in floorTiles:
                 floor.draw(drawSurface, index)
+
+            for enemy in enemies:
+                enemy.draw(drawSurface, index)
+
 
             players[0].draw(drawSurface, index)
             players[1].draw(drawSurface, index)
@@ -106,6 +113,30 @@ def main():
                     player.collideGround(clipRect.height)
                     break
 
+        # Update enemies/detect collision with player
+        for enemy in enemies:
+            for player in players:
+                playerClipRect = enemy.getCollisionRect().clip(player.getCollisionRect())
+                #enemyClipRect = mario.getCollisionRect().clip(enemy.getCollisionRect())
+
+                if playerClipRect.width > 0:
+                # print (mario._state.getState(), ": ",playerClipRect.height, ": ",playerClipRect.width )
+                    if player._state.getState() == "falling" and playerClipRect.height <= playerClipRect.width:
+                        enemies.remove(enemy)
+                        #print("enemy merked")
+                        pass
+                    else:
+                        player.kill()
+                        time.sleep(2)
+                        RUNNING = False
+                
+                for floor in floorTiles:
+                    clipRect = enemy.getCollisionRect().clip(floor.getCollisionRect())
+
+                    if clipRect.width > 0:
+                        enemy.collideGround(clipRect.height)
+                        break
+
         # Let our game clock tick at 60 fps
         gameClock.tick(60)
 
@@ -118,6 +149,9 @@ def main():
 
             for player in players:
                 player.update(seconds)
+            
+            for enemy in enemies:
+                enemy.update(seconds)
 
 
 if __name__ == "__main__":
