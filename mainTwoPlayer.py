@@ -46,7 +46,7 @@ def main():
 
     players: list[Player] = []
     players.append(Player("mario.png", (15, WORLD_SIZE.y - 48), joysticks[0]))
-    players.append(Player("mario.png", (35,200), joysticks[1]))
+    players.append(Player("luigi.png", (35,200), joysticks[1]))
 
     enemies: list [Enemy] = [Enemy("enemies.png", list(WORLD_SIZE//x)) for x in range (2,16,2)]
 
