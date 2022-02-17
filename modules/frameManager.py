@@ -49,10 +49,6 @@ class FrameManager(object):
         # A list of images that require to be loaded with a color key
         _COLOR_KEY = [ "enemies.png", "mario.png"]
         
-        #@classmethod
-        #def setFrameSize(cls, spriteSheetName: str, newSize: tuple):
-        #    cls._FRAME_SIZES[spriteSheetName] = newSize
-        
         
         def __init__(self):
             # Stores the surfaces indexed based on file name
@@ -73,6 +69,7 @@ class FrameManager(object):
 
             # If this is an image sheet, return the correctly offset sub surface
             if offset != None:
+                print (self)
                 return self[fileName][offset[1]][offset[0]]
 
             # Otherwise, return the sheet created

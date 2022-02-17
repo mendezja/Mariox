@@ -48,12 +48,12 @@ class Mobile(Animated):
             self._jumpTimer = self._jumpTime
 
         self._nFrames = self._nFramesList[state]
-        self._frame = self._row
-        self._column = self._columnsList[state]    #has to be refactored possibly use columns instead of rows and just keep those
+        self._frame = 0
+        self._row = self._rowList[state]
         self._framesPerSecond = self._framesPerSecondList[state]
         self._animationTimer = 0
         self.setImage(FrameManager.getInstance().getFrame(
-            self._imageName, (self._column, self._frame)))
+            self._imageName, (self._frame, self._row)))
 
 
 class MobileState(object):

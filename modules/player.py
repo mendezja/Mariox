@@ -27,12 +27,12 @@ class Player(Mobile):
          "dead": 1
       }
 
-      self._columnsList = {
+      self._rowList = {
          "walking": 1,
          "jumping": 1,
          "falling": 1,
          "standing": 1,
-         "dead":3 # delay when switching from left/right walking, based on acceleration
+         "dead": 3 # delay when switching from left/right walking, based on acceleration
       }
 
       self._framesPerSecondList = {
@@ -43,9 +43,8 @@ class Player(Mobile):
          "dead": 1#will likely depend on acceleration
 
       }
-
-        self._state = PlayerState()
-        self.transitionState("falling")
+      self._state = PlayerState()
+      self.transitionState("falling")
 
     def updateVelocity(self, seconds):
        super().updateVelocity(seconds)

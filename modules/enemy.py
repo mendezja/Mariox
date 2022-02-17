@@ -1,3 +1,4 @@
+from .vector2D import Vector2
 from .mobile import Mobile
 from .frameManager import FrameManager
 
@@ -7,34 +8,16 @@ from pygame.event import Event
 
 class Enemy(Mobile):
 
-   _ENEMY_ROWS = { "gTurtle": 1,
-                  "rTurtle": 2,
-                    "gumba": 6}
-   _ENEMY_SIZES = { "gTurtle": (10,10),
-                  "rTurtle": (10,10),
-                    "gumba": (10,10)}
-
-   def __init__(self, enemyName, position, enemy):
-      super().__init__(enemyName, position, (0,Enemy._ENEMY_ROWS[enemy]))
+   def __init__(self, enemyName: str, position: Vector2):
+      super().__init__(enemyName, position)
       
       self._jumpTime = 0.01
       self._vSpeed = 50
       self._jSpeed = 100
-      print(FrameManager._FM._FRAME_SIZES[enemyName])
-      FrameManager._FM._FRAME_SIZES[enemyName] = Enemy._ENEMY_SIZES[enemy]
-
+      
       self._nFrames = 2
       self._framesPerSecond = 2
-      self._row = Enemy._ENEMY_ROWS[enemy]
       
-      
-      #self._image = FrameManager.getInstance().getFrame(self._imageName, offset)
-      
-    #   self._enemyTypeRow = {
-    #       "turtle": 1,
-    #       "redTurtle": 2,
-    #       "mushroom": 3
-    #   }
 
       self._nFramesList = {
          "walking": 2,
@@ -44,7 +27,7 @@ class Enemy(Mobile):
          "dying": 1
       }
 
-      self._columnsList = {
+      self._rowList = {
          "walking": 0,
          "falling": 2,
          "standing": 1,
