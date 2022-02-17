@@ -37,8 +37,9 @@ class FrameManager(object):
             "mario.png": (16,17),
             "brick.png": (16,16),
             "background.png": (2624,240),
-            "enemies.png": (20,15)              #create var here for enemies/mario
+            "enemies.png": (19,16)              #create var here for enemies/mario
         }
+        
 
         # A default frame size
         _DEFAULT_FRAME = (32, 32)
@@ -58,9 +59,11 @@ class FrameManager(object):
 
         def __getitem__(self, key) -> Surface:
             return self._surfaces[key]
+            
 
         def __setitem__(self, key, item):
-            self._surfaces[key] = item        
+            self._surfaces[key] = item     
+  
 
         def getFrame(self, fileName, offset=None) -> Surface:
             # If this frame has not already been loaded, load the image from memory
@@ -69,7 +72,6 @@ class FrameManager(object):
 
             # If this is an image sheet, return the correctly offset sub surface
             if offset != None:
-                print (self)
                 return self[fileName][offset[1]][offset[0]]
 
             # Otherwise, return the sheet created

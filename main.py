@@ -88,12 +88,12 @@ def main():
 
             if playerClipRect.width > 0:
                # print (mario._state.getState(), ": ",playerClipRect.height, ": ",playerClipRect.width )
-                if mario._state.getState() == "falling" and playerClipRect.height <= playerClipRect.width:
+                if player._state.getState() == "falling" and playerClipRect.height <= playerClipRect.width:
                     enemies.remove(enemy)
-                    # print("enemy merked")
+                    #print("enemy merked")
                     pass
                 else:
-                    mario.kill()
+                    player.kill()
                     RUNNING = False
                 
 

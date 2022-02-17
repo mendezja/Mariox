@@ -21,18 +21,18 @@ class Player(Mobile):
 
       self._nFramesList = {
          "walking": 2,
-         "falling": 2,
-         "jumping": 2,
-         "standing": 2,
+         "falling": 1,
+         "jumping": 6,
+         "standing": 1,
          "dead": 1
       }
 
       self._rowList = {
-         "walking": 1,
-         "jumping": 1,
-         "falling": 1,
-         "standing": 1,
-         "dead": 3 # delay when switching from left/right walking, based on acceleration
+         "walking": 0,
+         "jumping": 2,
+         "falling": 2,
+         "standing": 3,
+         "dead": 1 # delay when switching from left/right walking, based on acceleration
       }
 
       self._framesPerSecondList = {

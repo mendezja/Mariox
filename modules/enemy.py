@@ -22,16 +22,16 @@ class Enemy(Mobile):
       self._nFramesList = {
          "walking": 2,
          "falling": 1,
-         "jumping": 6,
+         #"jumping": 6,
          "standing": 1,
          "dying": 1
       }
 
       self._rowList = {
          "walking": 0,
-         "falling": 2,
-         "standing": 1,
-         "dying": 1 
+         "falling": 0,
+         "standing": 0,
+         "dying": 0
       }
 
       self._framesPerSecondList = {
