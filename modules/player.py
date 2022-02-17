@@ -9,27 +9,28 @@ class Player(Mobile):
    def __init__(self, imageName, position):
       super().__init__(imageName, position, (0,0))
 
-      self._jumpTime = 0.05
+      self._jumpTime = .06
       self._vSpeed = 50
       self._jSpeed = 100
 
       self._nFrames = 2
       self._framesPerSecond = 2
 
+
       self._nFramesList = {
          "walking": 2,
-         "falling": 1,
-         "jumping": 6,
-         "standing": 1,
+         "falling": 2,
+         "jumping": 2,
+         "standing": 2,
          "dead": 1
       }
 
-      self._rowList = {
-         "walking": 0,
-         "jumping": 2,
-         "falling": 2,
-         "standing": 3,
-         "dead":1 # delay when switching from left/right walking, based on acceleration
+      self._columnsList = {
+         "walking": 1,
+         "jumping": 1,
+         "falling": 1,
+         "standing": 1,
+         "dead":3 # delay when switching from left/right walking, based on acceleration
       }
 
       self._framesPerSecondList = {
@@ -50,12 +51,12 @@ class Player(Mobile):
        if self._state.getState() == "standing":
             self._velocity.y = 0
        elif self._state.getState() == "jumping":
-            self._velocity.y = -self._jSpeed
+            self._velocity.y = -self._jSpeed//1.5
             self._jumpTimer -= seconds
             if self._jumpTimer < 0:
                 self._state.manageState("fall", self)
        elif self._state.getState() == "falling":
-            self._velocity.y += self._jSpeed * seconds
+            self._velocity.y += self._jSpeed * seconds*1.5
 
    
    def handleEvent(self, event: Event):

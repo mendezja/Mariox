@@ -37,7 +37,7 @@ class FrameManager(object):
             "mario.png": (16,17),
             "brick.png": (16,16),
             "background.png": (2624,240),
-            "enemies.png": (30,30)
+            "enemies.png": (20,15)              #create var here for enemies/mario
         }
 
         # A default frame size

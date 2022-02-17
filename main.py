@@ -68,7 +68,7 @@ def main():
             if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
                 # change the value to False, to exit the main loop
                 RUNNING = False
-
+                
             mario.handleEvent(event)
 
         # Update everything
