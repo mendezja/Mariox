@@ -1,6 +1,7 @@
 from typing import Tuple
 import pygame
 from pygame import Surface
+
 from .vector2D import Vector2
 from .frameManager import FrameManager
 
@@ -17,21 +18,28 @@ class BasicState(object):
 
 
 class Drawable(object):
+    CAM_OFFSET1 = Vector2(0, 0)
+    CAM_OFFSET2 = Vector2(0, 0)
 
-    CAM_OFFSET = Vector2(0,0)
-   
     @classmethod
-    def updateOffset(cls, tracked, screenSize, worldSize):
+    def updateOffset(cls, tracked, screenSize, worldSize, whichPlayer=None):
         position = tracked.getPosition()
         size = tracked.getSize()
-        cls.CAM_OFFSET = Vector2(min(max(0, position[0] + (size[0] // 2) - (screenSize[0] // 2)),
-                                               worldSize[0] - screenSize[0]),
-                                 min(max(0, position[1] + (size[1] // 2) - (screenSize[1] // 2)),
-                                               worldSize[1] - screenSize[1]))
-   
+        offset = Vector2(min(max(0, position[0] + (size[0] // 2) - (screenSize[0] // 2)),
+                             worldSize[0] - screenSize[0]),
+                         min(max(0, position[1] + (size[1] // 2) - ((screenSize[1]) // 2)),
+                             worldSize[1] - screenSize[1] // 2))
+        if whichPlayer == 0:  # Bottom screen
+            cls.CAM_OFFSET2 = offset
+        elif whichPlayer == 1:  # Top screen
+            cls.CAM_OFFSET1 = offset
+        else:  # single player
+            cls.CAM_OFFSET1 = Vector2(min(max(0, position[0] + (size[0] // 2) - (screenSize[0] // 2)),
+                                          worldSize[0] - screenSize[0]),
+                                      min(max(0, position[1] + (size[1] // 2) - ((screenSize[1]) // 2)),
+                                          worldSize[1] - screenSize[1]))
 
-
-    def __init__(self, imageName, position: tuple, offset = None):
+    def __init__(self, imageName: str, position: tuple, offset=None):
         self._imageName = imageName
 
         # Let frame manager handle loading the image
@@ -56,11 +64,20 @@ class Drawable(object):
         newRect = self._position + self._image.get_rect()
         return newRect
 
-    def draw(self, surface: Surface):
+    def draw(self, surface: Surface, whichPlayer=None):
         blitImage = self._image
+        offset = None
+
+        if whichPlayer != None:  # Two players
+            offset = (Drawable.CAM_OFFSET1 if whichPlayer ==
+                      1 else Drawable.CAM_OFFSET2)
+        else:  # 1 player
+            offset = Drawable.CAM_OFFSET1
 
         if self._state.getFacing() == "left":
             blitImage = pygame.transform.flip(self._image, True, False)
-        
-        surface.blit(blitImage, (int (self._position[0] - Drawable.CAM_OFFSET[0]), 
-                                 int (self._position[1] - Drawable.CAM_OFFSET[1])))
+
+        x = int(self._position.x - offset.x)
+        y = int(self._position.y - offset.y)
+
+        surface.blit(blitImage, (x, y))

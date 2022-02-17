@@ -6,9 +6,9 @@ from modules.drawable import Drawable
 from modules.player import Player
 from modules.enemy import Enemy
 
-WORLD_SIZE = Vector2(2624,240)
+WORLD_SIZE = Vector2(2624, 240)
 SCREEN_SIZE = Vector2(WORLD_SIZE.y, WORLD_SIZE.y)
-SCALE = 4
+SCALE = 3
 UPSCALED_SCREEN_SIZE = SCREEN_SIZE * SCALE
 
 
@@ -24,17 +24,16 @@ def main():
 
     drawSurface = pygame.Surface(list(SCREEN_SIZE))
 
-    background = Drawable("background.png", (0,0))
-    
+    background = Drawable("background.png", (0, 0))
+
     floorTiles: list[Drawable] = []
 
     for x in range(0, WORLD_SIZE.x, 16):
         floorTiles.append(
             Drawable("brick.png", Vector2(x, SCREEN_SIZE.y - 32)))
 
-
-    mario = Player("mario.png", (35,200)) # position set to castle door
     enemies: list [Enemy] = [Enemy("enemies.png", list(WORLD_SIZE//x), "gumba") for x in range (2,16,2)]
+    player = Player("mario.png", (35,200))
 
     # Make a game clock for nice, smooth animations
     gameClock = pygame.time.Clock()
@@ -46,7 +45,6 @@ def main():
     while RUNNING:
 
         # Draw everything
-        # drawSurface.fill((92,148,252))
         background.draw(drawSurface)
 
         for floor in floorTiles:
@@ -55,7 +53,7 @@ def main():
         for enemy in enemies:
             enemy.draw(drawSurface)
 
-        mario.draw(drawSurface)
+        player.draw(drawSurface)
 
         pygame.transform.scale(drawSurface, list(UPSCALED_SCREEN_SIZE), screen)
 
@@ -68,18 +66,18 @@ def main():
             if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
                 # change the value to False, to exit the main loop
                 RUNNING = False
-                
-            mario.handleEvent(event)
+
+            player.handleEvent(event)
 
         # Update everything
-        Drawable.updateOffset(mario, SCREEN_SIZE, WORLD_SIZE)
+        Drawable.updateOffset(player, SCREEN_SIZE, WORLD_SIZE)
 
         # Detect the floor collision
         for floor in floorTiles:
-            clipRect = mario.getCollisionRect().clip(floor.getCollisionRect())
+            clipRect = player.getCollisionRect().clip(floor.getCollisionRect())
 
             if clipRect.width > 0:
-                mario.collideGround(clipRect.height)
+                player.collideGround(clipRect.height)
                 break
 
 
@@ -115,7 +113,8 @@ def main():
 
         # let others update based on the amount of time elapsed
         if seconds < 0.05:
-            mario.update(seconds)
+
+            player.update(seconds)
 
             for enemy in enemies:
                 enemy.update(seconds)

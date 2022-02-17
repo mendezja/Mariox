@@ -9,87 +9,82 @@ from pygame.joystick import Joystick
 
 class Player(Mobile):
     def __init__(self, imageName: str, position: Vector2, joystick: Joystick = None):
-      super().__init__(imageName, position)
-      self._joystick = joystick
-      self._jumpTime = .06
-      self._vSpeed = 50
-      self._jSpeed = 100
+        super().__init__(imageName, position)
+        self._joystick = joystick
+        self._jumpTime = 0.05
+        self._vSpeed = 50
+        self._jSpeed = 100
 
-      self._nFrames = 2
-      self._framesPerSecond = 2
+        self._nFrames = 2
+        self._framesPerSecond = 2
 
+        self._nFramesList = {
+            "walking": 2,
+            "falling": 1,
+            "jumping": 6,
+            "standing": 1,
+            "Dying": 1
+        }
 
-      self._nFramesList = {
-         "walking": 2,
-         "falling": 2,
-         "jumping": 2,
-         "standing": 2,
-         "dead": 1
-      }
+        self._rowList = {
+            "walking": 0,
+            "jumping": 2,
+            "falling": 2,
+            "standing": 3,
+            "Dying": 1  # delay when switching from left/right walking, based on acceleration
+        }
 
-      self._columnsList = {
-         "walking": 1,
-         "jumping": 1,
-         "falling": 1,
-         "standing": 1,
-         "dead":3 # delay when switching from left/right walking, based on acceleration
-      }
+        self._framesPerSecondList = {
+            "walking": 8,
+            "standing": 2,
+            "jumping": 1,
+            "falling": 8,
+            "transition": 1  # will likely depend on acceleration
 
-      self._framesPerSecondList = {
-         "walking": 8,
-         "standing": 2,
-         "jumping": 1,
-         "falling": 8,
-         "dead": 1#will likely depend on acceleration
-
-      }
+        }
 
         self._state = PlayerState()
         self.transitionState("falling")
 
     def updateVelocity(self, seconds):
-       super().updateVelocity(seconds)
+        super().updateVelocity(seconds)
 
-       if self._state.getState() == "standing":
+        if self._state.getState() == "standing":
             self._velocity.y = 0
-       elif self._state.getState() == "jumping":
-            self._velocity.y = -self._jSpeed//1.5
+        elif self._state.getState() == "jumping":
+            self._velocity.y = -self._jSpeed
             self._jumpTimer -= seconds
             if self._jumpTimer < 0:
                 self._state.manageState("fall", self)
-       elif self._state.getState() == "falling":
-            self._velocity.y += self._jSpeed * seconds*1.5
+        elif self._state.getState() == "falling":
+            self._velocity.y += self._jSpeed * seconds
 
     def handleEvent(self, event: Event):
-        if event.type == pygame.KEYDOWN:
 
-            if event.key == pygame.K_UP:
+        if event.type == pygame.JOYBUTTONDOWN:
+            if event.button == 2 and event.joy == self._joystick.get_id():
                 self._state.manageState("jump", self)
 
-            elif event.key == pygame.K_LEFT:
-                self._state.manageState("left", self)
+        elif event.type == pygame.JOYBUTTONUP:
 
-            elif event.key == pygame.K_RIGHT:
-                self._state.manageState("right", self)
-
-        elif event.type == pygame.KEYUP:
-
-            if event.key == pygame.K_UP:
+            if event.button == 0:
                 self._state.manageState("fall", self)
 
-            elif event.key == pygame.K_LEFT:
-                self._state.manageState("stopleft", self)
-
-            elif event.key == pygame.K_RIGHT:
-                self._state.manageState("stopright", self)
+        elif event.type == pygame.JOYAXISMOTION:
+            if event.axis == 0 and event.joy == self._joystick.get_id():
+                if abs(event.value) < 0.1:
+                    self._state.manageState("stopleft", self)
+                    self._state.manageState("stopright", self)
+                elif event.value < 0:
+                    self._state.manageState("left", self)
+                    self._state.manageState("stopright", self)
+                elif event.value > 0:
+                    self._state.manageState("right", self)
+                    self._state.manageState("stopleft", self)
 
     def collideGround(self, yClip):
         self._state.manageState("ground", self)
         self._position.y -= yClip
-    
-    def kill(self):
-       print("you dead son")
-       #self._state.manageState("dead", self)
 
 
 class PlayerState(object):
