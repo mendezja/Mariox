@@ -9,55 +9,55 @@ from pygame.joystick import Joystick
 
 class Player(Mobile):
     def __init__(self, imageName: str, position: Vector2, joystick: Joystick = None):
-        super().__init__(imageName, position)
-        self._joystick = joystick
-        self._jumpTime = 0.05
-        self._vSpeed = 50
-        self._jSpeed = 100
+      super().__init__(imageName, position)
+      self._joystick = joystick
+      self._jumpTime = .06
+      self._vSpeed = 50
+      self._jSpeed = 100
 
-        self._nFrames = 2
-        self._framesPerSecond = 2
+      self._nFrames = 2
+      self._framesPerSecond = 2
 
-        self._nFramesList = {
-            "walking": 2,
-            "falling": 1,
-            "jumping": 6,
-            "standing": 1,
-            "Dying": 1
-        }
 
-        self._rowList = {
-            "walking": 0,
-            "jumping": 2,
-            "falling": 2,
-            "standing": 3,
-            "Dying": 1  # delay when switching from left/right walking, based on acceleration
-        }
+      self._nFramesList = {
+         "walking": 2,
+         "falling": 1,
+         "jumping": 6,
+         "standing": 1,
+         "dead": 0
+      }
 
-        self._framesPerSecondList = {
-            "walking": 8,
-            "standing": 2,
-            "jumping": 1,
-            "falling": 8,
-            "transition": 1  # will likely depend on acceleration
+      self._rowList = {
+         "walking": 0,
+         "jumping": 2,
+         "falling": 2,
+         "standing": 3,
+         "dead": 1 # delay when switching from left/right walking, based on acceleration
+      }
 
-        }
+      self._framesPerSecondList = {
+         "walking": 8,
+         "standing": 1,
+         "jumping": 1,
+         "falling": 8,
+         "dead": 1 #will likely depend on acceleration
 
-        self._state = PlayerState()
-        self.transitionState("falling")
+      }
+      self._state = PlayerState()
+      self.transitionState("falling")
 
     def updateVelocity(self, seconds):
-        super().updateVelocity(seconds)
+       super().updateVelocity(seconds)
 
-        if self._state.getState() == "standing":
+       if self._state.getState() == "standing":
             self._velocity.y = 0
-        elif self._state.getState() == "jumping":
-            self._velocity.y = -self._jSpeed
+       elif self._state.getState() == "jumping":
+            self._velocity.y = -self._jSpeed//1.5
             self._jumpTimer -= seconds
             if self._jumpTimer < 0:
                 self._state.manageState("fall", self)
-        elif self._state.getState() == "falling":
-            self._velocity.y += self._jSpeed * seconds
+       elif self._state.getState() == "falling":
+            self._velocity.y += self._jSpeed * seconds*1.5
 
     def handleEvent(self, event: Event):
         if event.type == pygame.KEYDOWN:
@@ -85,6 +85,10 @@ class Player(Mobile):
     def collideGround(self, yClip):
         self._state.manageState("ground", self)
         self._position.y -= yClip
+    
+    def kill(self):
+       print("you dead son")
+       self._state.manageState("dead", self)
 
 
 class PlayerState(object):
@@ -118,6 +122,9 @@ class PlayerState(object):
                 self._movement[action] = True
                 if self._state == "standing":
                     player.transitionState("walking")
+        
+        elif action == "dead":
+            print("dead")
 
         elif action.startswith("stop") and action[4:] in self._movement.keys():
             direction = action[4:]

@@ -1,9 +1,11 @@
 from typing import Tuple
 import pygame
 from pygame import Surface
+from pygame import Rect
 
 from .vector2D import Vector2
 from .frameManager import FrameManager
+
 
 
 class BasicState(object):
@@ -21,6 +23,11 @@ class Drawable(object):
     CAM_OFFSET1 = Vector2(0, 0)
     CAM_OFFSET2 = Vector2(0, 0)
 
+    _IMAGE_RECTS= {
+            "mario.png": Rect(2, 0, 13, 17),
+            "luigi.png": Rect(2, 0, 13, 17),
+            "enemies.png": Rect(5, 0, 17, 15)
+        }
     @classmethod
     def updateOffset(cls, tracked, screenSize, worldSize, whichPlayer=None):
         position = tracked.getPosition()
@@ -61,8 +68,13 @@ class Drawable(object):
         self._image = surface
 
     def getCollisionRect(self):
-        newRect = self._position + self._image.get_rect()
+        #print(self._image.get_rect())
+        if self._imageName in self._IMAGE_RECTS:
+            newRect = self._position + self._IMAGE_RECTS[self._imageName]
+        else:
+            newRect = self._position + self._image.get_rect()
         return newRect
+
 
     def draw(self, surface: Surface, whichPlayer=None):
         blitImage = self._image
