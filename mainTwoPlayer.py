@@ -18,7 +18,7 @@ def main():
     pygame.init()
     # load and set the logo
 
-    pygame.display.set_caption("Physics")
+    pygame.display.set_caption("M@RIO+")
 
     mainSurface = pygame.Surface(
         (SCREEN_SIZE.x, SCREEN_SIZE.y))  # main surface
@@ -122,12 +122,29 @@ def main():
                 if playerClipRect.width > 0:
                 # print (mario._state.getState(), ": ",playerClipRect.height, ": ",playerClipRect.width )
                     if player._state.getState() == "falling" and playerClipRect.height <= playerClipRect.width:
+                        enemy.kill()
+                        
                         enemies.remove(enemy)
-                        #print("enemy merked")
                         pass
                     else:
                         player.kill()
-                        time.sleep(2)
+                        ## Temp Game over message
+                        # font = pygame.font.SysFont('comicsansms', 32)
+                        # text = font.render('Game Over', True, (225,0,0))
+                        # textRect = text.get_rect()
+                        # textRect.center = (SCREEN_SIZE.x// 2, SCREEN_SIZE.y// 4)
+
+                        # for surface in drawSurfaces:
+                        #     index = drawSurfaces.index(surface)
+                            
+                        #     surface.blit(text, (SCREEN_SIZE.x// 2, SCREEN_SIZE.y// 4))
+                        #     mainSurface.blit(surface, (0, 0 if index ==
+                        #      0 else SCREEN_SIZE.y // 2))
+                             
+                        # pygame.transform.scale(mainSurface, list(
+                        #         UPSCALED_SCREEN_SIZE), screen)
+
+                        time.sleep(3)
                         RUNNING = False
                 
                 for floor in floorTiles:

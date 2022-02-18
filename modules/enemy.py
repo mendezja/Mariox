@@ -60,6 +60,10 @@ class Enemy(Mobile):
       self._state.manageState("left",self)
       self._state.manageState("ground", self)
       self._position.y -= yClip
+
+   def kill(self):
+       self._state = "dying"
+       self.transitionState("dying")
    
 
   

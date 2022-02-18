@@ -24,8 +24,9 @@ class Drawable(object):
     CAM_OFFSET2 = Vector2(0, 0)
 
     _IMAGE_RECTS= {
-            "mario.png": Rect(2, 1, 14, 17),
-            "enemies.png": Rect(5, 0, 17, 16)
+            "mario.png": Rect(2, 0, 13, 17),
+            "luigi.png": Rect(2, 0, 13, 17),
+            "enemies.png": Rect(5, 0, 17, 15)
         }
     @classmethod
     def updateOffset(cls, tracked, screenSize, worldSize, whichPlayer=None):

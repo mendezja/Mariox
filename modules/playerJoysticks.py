@@ -23,7 +23,7 @@ class Player(Mobile):
             "falling": 1,
             "jumping": 6,
             "standing": 1,
-            "dead": 2
+            "dead": 0
         }
 
         self._rowList = {
@@ -36,7 +36,7 @@ class Player(Mobile):
 
         self._framesPerSecondList = {
             "walking": 8,
-            "standing": 2,
+            "standing": 1,
             "jumping": 1,
             "falling": 8,
             "dead": 10  # will likely depend on acceleration
