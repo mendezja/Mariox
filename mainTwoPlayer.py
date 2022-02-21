@@ -1,7 +1,7 @@
 import pygame
 import time
 import os
-from modules.vector2D import Vector2
+from modules.gameObjects.vector2D import Vector2
 from modules.drawable import Drawable
 from modules.playerJoysticks import Player
 from modules.enemy import Enemy

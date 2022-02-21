@@ -30,17 +30,16 @@ class FrameManager(object):
         """An internal FrameManager class to contain the actual code. Is a private class."""
 
         # Folder in which images are stored
-        _IMAGE_FOLDER = "images"
+        _IMAGE_FOLDER = join("resources", "images")
 
         # Static information about the frame sizes of particular image sheets.
         _FRAME_SIZES = {
-            "mario.png": (16,17),
-            "luigi.png": (16,17),
-            "brick.png": (16,16),
-            "background.png": (2624,240),
-            "enemies.png": (19,16)              #create var here for enemies/mario
+            "mario.png": (16, 17),
+            "luigi.png": (16, 17),
+            "brick.png": (16, 16),
+            "background.png": (2624, 240),
+            "enemies.png": (19, 16)  # create var here for enemies/mario
         }
-        
 
         # A default frame size
         _DEFAULT_FRAME = (32, 32)
@@ -49,9 +48,8 @@ class FrameManager(object):
         _TRANSPARENCY = []
 
         # A list of images that require to be loaded with a color key
-        _COLOR_KEY = [ "enemies.png", "mario.png", "luigi.png"]
-        
-        
+        _COLOR_KEY = ["enemies.png", "mario.png", "luigi.png"]
+
         def __init__(self):
             # Stores the surfaces indexed based on file name
             # The values in _surfaces can be a single Surface
@@ -59,12 +57,11 @@ class FrameManager(object):
             self._surfaces = {}
 
         def __getitem__(self, key) -> Surface:
-            return self._surfaces[key]
-            
+            if key:
+                return self._surfaces[key]
 
         def __setitem__(self, key, item):
-            self._surfaces[key] = item     
-  
+            self._surfaces[key] = item
 
         def getFrame(self, fileName, offset=None) -> Surface:
             # If this frame has not already been loaded, load the image from memory
@@ -78,7 +75,10 @@ class FrameManager(object):
             # Otherwise, return the sheet created
             return self[fileName]
 
-        def _loadImage(self, fileName, sheet=False) -> None:
+        def _loadImage(self, fileName, sheet=False):
+            if not fileName:
+                return
+
             # Load the full image
             fullImage = image.load(
                 join(FrameManager._FM._IMAGE_FOLDER, fileName))
