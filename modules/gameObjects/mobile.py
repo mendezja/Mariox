@@ -1,11 +1,11 @@
 
 from .animated import Animated
 from .vector2D import Vector2
-from .frameManager import FrameManager
+from ..managers.frameManager import FrameManager
 
 
 class Mobile(Animated):
-    def __init__(self, imageName, position, offset = None):
+    def __init__(self, imageName, position, offset=None):
         super().__init__(imageName, position, offset)
         self._velocity = Vector2(0, 0)
         self._jumpTimer = 0
@@ -19,9 +19,9 @@ class Mobile(Animated):
 
         self._row = 0
 
-    def update(self, seconds):
+    def update(self, seconds, boundaries):
         self.updateVelocity(seconds)
-        self.updatePosition(seconds)
+        self.updatePosition(seconds, boundaries)
 
     def updateVelocity(self, seconds):
         '''Helper method for update'''
@@ -36,8 +36,15 @@ class Mobile(Animated):
         else:
             self._velocity.x = 0
 
-    def updatePosition(self, seconds):
+    def updatePosition(self, seconds, boundaries):
         '''Helper method for update'''
+        newPosition = self.getPosition() + self._velocity * seconds
+
+        if newPosition.x < 0 or newPosition.x > boundaries.x - self.getSize()[0]:
+            self._velocity.x = -self._velocity.x
+        if newPosition.y < 0 or newPosition.y > boundaries.y - self.getSize()[1]:
+            self._velocity.y = -self._velocity.y
+
         newPosition = self.getPosition() + self._velocity * seconds
 
         self.setPosition(newPosition)

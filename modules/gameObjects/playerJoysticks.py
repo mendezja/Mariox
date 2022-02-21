@@ -87,8 +87,8 @@ class Player(Mobile):
         self._position.y -= yClip
 
     def kill(self):
-       #print("you dead son")
-       self._state.manageState("dead", self)
+        #print("you dead son")
+        self._state.manageState("dead", self)
 
 
 class PlayerState(object):
@@ -126,7 +126,6 @@ class PlayerState(object):
         elif action == "dead":
             self._state = "dead"
             player.transitionState(self._state)
-            
 
         elif action.startswith("stop") and action[4:] in self._movement.keys():
             direction = action[4:]

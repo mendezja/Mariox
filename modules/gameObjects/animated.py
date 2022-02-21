@@ -1,11 +1,11 @@
-from .frameManager import FrameManager
+from ..managers.frameManager import FrameManager
 from .drawable import Drawable
 
 
 class Animated(Drawable):
 
-    def __init__(self, imageName, location, offset = None):
-        super().__init__(imageName, location, (0,0))
+    def __init__(self, imageName, location, offset=None):
+        super().__init__(imageName, location, (0, 0))
 
         self._frame = 0
         self._row = 0

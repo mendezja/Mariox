@@ -1,15 +1,8 @@
 
 import pygame
 import os
-from modules.vector2D import Vector2
-from modules.drawable import Drawable
-from modules.player import Player
-from modules.enemy import Enemy
-
-WORLD_SIZE = Vector2(2624, 240)
-SCREEN_SIZE = Vector2(WORLD_SIZE.y, WORLD_SIZE.y)
-SCALE = 3
-UPSCALED_SCREEN_SIZE = SCREEN_SIZE * SCALE
+from modules.managers.screenManager import ScreenManager
+from modules.UI.screenInfo import SCREEN_SIZE, UPSCALED_SCREEN_SIZE
 
 
 def main():
@@ -18,42 +11,22 @@ def main():
     pygame.init()
     # load and set the logo
 
-    pygame.display.set_caption("Physics")
+    pygame.display.set_caption("M@rio+")
 
     screen = pygame.display.set_mode(list(UPSCALED_SCREEN_SIZE))
 
     drawSurface = pygame.Surface(list(SCREEN_SIZE))
 
-    background = Drawable("background.png", (0, 0))
-
-    floorTiles: list[Drawable] = []
-
-    for x in range(0, WORLD_SIZE.x, 16):
-        floorTiles.append(
-            Drawable("brick.png", Vector2(x, SCREEN_SIZE.y - 32)))
-
-    enemies: list [Enemy] = [Enemy("enemies.png", list(WORLD_SIZE//x)) for x in range (2,16,2)]
-    player = Player("mario.png", (35,200))
+    screenManager = ScreenManager()
 
     # Make a game clock for nice, smooth animations
     gameClock = pygame.time.Clock()
 
-    # define a variable to control the main loop
     RUNNING = True
 
-    # main loop
     while RUNNING:
 
-        # Draw everything
-        background.draw(drawSurface)
-
-        for floor in floorTiles:
-            floor.draw(drawSurface)
-
-        for enemy in enemies:
-            enemy.draw(drawSurface)
-
-        player.draw(drawSurface)
+        screenManager.draw(drawSurface)
 
         pygame.transform.scale(drawSurface, list(UPSCALED_SCREEN_SIZE), screen)
 
@@ -66,58 +39,25 @@ def main():
             if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
                 # change the value to False, to exit the main loop
                 RUNNING = False
-
-            player.handleEvent(event)
-
-        # Update everything
-        Drawable.updateOffset(player, SCREEN_SIZE, WORLD_SIZE)
-
-        # Detect the floor collision
-        for floor in floorTiles:
-            clipRect = player.getCollisionRect().clip(floor.getCollisionRect())
-
-            if clipRect.width > 0:
-                player.collideGround(clipRect.height)
                 break
 
+            result = screenManager.handleEvent(event)
 
-        # Update enemies/detect collision with player
-        for enemy in enemies:
-            playerClipRect = enemy.getCollisionRect().clip(player.getCollisionRect())
-            #enemyClipRect = mario.getCollisionRect().clip(enemy.getCollisionRect())
+            if result == "exit":
+                RUNNING = False
+                break
 
-            if playerClipRect.width > 0:
-               # print (mario._state.getState(), ": ",playerClipRect.height, ": ",playerClipRect.width )
-                if player._state.getState() == "falling" and playerClipRect.height <= playerClipRect.width:
-                    enemies.remove(enemy)
-                    #print("enemy merked")
-                    pass
-                else:
-                    player.kill()
-                    RUNNING = False
-                
+        # Update everything
 
-            for floor in floorTiles:
-                clipRect = enemy.getCollisionRect().clip(floor.getCollisionRect())
-
-                if clipRect.width > 0:
-                    enemy.collideGround(clipRect.height)
-                    break
-
-        
         # Let our game clock tick at 60 fps
         gameClock.tick(60)
 
         # Get some time in seconds
-        seconds = gameClock.get_time() / 1000
+        seconds = min(0.5, gameClock.get_time() / 1000)
 
-        # let others update based on the amount of time elapsed
-        if seconds < 0.05:
-
-            player.update(seconds)
-
-            for enemy in enemies:
-                enemy.update(seconds)
+        # If player dies
+        if screenManager.update(seconds) == False:
+            RUNNING = False
 
 
 if __name__ == "__main__":
