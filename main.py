@@ -1,5 +1,6 @@
 
 import pygame
+from pygame.joystick import Joystick
 import os
 from modules.managers.screenManager import ScreenManager
 from modules.UI.screenInfo import SCREEN_SIZE, UPSCALED_SCREEN_SIZE
@@ -17,7 +18,16 @@ def main():
 
     drawSurface = pygame.Surface(list(SCREEN_SIZE))
 
-    screenManager = ScreenManager()
+    joysticks: list[Joystick] = []
+
+    try:
+        pygame.joystick.init()
+        joysticks.append(Joystick(0))
+        joysticks.append(Joystick(1))
+    except:
+        print("no joysticks")
+
+    screenManager = ScreenManager(joysticks)
 
     # Make a game clock for nice, smooth animations
     gameClock = pygame.time.Clock()

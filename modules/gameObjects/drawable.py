@@ -35,7 +35,7 @@ class Drawable(object):
         offset = Vector2(min(max(0, position[0] + (size[0] // 2) - (screenSize[0] // 2)),
                              worldSize[0] - screenSize[0]),
                          min(max(0, position[1] + (size[1] // 2) - ((screenSize[1]) // 2)),
-                             worldSize[1] - screenSize[1] // 2))
+                             worldSize[1] - screenSize[1] // 2) + 30)
         if whichPlayer == 0:  # Bottom screen
             cls.CAM_OFFSET2 = offset
         elif whichPlayer == 1:  # Top screen
@@ -76,7 +76,7 @@ class Drawable(object):
             newRect = self._position + self._image.get_rect()
         return newRect
 
-    def draw(self, surface: Surface, whichPlayer=None):
+    def draw(self, surface: Surface, whichPlayer=None, noOffset=False):
         blitImage = self._image
         offset = None
 
@@ -89,7 +89,9 @@ class Drawable(object):
         if self._state.getFacing() == "left":
             blitImage = pygame.transform.flip(self._image, True, False)
 
-        x = int(self._position.x - offset.x)
-        y = int(self._position.y - offset.y)
+        x = int(self._position.x) if noOffset else int(
+            self._position.x - offset.x)
+        y = int(self._position.y) if noOffset else int(
+            self._position.y - offset.y)
 
         surface.blit(blitImage, (x, y))
