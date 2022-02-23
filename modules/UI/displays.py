@@ -41,7 +41,7 @@ class AbstractMenu(Drawable):
         super().draw(surface)
 
         for item in self._options.values():
-            item.draw(surface)
+            item.draw(surface, noOffset=True)
 
     def update(self, seconds):
         pass
@@ -76,7 +76,7 @@ class CursorMenu(AbstractMenu):
 
     def draw(self, surface):
         super().draw(surface)
-        self._cursor.draw(surface)
+        self._cursor.draw(surface, noOffset=True)
 
     def _moveCursor(self):
         self._cursor.setPosition(self._options[self._current].getPosition(
