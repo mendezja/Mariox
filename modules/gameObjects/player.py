@@ -107,6 +107,17 @@ class Player(Mobile):
     def collideGround(self, yClip):
         self._state.manageState("ground", self)
         self._position.y -= yClip
+    def startFalling(self):
+        self._state.manageState("falling", self)
+        
+    def collideWall(self, xClip):
+        self._state.manageState("ground", self)
+        if self._state._movement["left"] == True:
+            self._state.manageState("right", self)
+            self._position.x += xClip 
+        elif self._state._movement["right"] == True:
+            self._state.manageState("left", self)
+            self._position.x -= xClip 
 
     def kill(self):
         # print("you dead son")
@@ -151,9 +162,13 @@ class PlayerState(object):
     def manageState(self, action: str, player: Player):
         if action in self._movement.keys():
             if self._movement[action] == False:
+                self._movement[self._lastFacing] = False
                 self._movement[action] = True
+                self._lastFacing = action
+
                 if self._state == "standing":
                     player.transitionState("walking")
+            
 
         elif action == "dead":
             # print("dead")

@@ -76,18 +76,25 @@ class ScreenManager(BasicManager):
 
                 if choice == START_SINGLE_PLAYER:
                     if len(self._joysticks) >= 1:
-                        self._game = GameManager(
-                            SCREEN_SIZE, SINGLE_PLAYER, self._joysticks)
-                        self._state.manageState("startGame", self)
+                        print("using joystick")        
                     else:
-                        print("Need one joystick")
+                        print("using keyboard")
+
+                    self._game = GameManager(
+                            SCREEN_SIZE, SINGLE_PLAYER, "world1.txt", self._joysticks)
+                    self._game.load()
+                    self._state.manageState("startGame", self)
                 elif choice == START_TWO_PLAYER:
                     if len(self._joysticks) == 2:
-                        self._game = GameManager(
-                            SCREEN_SIZE, TWO_PLAYER, self._joysticks)
-                        self._state.manageState("startGame", self)
+                        print("using joysticks")
                     else:
-                        print("Need two joysticks")
+                        print("using keyboard")
+
+                    self._game = GameManager(
+                            SCREEN_SIZE, TWO_PLAYER, "world1.txt", self._joysticks)
+                    self._game.load()
+                    self._state.manageState("startGame", self)
+                    
                 elif choice == EXIT:
                     return EXIT
 

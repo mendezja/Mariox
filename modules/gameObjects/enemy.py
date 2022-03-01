@@ -6,6 +6,7 @@ import pygame
 from pygame.event import Event
 
 
+
 class Enemy(Mobile):
 
     def __init__(self, enemyName: str, position: Vector2):
@@ -21,7 +22,6 @@ class Enemy(Mobile):
         self._nFramesList = {
             "walking": 2,
             "falling": 1,
-            # "jumping": 6,
             "standing": 1,
             "dying": 1
         }
@@ -59,6 +59,17 @@ class Enemy(Mobile):
         self._state.manageState("ground", self)
         self._position.y -= yClip
 
+    
+    def collideWall(self, xClip):
+        self._state.manageState("ground", self)
+        if self._state._movement["left"] == True:
+            self._state.manageState("right", self)
+            self._position.x += xClip 
+        elif self._state._movement["right"] == True:
+            self._state.manageState("left", self)
+            self._position.x -= xClip 
+
+
     def kill(self):
         self._state = "dying"
         self.transitionState("dying")
@@ -93,7 +104,10 @@ class EnemyState(object):
 
         if action in self._movement.keys():
             if self._movement[action] == False:
+                self._movement[self._lastFacing] = False
                 self._movement[action] = True
+                self._lastFacing = action
+
                 if self._state == "standing":
                     enemy.transitionState("walking")
 
