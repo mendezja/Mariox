@@ -65,9 +65,7 @@ def main():
         # Get some time in seconds
         seconds = min(0.5, gameClock.get_time() / 1000)
 
-        # If player dies
-        if screenManager.update(seconds) == False:
-            RUNNING = False
+        screenManager.update(seconds)
 
 
 if __name__ == "__main__":
