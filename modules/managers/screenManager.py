@@ -11,16 +11,19 @@ from .gamemodes import *
 
 class ScreenManager(BasicManager):
 
+    RETURN_TO_MAIN = "returnToMain"
+
     def __init__(self, joysticks: 'list[Joystick]'):
         super().__init__()
         self._game = None
         self._state = ScreenState()
         self._pausedText = Text(Vector2(0, 0), "Paused")
+        self._gameOverText = Text(Vector2(0, 0), "Game Over")
         self._joysticks = joysticks
 
-        size = self._pausedText.getSize()
-        midPointX = SCREEN_SIZE.x // 2 - size[0] // 2
-        midPointY = SCREEN_SIZE.y // 2 - size[1] // 2
+        pausedTextSize = self._pausedText.getSize()
+        midPointX = SCREEN_SIZE.x // 2 - pausedTextSize[0] // 2
+        midPointY = SCREEN_SIZE.y // 2 - pausedTextSize[1] // 2
 
         self._pausedText.setPosition(Vector2(midPointX, midPointY))
 
@@ -34,9 +37,19 @@ class ScreenManager(BasicManager):
         self._mainMenu.addOption(EXIT, "Exit Game",
                                  SCREEN_SIZE // 2 + Vector2(0, 50),
                                  center="both")
+        gameOverTextSize = self._gameOverText.getSize()
+        self._gameOverText.setPosition(
+            SCREEN_SIZE // 2 - Vector2(gameOverTextSize[0]//2, gameOverTextSize[1]//2 + 50))
+
+        self._gameOverMenu = CursorMenu("background.png", fontName="default8")
+        self._gameOverMenu.addOption(ScreenManager.RETURN_TO_MAIN, "Return to Main Menu", SCREEN_SIZE // 2,
+                                     center="both")
+        self._gameOverMenu.addOption(EXIT, "Quit",
+                                     SCREEN_SIZE // 2 + Vector2(0, 50),
+                                     center="both")
 
     def draw(self, mainSurface: pygame.Surface):
-        if self._state == "game":
+        if self._state == ScreenState.state["GAME"]:
 
             if self._game._mode == SINGLE_PLAYER:
                 self._game.draw(mainSurface)
@@ -52,17 +65,21 @@ class ScreenManager(BasicManager):
                 self._pausedText.draw(
                     mainSurface, noOffset=True)
 
-        elif self._state == "mainMenu":
+        elif self._state == ScreenState.state["MAIN_MENU"]:
             self._mainMenu.draw(mainSurface)
+
+        elif self._state == ScreenState.state["GAME_OVER_MENU"]:
+            self._gameOverMenu.draw(mainSurface)
+            self._gameOverText.draw(mainSurface, noOffset=True)
 
     def handleEvent(self, event):
         # Handle screen-changing events first
         if event.type == pygame.KEYDOWN and event.key == pygame.K_p:
-            self._state.manageState("pause", self)
+            self._state.manageState(ScreenState.actions["PAUSE"], self)
         elif event.type == pygame.KEYDOWN and event.key == pygame.K_m:
-            self._state.manageState("mainMenu", self)
+            self._state.manageState(ScreenState.actions["MAIN_MENU"], self)
         else:
-            if self._state == "game" and not self._state.isPaused():
+            if self._state == ScreenState.state["GAME"] and not self._state.isPaused():
                 self._game.handleEvent(event)
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_1:
@@ -71,67 +88,91 @@ class ScreenManager(BasicManager):
                         self._currentMenu = 1
                     elif event.key == pygame.K_3:
                         self._currentMenu = 2
-            elif self._state == "mainMenu":
+                if self._game.isGameOver():
+                    self._state.manageState(
+                        ScreenState.actions["GAME_OVER"], self)
+            elif self._state == ScreenState.state["MAIN_MENU"]:
                 choice = self._mainMenu.handleEvent(event)
-
                 if choice == START_SINGLE_PLAYER:
-                    if len(self._joysticks) >= 1:
-                        print("using joystick")        
-                    else:
-                        print("using keyboard")
-
                     self._game = GameManager(
-                            SCREEN_SIZE, SINGLE_PLAYER, "world1.txt", self._joysticks)
+                        SCREEN_SIZE, SINGLE_PLAYER, "world1.txt", self._joysticks)
                     self._game.load()
-                    self._state.manageState("startGame", self)
+                    self._state.manageState(
+                        ScreenState.actions["START_GAME"], self)
                 elif choice == START_TWO_PLAYER:
-                    if len(self._joysticks) == 2:
-                        print("using joysticks")
-                    else:
-                        print("using keyboard")
-
                     self._game = GameManager(
-                            SCREEN_SIZE, TWO_PLAYER, "world1.txt", self._joysticks)
+                        SCREEN_SIZE, TWO_PLAYER,"world1.txt", self._joysticks)
                     self._game.load()
-                    self._state.manageState("startGame", self)
-                    
+                    self._state.manageState(
+                        ScreenState.actions["START_GAME"], self)
+                elif choice == EXIT:
+                    return EXIT
+            elif self._state == ScreenState.state["GAME_OVER_MENU"]:
+                choice = self._gameOverMenu.handleEvent(event)
+                if choice == ScreenManager.RETURN_TO_MAIN:
+                    self._state.manageState(
+                        ScreenState.actions["MAIN_MENU"], self)
                 elif choice == EXIT:
                     return EXIT
 
     def update(self, seconds):
-        if self._state == "game" and not self._state.isPaused():
+        if self._state == ScreenState.state["GAME"] and not self._state.isPaused():
             self._game.update(seconds)
-        elif self._state == "mainMenu":
+            if self._game.isGameOver():
+                self._state.manageState(ScreenState.actions["GAME_OVER"], self)
+        elif self._state == ScreenState.state["MAIN_MENU"]:
             self._mainMenu.update(seconds)
+        elif self._state == ScreenState.state["GAME_OVER_MENU"]:
+            self._gameOverMenu.update(seconds)
 
     # Prevents player from constantly walking if the direction arrow
     #  is released when the game isn't playing
 
     def transitionState(self, state):
-        if state == "game":
+        if state == ScreenState.state["GAME"]:
             self._game.updateMovement()
 
 
 class ScreenState(object):
-    def __init__(self, state="mainMenu"):
+    # actions
+    actions = {
+        "PAUSE": "pause",
+        "MAIN_MENU": "mainMenu",
+        "START_GAME": "startGame",
+        "CURSOR": "cursor",
+        "GAME_OVER": "gameOver"
+    }
+
+    # state
+    state = {
+        "GAME": "game",
+        "MAIN_MENU": "mainMenu",
+        "GAME_OVER_MENU": "gameOverMenu"
+    }
+
+    def __init__(self, state=state["MAIN_MENU"]):
         self._state = state
         self._paused = False
 
-    def manageState(self, action, screenManager: ScreenManager):
-        if action == "pause" and self._state == "game":
+    def manageState(self, action: str, screenManager: 'ScreenManager'):
+        if action == ScreenState.actions["PAUSE"] and self._state == ScreenState.state["GAME"]:
             self._paused = not self._paused
             screenManager.transitionState(self._state)
 
-        elif action == "mainMenu" and not self._paused and self._state != "mainMenu":
-            self._state = "mainMenu"
+        elif action == ScreenState.actions["MAIN_MENU"] and not self._paused and self._state != ScreenState.state["MAIN_MENU"]:
+            self._state = ScreenState.state["MAIN_MENU"]
             screenManager.transitionState(self._state)
 
-        elif action == "startGame" and self._state != "game":
-            self._state = "game"
+        elif action == ScreenState.actions["START_GAME"] and self._state != ScreenState.state["GAME"]:
+            self._state = ScreenState.state["GAME"]
             screenManager.transitionState(self._state)
 
-        elif action == "cursor" and self._state != "mainMenu":
-            self._state = "mainMenu"
+        elif action == ScreenState.actions["CURSOR"] and self._state != ScreenState.state["MAIN_MENU"]:
+            self._state = ScreenState.state["MAIN_MENU"]
+            screenManager.transitionState(self._state)
+
+        elif action == ScreenState.actions["GAME_OVER"] and self._state == ScreenState.state["GAME"]:
+            self._state = ScreenState.state["GAME_OVER_MENU"]
             screenManager.transitionState(self._state)
 
     def __eq__(self, other):

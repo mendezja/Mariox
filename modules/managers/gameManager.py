@@ -31,6 +31,19 @@ class GameManager(BasicManager):
         self._wall: list[Drawable] = []
         self._enemies: list [Enemy] = []
         self._players: list[Player] = []
+        self._gameOver = False
+        if mode == SINGLE_PLAYER:
+
+            self._players.append(
+                Player("mario.png", Vector2(10, GameManager.WORLD_SIZE.y - 48), (joysticks[0] if len(joysticks) == 1 else None)))
+
+        elif mode == TWO_PLAYER:
+
+            self._players = [Player("mario.png", Vector2(10, GameManager.WORLD_SIZE.y - 48), (joysticks[x] if len(joysticks) == 2 else None))
+                             for x in range(2)]
+
+        self._floor = [Drawable("brick.png", Vector2(x, SCREEN_SIZE.y - 32))
+                       for x in range(0, GameManager.WORLD_SIZE.x, 16)]
         self._background = EfficientBackground(
             self._screenSize, "background.png", parallax=0)
 
@@ -85,7 +98,8 @@ class GameManager(BasicManager):
         for player in self._players:
             player.handleEvent(event)
 
-    def update(self, seconds) -> bool:
+    def update(self, seconds):
+        '''Return false if player dies'''
         # Update everything
         for player in self._players:
             whichPlayer = None if len(
@@ -155,7 +169,7 @@ class GameManager(BasicManager):
                         pass
                     else:
                         player.kill()
-                        return False
+                        self._gameOver = True
 
             for floor in self._floor:
                 clipRect = enemy.getCollisionRect().clip(floor.getCollisionRect())
@@ -183,9 +197,9 @@ class GameManager(BasicManager):
             for enemy in self._enemies:
                 enemy.update(seconds, GameManager.WORLD_SIZE)
 
-        return True
-
     def updateMovement(self):
         for player in self._players:
             player.updateMovement()
 
+    def isGameOver(self):
+        return self._gameOver
