@@ -8,7 +8,6 @@ from ..UI.screenInfo import SCREEN_SIZE
 import pygame
 from .gamemodes import *
 
-
 class ScreenManager(BasicManager):
 
     RETURN_TO_MAIN = "returnToMain"
@@ -18,7 +17,7 @@ class ScreenManager(BasicManager):
         self._game = None
         self._state = ScreenState()
         self._pausedText = Text(Vector2(0, 0), "Paused")
-        #self._gameOverText = Text(Vector2(0, 0), "Game Over")
+        self._gameOverText = Text(Vector2(0, 0), "Game Over")
         self._joysticks = joysticks
 
         pausedTextSize = self._pausedText.getSize()
@@ -37,9 +36,9 @@ class ScreenManager(BasicManager):
         self._mainMenu.addOption(EXIT, "Exit Game",
                                  SCREEN_SIZE // 2 + Vector2(0, 60),
                                  center="both")
-        # gameOverTextSize = self._gameOverText.getSize()
-        # self._gameOverText.setPosition(
-        #     SCREEN_SIZE // 2 - Vector2(gameOverTextSize[0]//2, gameOverTextSize[1]//2 + 50))
+        gameOverTextSize = self._gameOverText.getSize()
+        self._gameOverText.setPosition(
+            SCREEN_SIZE // 2 - Vector2(gameOverTextSize[0]//2, gameOverTextSize[1]//2 + 50))
 
         self._gameOverMenu = CursorMenu("gameOver.png", fontName="default8")
         self._gameOverMenu.addOption(ScreenManager.RETURN_TO_MAIN, "Return to Main Menu", SCREEN_SIZE // 2 + Vector2(0, 50),
@@ -70,7 +69,7 @@ class ScreenManager(BasicManager):
 
         elif self._state == ScreenState.state["GAME_OVER_MENU"]:
             self._gameOverMenu.draw(mainSurface)
-            #self._gameOverText.draw(mainSurface, noOffset=True)
+            self._gameOverText.draw(mainSurface, noOffset=True)
             
 
     def handleEvent(self, event):

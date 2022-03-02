@@ -38,7 +38,7 @@ class AbstractMenu(Drawable):
             self._options[key].setPosition(position)
 
     def draw(self, surface):
-        super().draw(surface)
+        super().draw(surface, noOffset=True)
 
         for item in self._options.values():
             item.draw(surface, noOffset=True)
