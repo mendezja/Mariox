@@ -82,14 +82,13 @@ class Player(Mobile):
 
             elif event.key == pygame.K_RIGHT:
                 self._state.manageState("stopright", self)
-        
+
         # Joystick
         if event.type == pygame.JOYBUTTONDOWN:
             if event.button == 2 and event.joy == self._joystick.get_id():
                 self._state.manageState("jump", self)
 
         elif event.type == pygame.JOYBUTTONUP:
-
             if event.button == 0:
                 self._state.manageState("fall", self)
 
@@ -112,27 +111,27 @@ class Player(Mobile):
             
             self._state.manageState("fall", self)
             self._velocity.y *= -1
-            self._position.y += yClip 
-      
+            self._position.y += yClip
+
             return False
-            
+
         else:
             self._state.manageState("ground", self)
-            self._position.y -= yClip 
+            self._position.y -= yClip
             return True
 
     def startFalling(self):
         self._state.manageState("falling", self)
-        
+
     def collideWall(self, xClip):
        # self._state.manageState("ground", self)
         if self._state._movement["left"] == True:
             self._state.manageState("right", self)
-            self._position.x += xClip 
-            
+            self._position.x += xClip
+
         elif self._state._movement["right"] == True:
             self._state.manageState("left", self)
-            self._position.x -= xClip 
+            self._position.x -= xClip
 
     def kill(self):
         # print("you dead son")
@@ -140,6 +139,7 @@ class Player(Mobile):
         self._isDead = True
 
     def updateMovement(self):
+
         pressed = pygame.key.get_pressed()
 
         if not pressed[pygame.K_UP]:
@@ -176,14 +176,19 @@ class PlayerState(object):
         return self._lastFacing
 
     def manageState(self, action: str, player: Player):
+        # if action in self._movement.keys():
+        #     if self._movement[action] == False:
+        #         self._movement[self._lastFacing] = False
+        #         self._movement[action] = True
+        #         self._lastFacing = action
+
+        #         if self._state == "standing":
+        #             player.transitionState("walking")
         if action in self._movement.keys():
             if self._movement[action] == False:
-                self._movement[self._lastFacing] = False
                 self._movement[action] = True
-                self._lastFacing = action
-
                 if self._state == "standing":
-                    player.transitionState("walking")
+                     player.transitionState("walking")
 
         elif action == "dead":
             self._state = "dead"

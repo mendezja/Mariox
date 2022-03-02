@@ -141,6 +141,7 @@ class GameManager(BasicManager):
                     else:
                         player.kill()
                         self._gameOver = True
+                        return
             
             hasFloor = False
             
@@ -169,6 +170,7 @@ class GameManager(BasicManager):
                 
                 if player._isDead:
                     self._gameOver = True
+                    return
 
                 player.update(seconds, GameManager.WORLD_SIZE)
 
