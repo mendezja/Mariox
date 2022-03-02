@@ -3,6 +3,7 @@ from ..gameObjects.drawable import Drawable
 from ..gameObjects.vector2D import Vector2
 from .items import *
 import pygame
+from pygame.event import Event
 
 
 class AbstractMenu(Drawable):
@@ -61,7 +62,9 @@ class CursorMenu(AbstractMenu):
             pygame.K_UP: "up",
             pygame.K_DOWN: "down",
             pygame.K_RIGHT: "right",
-            pygame.K_LEFT: "left"
+            pygame.K_LEFT: "left",
+            "UP": "up",
+            "DOWN": "down"
         }
 
     def addOption(self, key, text, position, center=None):
@@ -101,8 +104,8 @@ class CursorMenu(AbstractMenu):
 
         return nearest
 
-    def handleEvent(self, event):
-
+    def handleEvent(self, event: Event):
+        # Keyboard
         if event.type == pygame.KEYDOWN:
             if event.key in self._controls.keys():
                 newCurr = self._findNearestInDirection(
@@ -113,4 +116,19 @@ class CursorMenu(AbstractMenu):
                     self._moveCursor()
 
             elif event.key == pygame.K_RETURN:
+                return self._current
+
+        # Joystick
+        elif event.type == pygame.JOYAXISMOTION:
+            if event.axis == 1:
+                if abs(event.value) < 0.1:
+                    return
+                newCurr = self._findNearestInDirection(
+                    self._controls["DOWN" if event.value > 0 else "UP"])
+
+                if newCurr != None:
+                    self._current = newCurr
+                    self._moveCursor()
+        elif event.type == pygame.JOYBUTTONDOWN:
+            if event.button == 2:
                 return self._current

@@ -22,8 +22,12 @@ def main():
 
     try:
         pygame.joystick.init()
-        joysticks.append(Joystick(0))
-        joysticks.append(Joystick(1))
+        try:
+            joysticks.append(Joystick(0))
+            joysticks.append(Joystick(1))
+        except:
+            print("one joystick")
+
     except:
         print("no joysticks")
 
@@ -35,7 +39,6 @@ def main():
     RUNNING = True
 
     while RUNNING:
-        
 
         screenManager.draw(drawSurface)
 

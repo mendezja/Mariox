@@ -24,7 +24,7 @@ class Drawable(object):
 
     _IMAGE_RECTS = {
         "mario.png": Rect(2, 0, 13, 16),
-        "luigi.png": Rect(2, 0, 13, 16),
+        "luigi.png": Rect(1, 0, 12, 16),
         "enemies.png": Rect(5, 0, 17, 15)
     }
 
