@@ -1,5 +1,4 @@
 import os
-
 from tkinter.font import BOLD
 from .basicManager import BasicManager
 from ..gameObjects.drawable import Drawable
@@ -16,6 +15,7 @@ from pygame import Rect
 class GameManager(BasicManager):
 
     WORLD_SIZE = Vector2(2624, 240)
+    
     BLOCKS_OFFSETS = {"G":(2,0), # Ground
                     "L": (0,0), # Leaves
                     "<": (1,0), # End Leaves Right
@@ -121,7 +121,7 @@ class GameManager(BasicManager):
                     break
     
             if not hasFloor:
-                player.updateMovement()
+                player.fall()#updateMovement()
 
         
 

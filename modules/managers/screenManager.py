@@ -81,7 +81,7 @@ class ScreenManager(BasicManager):
         else:
             if self._state == ScreenState.state["GAME"] and not self._state.isPaused():
                 self._game.handleEvent(event)
-                # Keyboard
+                
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_1:
                         self._currentMenu = 0

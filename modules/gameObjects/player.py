@@ -16,6 +16,10 @@ class Player(Mobile):
         self._jSpeed = 80
         self._isDead = False
 
+        self._pressedLeft = False
+        self._pressedRight = False
+        self._pressedUp = False
+
         self._nFrames = 2
         self._framesPerSecond = 2
 
@@ -86,23 +90,30 @@ class Player(Mobile):
         # Joystick
         if event.type == pygame.JOYBUTTONDOWN:
             if event.button == 2 and event.joy == self._joystick.get_id():
+                self._pressedUp = True
                 self._state.manageState("jump", self)
 
         elif event.type == pygame.JOYBUTTONUP:
             if event.button == 0:
+                self._pressedUp = False
                 self._state.manageState("fall", self)
 
-        elif event.type == pygame.JOYAXISMOTION:
+        if event.type == pygame.JOYAXISMOTION:
             if event.axis == 0 and event.joy == self._joystick.get_id():
                 if abs(event.value) < 0.1:
+                    self._pressedLeft = False
+                    self._pressedRight = False
                     self._state.manageState("stopleft", self)
                     self._state.manageState("stopright", self)
                 elif event.value < 0:
+                    self._pressedLeft = True
                     self._state.manageState("left", self)
                     self._state.manageState("stopright", self)
                 elif event.value > 0:
+                    self._pressedRight = True
                     self._state.manageState("right", self)
                     self._state.manageState("stopleft", self)
+        
 
     def collideGround(self, yClip):
        # print("collide")
@@ -124,13 +135,15 @@ class Player(Mobile):
         self._state.manageState("falling", self)
 
     def collideWall(self, xClip):
-       # self._state.manageState("ground", self)
+        self._state.manageState("ground", self)
         if self._state._movement["left"] == True:
-            self._state.manageState("right", self)
+            self._state.manageState("stopleft", self)
+            #self._state.manageState("right", self)
             self._position.x += xClip
 
         elif self._state._movement["right"] == True:
-            self._state.manageState("left", self)
+            self._state.manageState("stopright", self)
+            #self._state.manageState("left", self)
             self._position.x -= xClip
 
     def kill(self):
@@ -138,15 +151,20 @@ class Player(Mobile):
         self._state.manageState("dead", self)
         self._isDead = True
 
+    
+    def fall (self): #to be used when gravity is needed
+        self._state.manageState("fall", self)
+
+
     def updateMovement(self):
 
         pressed = pygame.key.get_pressed()
 
-        if not pressed[pygame.K_UP]:
+        if not pressed[pygame.K_UP]:# and not self._pressedUp:
             self._state.manageState("fall", self)
-        if not pressed[pygame.K_LEFT]:
+        if not pressed[pygame.K_LEFT] and not self._pressedLeft:
             self._state.manageState("stopleft", self)
-        if not pressed[pygame.K_RIGHT]:
+        if not pressed[pygame.K_RIGHT] and not self._pressedRight:
             self._state.manageState("stopright", self)
 
 

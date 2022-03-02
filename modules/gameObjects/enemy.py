@@ -69,19 +69,17 @@ class Enemy(Mobile):
 
     
     def collideWall(self, xClip):
-        self._state.manageState("ground", self)
+        #self._state.manageState("ground", self)
         
-        if self._velocity.x > 0:
-            print("movin right")
-            self._position.x -= xClip
-            self._state.manageState("stopright", self)
-            self._state.manageState("left", self)
-            
-        else:
-            print("movin left")
-            self._position.x += xClip
+        if self._state._movement["left"] == True:
             self._state.manageState("stopleft", self)
             self._state.manageState("right", self)
+            self._position.x += xClip
+
+        elif self._state._movement["right"] == True:
+            self._state.manageState("stopright", self)
+            self._state.manageState("left", self)
+            self._position.x -= xClip
             
             
 

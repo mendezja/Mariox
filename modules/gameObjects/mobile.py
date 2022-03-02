@@ -41,8 +41,9 @@ class Mobile(Animated):
         '''Helper method for update'''
         newPosition = self.getPosition() + self._velocity * seconds
 
-        if newPosition.x < 0 or newPosition.x > boundaries.x - self.getSize()[0] or \
-             newPosition.y < 0 or newPosition.y > boundaries.y - self.getSize()[1]:
+        if newPosition.x < 0 or newPosition.x > boundaries.x - self.getSize()[0]:
+            newPosition = self.getPosition() #+ self._velocity * seconds
+        if newPosition.y < 0 or newPosition.y > boundaries.y - self.getSize()[1]:
             self.kill() 
         else:
             self.setPosition(newPosition)
