@@ -13,7 +13,7 @@ class Player(Mobile):
         self._joystick = joystick
         self._jumpTime = .06
         self._vSpeed = 50
-        self._jSpeed = 100
+        self._jSpeed = 80
         self._isDead = False
 
         self._nFrames = 2
@@ -52,12 +52,12 @@ class Player(Mobile):
         if self._state.getState() == "standing":
             self._velocity.y = 0
         elif self._state.getState() == "jumping":
-            self._velocity.y = -self._jSpeed//1.5
+            self._velocity.y = -self._jSpeed
             self._jumpTimer -= seconds
             if self._jumpTimer < 0:
                 self._state.manageState("fall", self)
         elif self._state.getState() == "falling":
-            self._velocity.y += self._jSpeed * seconds*1.5
+            self._velocity.y += self._jSpeed * seconds
 
     def handleEvent(self, event: Event):
         # Keyboard
@@ -106,16 +106,29 @@ class Player(Mobile):
                     self._state.manageState("stopleft", self)
 
     def collideGround(self, yClip):
-        self._state.manageState("ground", self)
-        self._position.y -= yClip
+      
+        if self._velocity.y < 0: 
+            
+            self._state.manageState("fall", self)
+            self._velocity.y *= -1
+            self._position.y += yClip 
+      
+            return False
+            
+        else:
+            self._state.manageState("ground", self)
+            self._position.y -= yClip 
+            return True
+
     def startFalling(self):
         self._state.manageState("falling", self)
         
     def collideWall(self, xClip):
-        self._state.manageState("ground", self)
+       # self._state.manageState("ground", self)
         if self._state._movement["left"] == True:
             self._state.manageState("right", self)
             self._position.x += xClip 
+            
         elif self._state._movement["right"] == True:
             self._state.manageState("left", self)
             self._position.x -= xClip 

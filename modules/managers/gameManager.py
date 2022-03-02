@@ -77,14 +77,15 @@ class GameManager(BasicManager):
         # Draw everything
         self._background.draw(drawSurf, whichPlayer)
 
-        for block in self._blocks:
-            block.draw(drawSurf, whichPlayer)
-        for player in self._players:
-            player.draw(drawSurf, whichPlayer)
-        for enemy in self._enemies:
-            enemy.draw(drawSurf, whichPlayer)
         for decor in self._decor: 
             decor.draw(drawSurf, whichPlayer)
+        for block in self._blocks:
+            block.draw(drawSurf, whichPlayer)
+        
+        for enemy in self._enemies:
+            enemy.draw(drawSurf, whichPlayer)      
+        for player in self._players:
+            player.draw(drawSurf, whichPlayer)
 
     def handleEvent(self, event):
         for player in self._players:
@@ -109,11 +110,13 @@ class GameManager(BasicManager):
             for block in self._blocks:
                 clipRect = pRect.clip(block.getCollisionRect())
 
-                if clipRect.width > 0 :
-                    player.collideGround(clipRect.height)
-                    hasFloor = True
+                if clipRect.width >= clipRect.height and clipRect.width > 0: # check virtical collide                     
+                    hasFloor = player.collideGround(clipRect.height)
                     break
-                elif (pRect.move(0, 1)).colliderect(block.getCollisionRect()):
+                elif clipRect.width < clipRect.height: # check for horizontal collide
+                    player.collideWall(clipRect.width)
+                    break
+                elif (pRect.move(0, 1)).colliderect(block.getCollisionRect()): # Check for ground
                     hasFloor = True
                     break
     
@@ -130,7 +133,6 @@ class GameManager(BasicManager):
 
                 if playerClipRect.width > 0:
                     # print (mario._state.getState(), ": ",playerClipRect.height, ": ",playerClipRect.width )
-                    # TODO fix bug where if both players jump on the same enemy at the same time it crashes
                     if player._state.getState() == "falling" and playerClipRect.height <= playerClipRect.width:
                         self._enemies.remove(enemy)
                         break
@@ -144,13 +146,17 @@ class GameManager(BasicManager):
             for block in self._blocks:
                 clipRect = eRect.clip(block.getCollisionRect())
 
-                if clipRect.width > 0:
+                if clipRect.width >= clipRect.height and clipRect.width > 0:  # check virtical collide   
                     enemy.collideGround(clipRect.height)
                     hasFloor = True
                     break
-                elif (eRect.move(0, 1)).colliderect(block.getCollisionRect()):
+                elif clipRect.width < clipRect.height: # check for horizontal collide
+                    enemy.collideWall(clipRect.width)
+                    break
+                elif (eRect.move(0, 1)).colliderect(block.getCollisionRect()): # check for ground
                     hasFloor = True
                     break
+                    
     
             if not hasFloor:
                 enemy.updateMovement()
