@@ -85,24 +85,24 @@ class EfficientBackground(RepeatingSprite):
         self._image.set_alpha(amount)
 
 
-class MovingBackground(EfficientBackground):
-    def __init__(self, screenSize, imageName, velocity, position=Vector2(0, 0), offset=None, parallax=1):
-        super().__init__(screenSize, imageName, position, offset, parallax)
+# class MovingBackground(EfficientBackground):
+#     def __init__(self, screenSize, imageName, velocity, position=Vector2(0, 0), offset=None, parallax=1):
+#         super().__init__(screenSize, imageName, position, offset, parallax)
 
-        self._velocity = velocity
+#         self._velocity = velocity
 
-    def update(self, seconds):
-        self._position = self._position + self._velocity * seconds
+#     def update(self, seconds):
+#         self._position = self._position + self._velocity * seconds
 
-        super().update()
+#         super().update()
 
 
-class Floor(Drawable):
-    def __init__(self, width, yPos):
-        super().__init__("", Vector2(0, yPos))
-        self._image = pygame.Surface((width, 16))
-        self._tile = Drawable("brick.png", (0, 0))._image
+# class Floor(Drawable):
+#     def __init__(self, width, yPos):
+#         super().__init__("", Vector2(0, yPos))
+#         self._image = pygame.Surface((width, 16))
+#         self._tile = Drawable("brick.png", (0, 0))._image
 
-        for x in range(0, width, 16):
-            self._image.blit(self._tile, (x, 0))
+#         for x in range(0, width, 16):
+#             self._image.blit(self._tile, (x, 0))
 

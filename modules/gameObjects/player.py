@@ -14,6 +14,7 @@ class Player(Mobile):
         self._jumpTime = .06
         self._vSpeed = 50
         self._jSpeed = 100
+        self._isDead = False
 
         self._nFrames = 2
         self._framesPerSecond = 2
@@ -122,6 +123,7 @@ class Player(Mobile):
     def kill(self):
         # print("you dead son")
         self._state.manageState("dead", self)
+        self._isDead = True
 
     def updateMovement(self):
         pressed = pygame.key.get_pressed()
@@ -168,11 +170,10 @@ class PlayerState(object):
 
                 if self._state == "standing":
                     player.transitionState("walking")
-            
 
         elif action == "dead":
-            # print("dead")
-            pass
+            self._state = "dead"
+            player.transitionState(self._state)
 
         elif action.startswith("stop") and action[4:] in self._movement.keys():
             direction = action[4:]

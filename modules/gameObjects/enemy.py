@@ -23,21 +23,21 @@ class Enemy(Mobile):
             "walking": 2,
             "falling": 1,
             "standing": 1,
-            "dying": 1
+            "dead": 1
         }
 
         self._rowList = {
             "walking": 0,
             "falling": 0,
             "standing": 0,
-            "dying": 0
+            "dead": 1
         }
 
         self._framesPerSecondList = {
             "walking": 8,
             "falling": 8,
             "standing": 1,
-            "dying": 1
+            "dead": 1
 
         }
 
@@ -71,8 +71,17 @@ class Enemy(Mobile):
 
 
     def kill(self):
-        self._state = "dying"
-        self.transitionState("dying")
+        self._state.manageState("dead", self)
+
+    def updateMovement(self):
+        pressed = pygame.key.get_pressed()
+
+        if not pressed[pygame.K_UP]:
+            self._state.manageState("fall", self)
+        if not pressed[pygame.K_LEFT]:
+            self._state.manageState("stopleft", self)
+        if not pressed[pygame.K_RIGHT]:
+            self._state.manageState("stopright", self)
 
 
 class EnemyState(object):

@@ -23,6 +23,7 @@ class Mobile(Animated):
         self.updateVelocity(seconds)
         self.updatePosition(seconds, boundaries)
 
+
     def updateVelocity(self, seconds):
         '''Helper method for update'''
         super().update(seconds)
@@ -40,17 +41,14 @@ class Mobile(Animated):
         '''Helper method for update'''
         newPosition = self.getPosition() + self._velocity * seconds
 
-        if newPosition.x < 0 or newPosition.x > boundaries.x - self.getSize()[0]:
-            self._velocity.x = -self._velocity.x
-        if newPosition.y < 0 or newPosition.y > boundaries.y - self.getSize()[1]:
-            self._velocity.y = -self._velocity.y
-
-        newPosition = self.getPosition() + self._velocity * seconds
-
-        self.setPosition(newPosition)
+        if newPosition.x < 0 or newPosition.x > boundaries.x - self.getSize()[0] or \
+             newPosition.y < 0 or newPosition.y > boundaries.y - self.getSize()[1]:
+            self.kill() 
+        else:
+            self.setPosition(newPosition)
 
     def transitionState(self, state):
-
+  
         if state == "jumping":
             self._jumpTimer = self._jumpTime
 
