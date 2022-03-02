@@ -106,6 +106,7 @@ class Player(Mobile):
                     self._state.manageState("stopleft", self)
 
     def collideGround(self, yClip):
+       # print("collide")
       
         if self._velocity.y < 0: 
             

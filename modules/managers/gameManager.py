@@ -127,8 +127,10 @@ class GameManager(BasicManager):
 
         # Update enemies/detect collision with player
         for enemy in self._enemies:
+            eRect = enemy.getCollisionRect()
+
             for player in self._players:
-                playerClipRect = enemy.getCollisionRect().clip(player.getCollisionRect())
+                playerClipRect = eRect.clip(player.getCollisionRect())
                 # enemyClipRect = mario.getCollisionRect().clip(enemy.getCollisionRect())
 
                 if playerClipRect.width > 0:
@@ -141,12 +143,11 @@ class GameManager(BasicManager):
                         self._gameOver = True
             
             hasFloor = False
-            eRect = enemy.getCollisionRect()
-
+            
             for block in self._blocks:
                 clipRect = eRect.clip(block.getCollisionRect())
 
-                if clipRect.width >= clipRect.height and clipRect.width > 0:  # check virtical collide   
+                if  clipRect.width > 0:  # check virtical collide   clipRect.width > clipRect.height and
                     enemy.collideGround(clipRect.height)
                     hasFloor = True
                     break
@@ -156,7 +157,6 @@ class GameManager(BasicManager):
                 elif (eRect.move(0, 1)).colliderect(block.getCollisionRect()): # check for ground
                     hasFloor = True
                     break
-                    
     
             if not hasFloor:
                 enemy.updateMovement()
@@ -173,8 +173,9 @@ class GameManager(BasicManager):
                 player.update(seconds, GameManager.WORLD_SIZE)
 
             for enemy in self._enemies:
-                if enemy._state == "dead":
+                if enemy._isDead:
                     self._enemies.remove(enemy)
+                    pass
 
                 enemy.update(seconds, GameManager.WORLD_SIZE)
 

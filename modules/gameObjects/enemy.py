@@ -19,6 +19,8 @@ class Enemy(Mobile):
         self._nFrames = 2
         self._framesPerSecond = 2
 
+        self._isDead = False
+
         self._nFramesList = {
             "walking": 2,
             "falling": 1,
@@ -42,7 +44,9 @@ class Enemy(Mobile):
         }
 
         self._state = EnemyState()
+        
         self.transitionState("falling")
+        #self._state.manageState("left", self)
 
     def updateVelocity(self, seconds):
         super().updateVelocity(seconds)
@@ -55,29 +59,36 @@ class Enemy(Mobile):
             self._velocity = Vector2(0, 0)
 
     def collideGround(self, yClip):
-        self._state.manageState("left", self)
-        self._state.manageState("ground", self)
+        #print("you fucking dumbass")
         self._position.y -= yClip
+        self._state.manageState("ground", self)
+        
+        self._state.manageState("left", self)
+        
+        
 
     
     def collideWall(self, xClip):
-        #self._state.manageState("ground", self)
-        #self._velocity.x *= -1
-        #if self._state._movement["left"] == True:
-        if self._state.getFacing() == "left":
-            #self._state._state = "standing"
-            self._position.x += xClip 
+        self._state.manageState("ground", self)
+        
+        if self._velocity.x > 0:
+            print("movin right")
+            self._position.x -= xClip
+            self._state.manageState("stopright", self)
+            self._state.manageState("left", self)
+            
+        else:
+            print("movin left")
+            self._position.x += xClip
+            self._state.manageState("stopleft", self)
             self._state.manageState("right", self)
             
-        #elif self._state._movement["right"] == True:
-        else:
-            self._position.x -= xClip 
-            self._state.manageState("left", self)
             
 
 
     def kill(self):
         self._state.manageState("dead", self)
+        self._isDead = True
 
     def updateMovement(self):
         pressed = pygame.key.get_pressed()
@@ -117,12 +128,19 @@ class EnemyState(object):
 
     def manageState(self, action: str, enemy: Enemy):
 
+        # if action in self._movement.keys():
+        #     if self._movement[action] == False:
+        #         self._movement[self._lastFacing] = False
+        #         self._movement[action] = True
+        #         self._lastFacing = action
+
+        #         if self._state == "standing":
+                    
+        #             enemy.transitionState("walking")
+
         if action in self._movement.keys():
             if self._movement[action] == False:
-                self._movement[self._lastFacing] = False
                 self._movement[action] = True
-                self._lastFacing = action
-
                 if self._state == "standing":
                     enemy.transitionState("walking")
 
@@ -146,6 +164,7 @@ class EnemyState(object):
         elif action == "ground" and self._state == "falling":
 
             self._state = "standing"
+            
 
             if self.isMoving():
                 enemy.transitionState("walking")
