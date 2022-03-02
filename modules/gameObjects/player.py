@@ -13,7 +13,12 @@ class Player(Mobile):
         self._joystick = joystick
         self._jumpTime = .06
         self._vSpeed = 50
-        self._jSpeed = 100
+        self._jSpeed = 80
+        self._isDead = False
+
+        self._pressedLeft = False
+        self._pressedRight = False
+        self._pressedUp = False
 
         self._nFrames = 2
         self._framesPerSecond = 2
@@ -51,12 +56,12 @@ class Player(Mobile):
         if self._state.getState() == "standing":
             self._velocity.y = 0
         elif self._state.getState() == "jumping":
-            self._velocity.y = -self._jSpeed//1.5
+            self._velocity.y = -self._jSpeed
             self._jumpTimer -= seconds
             if self._jumpTimer < 0:
                 self._state.manageState("fall", self)
         elif self._state.getState() == "falling":
-            self._velocity.y += self._jSpeed * seconds*1.5
+            self._velocity.y += self._jSpeed * seconds
 
     def handleEvent(self, event: Event):
         # Keyboard
@@ -81,45 +86,85 @@ class Player(Mobile):
 
             elif event.key == pygame.K_RIGHT:
                 self._state.manageState("stopright", self)
-        
+
         # Joystick
         if event.type == pygame.JOYBUTTONDOWN:
             if event.button == 2 and event.joy == self._joystick.get_id():
+                self._pressedUp = True
                 self._state.manageState("jump", self)
 
         elif event.type == pygame.JOYBUTTONUP:
-
             if event.button == 0:
+                self._pressedUp = False
                 self._state.manageState("fall", self)
 
-        elif event.type == pygame.JOYAXISMOTION:
+        if event.type == pygame.JOYAXISMOTION:
             if event.axis == 0 and event.joy == self._joystick.get_id():
                 if abs(event.value) < 0.1:
+                    self._pressedLeft = False
+                    self._pressedRight = False
                     self._state.manageState("stopleft", self)
                     self._state.manageState("stopright", self)
                 elif event.value < 0:
+                    self._pressedLeft = True
                     self._state.manageState("left", self)
                     self._state.manageState("stopright", self)
                 elif event.value > 0:
+                    self._pressedRight = True
                     self._state.manageState("right", self)
                     self._state.manageState("stopleft", self)
+        
 
     def collideGround(self, yClip):
+       # print("collide")
+      
+        if self._velocity.y < 0: 
+            
+            self._state.manageState("fall", self)
+            self._velocity.y *= -1
+            self._position.y += yClip
+
+            return False
+
+        else:
+            self._state.manageState("ground", self)
+            self._position.y -= yClip
+            return True
+
+    def startFalling(self):
+        self._state.manageState("falling", self)
+
+    def collideWall(self, xClip):
         self._state.manageState("ground", self)
-        self._position.y -= yClip
+        if self._state._movement["left"] == True:
+            self._state.manageState("stopleft", self)
+            #self._state.manageState("right", self)
+            self._position.x += xClip
+
+        elif self._state._movement["right"] == True:
+            self._state.manageState("stopright", self)
+            #self._state.manageState("left", self)
+            self._position.x -= xClip
 
     def kill(self):
         # print("you dead son")
         self._state.manageState("dead", self)
+        self._isDead = True
+
+    
+    def fall (self): #to be used when gravity is needed
+        self._state.manageState("fall", self)
+
 
     def updateMovement(self):
+
         pressed = pygame.key.get_pressed()
 
-        if not pressed[pygame.K_UP]:
+        if not pressed[pygame.K_UP]:# and not self._pressedUp:
             self._state.manageState("fall", self)
-        if not pressed[pygame.K_LEFT]:
+        if not pressed[pygame.K_LEFT] and not self._pressedLeft:
             self._state.manageState("stopleft", self)
-        if not pressed[pygame.K_RIGHT]:
+        if not pressed[pygame.K_RIGHT] and not self._pressedRight:
             self._state.manageState("stopright", self)
 
 
@@ -149,15 +194,23 @@ class PlayerState(object):
         return self._lastFacing
 
     def manageState(self, action: str, player: Player):
+        # if action in self._movement.keys():
+        #     if self._movement[action] == False:
+        #         self._movement[self._lastFacing] = False
+        #         self._movement[action] = True
+        #         self._lastFacing = action
+
+        #         if self._state == "standing":
+        #             player.transitionState("walking")
         if action in self._movement.keys():
             if self._movement[action] == False:
                 self._movement[action] = True
                 if self._state == "standing":
-                    player.transitionState("walking")
+                     player.transitionState("walking")
 
         elif action == "dead":
-            # print("dead")
-            pass
+            self._state = "dead"
+            player.transitionState(self._state)
 
         elif action.startswith("stop") and action[4:] in self._movement.keys():
             direction = action[4:]

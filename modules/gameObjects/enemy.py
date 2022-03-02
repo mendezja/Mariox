@@ -6,6 +6,7 @@ import pygame
 from pygame.event import Event
 
 
+
 class Enemy(Mobile):
 
     def __init__(self, enemyName: str, position: Vector2):
@@ -18,31 +19,34 @@ class Enemy(Mobile):
         self._nFrames = 2
         self._framesPerSecond = 2
 
+        self._isDead = False
+
         self._nFramesList = {
             "walking": 2,
             "falling": 1,
-            # "jumping": 6,
             "standing": 1,
-            "dying": 1
+            "dead": 1
         }
 
         self._rowList = {
             "walking": 0,
             "falling": 0,
             "standing": 0,
-            "dying": 0
+            "dead": 1
         }
 
         self._framesPerSecondList = {
             "walking": 8,
             "falling": 8,
             "standing": 1,
-            "dying": 1
+            "dead": 1
 
         }
 
         self._state = EnemyState()
+        
         self.transitionState("falling")
+        #self._state.manageState("left", self)
 
     def updateVelocity(self, seconds):
         super().updateVelocity(seconds)
@@ -55,13 +59,44 @@ class Enemy(Mobile):
             self._velocity = Vector2(0, 0)
 
     def collideGround(self, yClip):
-        self._state.manageState("left", self)
-        self._state.manageState("ground", self)
+        #print("you fucking dumbass")
         self._position.y -= yClip
+        self._state.manageState("ground", self)
+        
+        self._state.manageState("left", self)
+        
+        
+
+    
+    def collideWall(self, xClip):
+        #self._state.manageState("ground", self)
+        
+        if self._state._movement["left"] == True:
+            self._state.manageState("stopleft", self)
+            self._state.manageState("right", self)
+            self._position.x += xClip
+
+        elif self._state._movement["right"] == True:
+            self._state.manageState("stopright", self)
+            self._state.manageState("left", self)
+            self._position.x -= xClip
+            
+            
+
 
     def kill(self):
-        self._state = "dying"
-        self.transitionState("dying")
+        self._state.manageState("dead", self)
+        self._isDead = True
+
+    def updateMovement(self):
+        pressed = pygame.key.get_pressed()
+
+        if not pressed[pygame.K_UP]:
+            self._state.manageState("fall", self)
+        if not pressed[pygame.K_LEFT]:
+            self._state.manageState("stopleft", self)
+        if not pressed[pygame.K_RIGHT]:
+            self._state.manageState("stopright", self)
 
 
 class EnemyState(object):
@@ -91,6 +126,16 @@ class EnemyState(object):
 
     def manageState(self, action: str, enemy: Enemy):
 
+        # if action in self._movement.keys():
+        #     if self._movement[action] == False:
+        #         self._movement[self._lastFacing] = False
+        #         self._movement[action] = True
+        #         self._lastFacing = action
+
+        #         if self._state == "standing":
+                    
+        #             enemy.transitionState("walking")
+
         if action in self._movement.keys():
             if self._movement[action] == False:
                 self._movement[action] = True
@@ -117,6 +162,7 @@ class EnemyState(object):
         elif action == "ground" and self._state == "falling":
 
             self._state = "standing"
+            
 
             if self.isMoving():
                 enemy.transitionState("walking")
