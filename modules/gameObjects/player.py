@@ -162,9 +162,9 @@ class Player(Mobile):
 
         if not pressed[pygame.K_UP]:# and not self._pressedUp:
             self._state.manageState("fall", self)
-        if not pressed[pygame.K_LEFT] and not self._pressedLeft:
+        if not pressed[pygame.K_LEFT]:# and not self._pressedLeft:
             self._state.manageState("stopleft", self)
-        if not pressed[pygame.K_RIGHT] and not self._pressedRight:
+        if not pressed[pygame.K_RIGHT]: # and not self._pressedRight:
             self._state.manageState("stopright", self)
 
 

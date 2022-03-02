@@ -48,7 +48,7 @@ class FrameManager(object):
         _TRANSPARENCY = []
 
         # A list of images that require to be loaded with a color key
-        _COLOR_KEY = ["enemies.png", "mario.png", "luigi.png", "arrow.png"]
+        _COLOR_KEY = ["enemies.png", "mario.png", "luigi.png", "arrow.png", "flagPost.png"]
 
         def __init__(self):
             # Stores the surfaces indexed based on file name
