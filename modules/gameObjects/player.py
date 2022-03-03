@@ -89,7 +89,7 @@ class Player(Mobile):
 
         # Joystick
         if event.type == pygame.JOYBUTTONDOWN:
-            if event.button == 2 and event.joy == self._joystick.get_id():
+            if event.button == 2 and event.instance_id == self._joystick.get_id():
                 self._pressedUp = True
                 self._state.manageState("jump", self)
 
@@ -99,7 +99,8 @@ class Player(Mobile):
                 self._state.manageState("fall", self)
 
         if event.type == pygame.JOYAXISMOTION:
-            if event.axis == 0 and event.joy == self._joystick.get_id():
+            
+            if event.axis == 0 and event.instance_id == self._joystick.get_id():
                 if abs(event.value) < 0.1:
                     self._pressedLeft = False
                     self._pressedRight = False
