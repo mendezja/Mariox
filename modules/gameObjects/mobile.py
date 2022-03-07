@@ -3,6 +3,9 @@ from .animated import Animated
 from .vector2D import Vector2
 from ..managers.frameManager import FrameManager
 
+import pygame
+from pygame.event import Event
+from pygame.joystick import Joystick
 
 class Mobile(Animated):
     def __init__(self, imageName, position, offset=None):
@@ -37,6 +40,13 @@ class Mobile(Animated):
         else:
             self._velocity.x = 0
 
+        if self._state.getState() == "standing":
+            self._velocity.y = 0
+        elif self._state.getState() == "falling":
+            self._velocity.y += self._jSpeed * seconds
+        # elif self._state.getState() == "dying":
+        #     self._velocity = Vector2(0, -1)
+
     def updatePosition(self, seconds, boundaries):
         '''Helper method for update'''
         newPosition = self.getPosition() + self._velocity * seconds
@@ -61,6 +71,47 @@ class Mobile(Animated):
         self.setImage(FrameManager.getInstance().getFrame(
             self._imageName, (self._frame, self._row)))
 
+    
+    def collideGround(self, yClip):
+        if self._velocity.y < 0:   
+            self._state.manageState("fall", self)
+            self._velocity.y *= -1
+            self._position.y += yClip
+            return False
+
+        else:
+            self._state.manageState("ground", self)
+            self._position.y -= yClip
+            return True
+    
+    def collideWall(self, xClip):
+        self._state.manageState("ground", self)
+        if self._state._movement["left"] == True:
+            self._state.manageState("stopleft", self)
+            self._position.x += xClip
+
+        elif self._state._movement["right"] == True:
+            self._state.manageState("stopright", self)
+            self._position.x -= xClip
+    
+    def updateMovement(self):
+
+        pressed = pygame.key.get_pressed()
+
+        if not pressed[pygame.K_UP]:# and not self._pressedUp:
+            self._state.manageState("fall", self)
+        if not pressed[pygame.K_LEFT]:# and not self._pressedLeft:
+            self._state.manageState("stopleft", self)
+        if not pressed[pygame.K_RIGHT]: # and not self._pressedRight:
+            self._state.manageState("stopright", self)
+    
+    def kill(self):
+        # print("you dead son")
+        self._state.manageState("dead", self)
+        self._isDead = True
+
+
+
 
 class MobileState(object):
     def __init__(self, state="falling"):
@@ -71,10 +122,13 @@ class MobileState(object):
             "right": False
         }
 
-        self._lastFacing = "right"
+        self._lastFacing = "left"
 
     def isMoving(self):
         return True in self._movement.values()
+
+    def isGrounded(self):
+        return self._state == "walking" or self._state == "standing"
 
     def getFacing(self):
         if self._movement["left"] == True:
@@ -83,6 +137,48 @@ class MobileState(object):
             self._lastFacing = "right"
 
         return self._lastFacing
+        
+    def manageState(self, action: str, player: Mobile):
+        if action in self._movement.keys():
+            if self._movement[action] == False:
+                self._movement[action] = True
+                if self._state == "standing":
+                     player.transitionState("walking")
+
+        elif action == "dead":
+            self._state = "dead"
+            player.transitionState(self._state)
+
+        elif action.startswith("stop") and action[4:] in self._movement.keys():
+            direction = action[4:]
+            if self._movement[direction] == True:
+                self._movement[direction] = False
+                allStop = True
+                for move in self._movement.keys():
+                    if self._movement[move] == True:
+                        allStop = False
+                        break
+
+                if allStop and self._state not in ["falling", "jumping"]:
+                    player.transitionState(self._state)
+
+        elif action == "jump" and self._state == "standing":
+            self._state = "jumping"
+            player.transitionState(self._state)
+
+        elif action == "fall" and self._state != "falling":
+            self._state = "falling"
+            player.transitionState(self._state)
+
+        elif action == "ground" and self._state == "falling":
+
+            self._state = "standing"
+
+            if self.isMoving():
+                player.transitionState("walking")
+            else:
+                player.transitionState(self._state)
+
 
     def getState(self):
         return self._state

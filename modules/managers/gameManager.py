@@ -96,8 +96,9 @@ class GameManager(BasicManager):
             player.draw(drawSurf, whichPlayer)
 
     def handleEvent(self, event):
-        for player in self._players:
-            player.handleEvent(event)
+        if not self._gameOver:
+            for player in self._players:
+                player.handleEvent(event)
 
     def update(self, seconds):
         '''Return false if player dies'''
@@ -133,7 +134,7 @@ class GameManager(BasicManager):
                     break
                 elif clipRect.width < clipRect.height: # check for horizontal collide
                     player.collideWall(clipRect.width)
-                    break
+                    #break
                 elif (pRect.move(0, 1)).colliderect(block.getCollisionRect()): # Check for ground
                     hasFloor = True
                     break

@@ -20,6 +20,7 @@ class BasicState(object):
 
 class Drawable(object):
     CAM_OFFSET1 = Vector2(0, 0)
+
     CAM_OFFSET2 = Vector2(0, 0)
 
     _IMAGE_RECTS = {
