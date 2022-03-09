@@ -20,12 +20,14 @@ class BasicState(object):
 
 class Drawable(object):
     CAM_OFFSET1 = Vector2(0, 0)
+
     CAM_OFFSET2 = Vector2(0, 0)
 
     _IMAGE_RECTS = {
         "mario.png": Rect(2, 0, 13, 16),
         "luigi.png": Rect(2, 0, 13, 16),
-        "enemies.png": Rect(5, 0, 16, 15)
+        "enemies.png": Rect(5, 0, 16, 15),
+        "flagPost.png": Rect(5, 9, 11, 155)
     }
 
     @classmethod

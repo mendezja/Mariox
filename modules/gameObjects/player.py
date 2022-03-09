@@ -46,23 +46,25 @@ class Player(Mobile):
             "jumping": 1,
             "falling": 8,
             "dead": 1  # will likely depend on acceleration
-
         }
-        self._state = PlayerState()
+
+        self._state._lastFacing = "right"
         self.transitionState("falling")
 
     def updateVelocity(self, seconds):
         super().updateVelocity(seconds)
 
-        if self._state.getState() == "standing":
-            self._velocity.y = 0
-        elif self._state.getState() == "jumping":
+        if self._state.getState() == "jumping":
             self._velocity.y = -self._jSpeed
             self._jumpTimer -= seconds
             if self._jumpTimer < 0:
                 self._state.manageState("fall", self)
-        elif self._state.getState() == "falling":
-            self._velocity.y += self._jSpeed * seconds
+
+    def startFalling(self):
+        self._state.manageState("falling", self)
+
+    def fall (self): #to be used when gravity is needed
+        self._state.manageState("fall", self)   
 
     def handleEvent(self, event: Event):
         # Keyboard
@@ -100,7 +102,6 @@ class Player(Mobile):
                 self._state.manageState("fall", self)
 
         if event.type == pygame.JOYAXISMOTION:
-            
             if event.axis == 0 and event.instance_id == self._joystick.get_id():
                 if abs(event.value) < 0.1:
                     self._pressedLeft = False
@@ -149,103 +150,97 @@ class Player(Mobile):
             self._position.x -= xClip
 
     def kill(self):
-        # print("you dead son")
-        self._state.manageState("dead", self)
-        self._isDead = True
         SoundManager.getInstance().playSound("mario_die.wav")
+        super().kill()
 
     
-    def fall (self): #to be used when gravity is needed
-        self._state.manageState("fall", self)
 
 
-    def updateMovement(self):
+    # def updateMovement(self):
 
-        pressed = pygame.key.get_pressed()
+    #     pressed = pygame.key.get_pressed()
 
-        if not pressed[pygame.K_UP]:# and not self._pressedUp:
-            self._state.manageState("fall", self)
-        if not pressed[pygame.K_LEFT] and not self._pressedLeft:
-            self._state.manageState("stopleft", self)
-        if not pressed[pygame.K_RIGHT] and not self._pressedRight:
-            self._state.manageState("stopright", self)
-
-
-class PlayerState(object):
-    def __init__(self, state="falling"):
-        self._state = state
-
-        self._movement = {
-            "left": False,
-            "right": False
-        }
-
-        self._lastFacing = "right"
-
-    def isMoving(self):
-        return True in self._movement.values()
-
-    def isGrounded(self):
-        return self._state == "walking" or self._state == "standing"
-
-    def getFacing(self):
-        if self._movement["left"] == True:
-            self._lastFacing = "left"
-        elif self._movement["right"] == True:
-            self._lastFacing = "right"
-
-        return self._lastFacing
-
-    def manageState(self, action: str, player: Player):
-        # if action in self._movement.keys():
-        #     if self._movement[action] == False:
-        #         self._movement[self._lastFacing] = False
-        #         self._movement[action] = True
-        #         self._lastFacing = action
-
-        #         if self._state == "standing":
-        #             player.transitionState("walking")
-        if action in self._movement.keys():
-            if self._movement[action] == False:
-                self._movement[action] = True
-                if self._state == "standing":
-                     player.transitionState("walking")
-
-        elif action == "dead":
-            self._state = "dead"
-            player.transitionState(self._state)
-
-        elif action.startswith("stop") and action[4:] in self._movement.keys():
-            direction = action[4:]
-            if self._movement[direction] == True:
-                self._movement[direction] = False
-                allStop = True
-                for move in self._movement.keys():
-                    if self._movement[move] == True:
-                        allStop = False
-                        break
-
-                if allStop and self._state not in ["falling", "jumping"]:
-                    player.transitionState(self._state)
-
-        elif action == "jump" and self._state == "standing":
-            self._state = "jumping"
-            player.transitionState(self._state)
-            SoundManager.getInstance().playSound("mario_jump.wav")
+    #     if not pressed[pygame.K_UP]:# and not self._pressedUp:
+    #         self._state.manageState("fall", self)
+    #     if not pressed[pygame.K_LEFT]:# and not self._pressedLeft:
+    #         self._state.manageState("stopleft", self)
+    #     if not pressed[pygame.K_RIGHT]: # and not self._pressedRight:
+    #         self._state.manageState("stopright", self)
 
 
-        elif action == "fall" and self._state != "falling":
-            self._state = "falling"
-            player.transitionState(self._state)
+# class PlayerState(object):
+#     def __init__(self, state="falling"):
+#         self._state = state
 
-        elif action == "ground" and self._state == "falling":
+#         self._movement = {
+#             "left": False,
+#             "right": False
+#         }
 
-            self._state = "standing"
+#         self._lastFacing = "right"
 
-            if self.isMoving():
-                player.transitionState("walking")
-            else:
-                player.transitionState(self._state)
+#     def isMoving(self):
+#         return True in self._movement.values()
 
-    def getState(self):
-        return self._state
+#     def isGrounded(self):
+#         return self._state == "walking" or self._state == "standing"
+
+#     def getFacing(self):
+#         if self._movement["left"] == True:
+#             self._lastFacing = "left"
+#         elif self._movement["right"] == True:
+#             self._lastFacing = "right"
+
+#         return self._lastFacing
+
+#     def manageState(self, action: str, player: Player):
+#         # if action in self._movement.keys():
+#         #     if self._movement[action] == False:
+#         #         self._movement[self._lastFacing] = False
+#         #         self._movement[action] = True
+#         #         self._lastFacing = action
+
+#         #         if self._state == "standing":
+#         #             player.transitionState("walking")
+#         if action in self._movement.keys():
+#             if self._movement[action] == False:
+#                 self._movement[action] = True
+#                 if self._state == "standing":
+#                      player.transitionState("walking")
+
+#         elif action == "dead":
+#             self._state = "dead"
+#             player.transitionState(self._state)
+
+#         elif action.startswith("stop") and action[4:] in self._movement.keys():
+#             direction = action[4:]
+#             if self._movement[direction] == True:
+#                 self._movement[direction] = False
+#                 allStop = True
+#                 for move in self._movement.keys():
+#                     if self._movement[move] == True:
+#                         allStop = False
+#                         break
+
+#                 if allStop and self._state not in ["falling", "jumping"]:
+#                     player.transitionState(self._state)
+
+#         elif action == "jump" and self._state == "standing":
+#             self._state = "jumping"
+#             player.transitionState(self._state)
+
+#         elif action == "fall" and self._state != "falling":
+#             self._state = "falling"
+#             player.transitionState(self._state)
+
+#         elif action == "ground" and self._state == "falling":
+
+#             self._state = "standing"
+
+#             if self.isMoving():
+#                 player.transitionState("walking")
+#             else:
+#                 player.transitionState(self._state)
+
+#     def getState(self):
+#         return self._state

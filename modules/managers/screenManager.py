@@ -8,6 +8,7 @@ from ..UI.screenInfo import SCREEN_SIZE
 import pygame
 from .gamemodes import *
 from .soundManager import SoundManager
+import time
 
 class ScreenManager(BasicManager):
 
@@ -19,6 +20,7 @@ class ScreenManager(BasicManager):
         self._state = ScreenState()
         self._pausedText = Text(Vector2(0, 0), "Paused")
         self._gameOverText = Text(Vector2(0, 0), "Game Over")
+        self._gameWonText = Text(Vector2(0, 0), "Winner")
         self._joysticks = joysticks
 
         pausedTextSize = self._pausedText.getSize()
@@ -27,6 +29,7 @@ class ScreenManager(BasicManager):
 
         self._pausedText.setPosition(Vector2(midPointX, midPointY))
 
+        # Create Main Menu
         self._mainMenu = CursorMenu("menuBackground.png", fontName="default8")
         self._mainMenu.addOption(START_SINGLE_PLAYER, "Single-Player",
                                  SCREEN_SIZE // 2 + Vector2(0, 20),
@@ -37,10 +40,14 @@ class ScreenManager(BasicManager):
         self._mainMenu.addOption(EXIT, "Exit Game",
                                  SCREEN_SIZE // 2 + Vector2(0, 60),
                                  center="both")
+
+        # Positon text for end menu
         gameOverTextSize = self._gameOverText.getSize()
         self._gameOverText.setPosition(
             SCREEN_SIZE // 2 - Vector2(gameOverTextSize[0]//2, gameOverTextSize[1]//2 + 50))
-
+        
+        
+        # Create Game Over Menu
         self._gameOverMenu = CursorMenu("gameOver.png", fontName="default8")
         self._gameOverMenu.addOption(ScreenManager.RETURN_TO_MAIN, "Return to Main Menu", SCREEN_SIZE // 2 + Vector2(0, 50),
                                      center="both")
@@ -48,6 +55,14 @@ class ScreenManager(BasicManager):
                                      SCREEN_SIZE // 2 + Vector2(0, 80),
                                      center="both")
     
+
+        # Create Game Won Menu
+        self._gameWonMenu = CursorMenu("gameOver.png", fontName="default8")
+        self._gameWonMenu.addOption(ScreenManager.RETURN_TO_MAIN, "Return to Main Menu", SCREEN_SIZE // 2 + Vector2(0, 50),
+                                     center="both")
+        self._gameWonMenu.addOption(EXIT, "Quit",
+                                     SCREEN_SIZE // 2 + Vector2(0, 80),
+                                     center="both")
 
     def draw(self, mainSurface: pygame.Surface):
         if self._state == ScreenState.state["GAME"]:
@@ -62,6 +77,8 @@ class ScreenManager(BasicManager):
                 mainSurface.blit(drawSurfaces[0], (0, 0))
                 mainSurface.blit(drawSurfaces[1], (0, SCREEN_SIZE.y // 2))
 
+                pygame.draw.line(mainSurface, (0,0,0), (0, SCREEN_SIZE.y//2), (SCREEN_SIZE.x ,SCREEN_SIZE.y//2), 2)
+
             if self._state.isPaused():
                 self._pausedText.draw(
                     mainSurface, noOffset=True)
@@ -72,7 +89,10 @@ class ScreenManager(BasicManager):
         elif self._state == ScreenState.state["GAME_OVER_MENU"]:
             self._gameOverMenu.draw(mainSurface)
             self._gameOverText.draw(mainSurface, noOffset=True)
-            
+
+        elif self._state == ScreenState.state["GAME_WON_MENU"]:
+            self._gameWonMenu.draw(mainSurface)
+            self._gameWonText.draw(mainSurface, noOffset=True)
 
     def handleEvent(self, event):
         # Handle screen-changing events first
@@ -92,8 +112,23 @@ class ScreenManager(BasicManager):
                     elif event.key == pygame.K_3:
                         self._currentMenu = 2
                 if self._game.isGameOver():
+                    #time.sleep(2)
                     self._state.manageState(
                         ScreenState.actions["GAME_OVER"], self)
+                    #time.sleep(10)
+                elif self._game.isWon() != None:
+                    #time.sleep(2)
+                    # If two player change text
+                    if self._game._mode == TWO_PLAYER:
+                        winner = (self._game.isWon())[0:-4]
+                        self._gameWonText = Text(Vector2(0, 0), (winner.upper()+" Wins" ))
+                    # Update text Position 
+                    gameWonTextSize = self._gameWonText.getSize()
+                    self._gameWonText.setPosition(
+                        SCREEN_SIZE // 2 - Vector2(gameWonTextSize[0]//2, gameWonTextSize[1]//2 + 50))
+                    self._state.manageState(ScreenState.actions["GAME_WON"],self)
+                    #time.sleep(10)
+
             elif self._state == ScreenState.state["MAIN_MENU"]:
                 choice = self._mainMenu.handleEvent(event)
                 if choice == START_SINGLE_PLAYER:
@@ -117,6 +152,13 @@ class ScreenManager(BasicManager):
                         ScreenState.actions["MAIN_MENU"], self)
                 elif choice == EXIT:
                     return EXIT
+            elif self._state == ScreenState.state["GAME_WON_MENU"]:
+                choice = self._gameWonMenu.handleEvent(event)
+                if choice == ScreenManager.RETURN_TO_MAIN:
+                    self._state.manageState(
+                        ScreenState.actions["MAIN_MENU"], self)
+                elif choice == EXIT:
+                    return EXIT
 
     def update(self, seconds):
         if self._state == ScreenState.state["GAME"] and not self._state.isPaused():
@@ -127,6 +169,8 @@ class ScreenManager(BasicManager):
             self._mainMenu.update(seconds)
         elif self._state == ScreenState.state["GAME_OVER_MENU"]:
             self._gameOverMenu.update(seconds)
+        elif self._state == ScreenState.state["GAME_WON_MENU"]:
+            self._gameWonMenu.update(seconds)
 
     # Prevents player from constantly walking if the direction arrow
     #  is released when the game isn't playing
@@ -144,14 +188,16 @@ class ScreenState(object):
         "MAIN_MENU": "mainMenu",
         "START_GAME": "startGame",
         "CURSOR": "cursor",
-        "GAME_OVER": "gameOver"
+        "GAME_OVER": "gameOver",
+        "GAME_WON": "gameWon"
     }
 
     # state
     state = {
         "GAME": "game",
         "MAIN_MENU": "mainMenu",
-        "GAME_OVER_MENU": "gameOverMenu"
+        "GAME_OVER_MENU": "gameOverMenu",
+        "GAME_WON_MENU": "gameWonMenu"
     }
 
     def __init__(self, state=state["MAIN_MENU"]):
@@ -182,8 +228,16 @@ class ScreenState(object):
 
         elif action == ScreenState.actions["GAME_OVER"] and self._state == ScreenState.state["GAME"]:
             self._state = ScreenState.state["GAME_OVER_MENU"]
+            time.sleep(1)
             screenManager.transitionState(self._state)
+            #time.sleep(1)
 
+        elif action == ScreenState.actions["GAME_WON"] and self._state == ScreenState.state["GAME"]:
+            self._state = ScreenState.state["GAME_WON_MENU"]
+            time.sleep(1)
+            screenManager.transitionState(self._state)
+            #time.sleep(1)
+            
     def __eq__(self, other):
         return self._state == other
 

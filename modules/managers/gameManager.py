@@ -38,7 +38,9 @@ class GameManager(BasicManager):
         self._decor: list[Drawable] = []
         self._enemies: list [Enemy] = []
         self._players: list[Player] = []
+        self._end: Drawable
         self._gameOver = False
+        self._WINNER: String = None#gameWon = False
        
         self._background = EfficientBackground(
             self._screenSize, "background.png", parallax=0)
@@ -60,13 +62,16 @@ class GameManager(BasicManager):
                     self._decor.append(Drawable("blocks.png", Vector2(col*tileSize, row*tileSize), (1,1)))
                 elif elemChar == "E": #enemies
                     self._enemies.append(Enemy("enemies.png",  Vector2(col*tileSize, row*tileSize) ))
+                
+                elif elemChar == "F": # Flag
+                    self._end = Drawable("flagPost.png", Vector2(col*tileSize, row*tileSize))
 
                 elif elemChar == "P": #player
                     if len(self._joysticks) >= 1 and self._mode == SINGLE_PLAYER:
                         self._players.append(Player("mario.png", Vector2(col*tileSize, row*tileSize), self._joysticks[0]))
                     elif self._mode == TWO_PLAYER:
-                        self._players.append(Player("mario.png", Vector2(10, GameManager.WORLD_SIZE.y - 48), self._joysticks[0] if len(self._joysticks) == 2 else None))
-                        self._players.append(Player("luigi.png", Vector2(10, GameManager.WORLD_SIZE.y - 48), self._joysticks[1] if len(self._joysticks) == 2 else None))
+                        self._players.append(Player("mario.png", Vector2(col*tileSize, row*tileSize), self._joysticks[0] if len(self._joysticks) == 2 else None))#,Vector2(10, GameManager.WORLD_SIZE.y - 48)
+                        self._players.append(Player("luigi.png", Vector2(col*tileSize, row*tileSize), self._joysticks[1] if len(self._joysticks) == 2 else None))
                     else:
                         #print("Please insert joystick")
                         self._players.append(Player("mario.png", Vector2(col*tileSize, row*tileSize) )) # edited for testing 
@@ -75,24 +80,29 @@ class GameManager(BasicManager):
     def draw(self, drawSurf: pygame.surface.Surface, whichPlayer=None):
 
         # Draw everything
+       # nameText = Text(Vector2(10, 10),)
+
         self._background.draw(drawSurf, whichPlayer)
 
         for decor in self._decor: 
             decor.draw(drawSurf, whichPlayer)
         for block in self._blocks:
             block.draw(drawSurf, whichPlayer)
-        
+
+        self._end.draw(drawSurf, whichPlayer)
         for enemy in self._enemies:
             enemy.draw(drawSurf, whichPlayer)      
         for player in self._players:
             player.draw(drawSurf, whichPlayer)
 
     def handleEvent(self, event):
-        for player in self._players:
-            player.handleEvent(event)
+        if not self._gameOver:
+            for player in self._players:
+                player.handleEvent(event)
 
     def update(self, seconds):
         # Update everything
+        
         for player in self._players:
 
             whichPlayer = None if len(
@@ -101,9 +111,18 @@ class GameManager(BasicManager):
                 player, SCREEN_SIZE, GameManager.WORLD_SIZE, whichPlayer=whichPlayer)
 
 
-        # Detect Gravity for each block
+        
         for player in self._players:
             pRect = player.getCollisionRect()
+            # Dectect if won for each player
+            if pRect.clip(self._end.getCollisionRect()).width > 0:
+                player.updateMovement()
+                #self._gameWon = True
+                self._WINNER = str(player._imageName)
+                return
+                print(player, "won")
+                pass
+            # Detect Gravity for each block
             hasFloor = False
             
             for block in self._blocks:
@@ -114,7 +133,7 @@ class GameManager(BasicManager):
                     break
                 elif clipRect.width < clipRect.height: # check for horizontal collide
                     player.collideWall(clipRect.width)
-                    break
+                    #break
                 elif (pRect.move(0, 1)).colliderect(block.getCollisionRect()): # Check for ground
                     hasFloor = True
                     break
@@ -135,7 +154,7 @@ class GameManager(BasicManager):
                 if playerClipRect.width > 0:
                     # print (mario._state.getState(), ": ",playerClipRect.height, ": ",playerClipRect.width )
                     if player._state.getState() == "falling" and playerClipRect.height <= playerClipRect.width:
-                        self._enemies.remove(enemy)
+                        enemy.kill()
                         break
                     else:
                         player.kill()
@@ -190,4 +209,5 @@ class GameManager(BasicManager):
     def isGameOver(self):
         return self._gameOver
     
-        
+    def isWon(self):
+        return self._WINNER
