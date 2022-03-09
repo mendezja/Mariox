@@ -1,4 +1,5 @@
 
+from modules.managers.soundManager import SoundManager
 from .vector2D import Vector2
 from .mobile import Mobile
 
@@ -151,6 +152,7 @@ class Player(Mobile):
         # print("you dead son")
         self._state.manageState("dead", self)
         self._isDead = True
+        SoundManager.getInstance().playSound("mario_die.wav")
 
     
     def fall (self): #to be used when gravity is needed
@@ -229,6 +231,8 @@ class PlayerState(object):
         elif action == "jump" and self._state == "standing":
             self._state = "jumping"
             player.transitionState(self._state)
+            SoundManager.getInstance().playSound("mario_jump.wav")
+
 
         elif action == "fall" and self._state != "falling":
             self._state = "falling"

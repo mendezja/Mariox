@@ -5,7 +5,7 @@ from ..managers.frameManager import FrameManager
 import pygame
 from pygame.event import Event
 
-
+from ..managers.soundManager import SoundManager
 
 class Enemy(Mobile):
 
@@ -65,8 +65,6 @@ class Enemy(Mobile):
         
         self._state.manageState("left", self)
         
-        
-
     
     def collideWall(self, xClip):
         #self._state.manageState("ground", self)
@@ -82,9 +80,8 @@ class Enemy(Mobile):
             self._position.x -= xClip
             
             
-
-
     def kill(self):
+        SoundManager.getInstance().playSound("mario_stomp.wav")
         self._state.manageState("dead", self)
         self._isDead = True
 
@@ -123,6 +120,7 @@ class EnemyState(object):
             self._lastFacing = "right"
 
         return self._lastFacing
+
 
     def manageState(self, action: str, enemy: Enemy):
 

@@ -7,6 +7,7 @@ from ..gameObjects.vector2D import Vector2
 from ..UI.screenInfo import SCREEN_SIZE
 import pygame
 from .gamemodes import *
+from .soundManager import SoundManager
 
 class ScreenManager(BasicManager):
 
@@ -46,6 +47,7 @@ class ScreenManager(BasicManager):
         self._gameOverMenu.addOption(EXIT, "Quit",
                                      SCREEN_SIZE // 2 + Vector2(0, 80),
                                      center="both")
+    
 
     def draw(self, mainSurface: pygame.Surface):
         if self._state == ScreenState.state["GAME"]:
@@ -160,6 +162,11 @@ class ScreenState(object):
         if action == ScreenState.actions["PAUSE"] and self._state == ScreenState.state["GAME"]:
             self._paused = not self._paused
             screenManager.transitionState(self._state)
+            if self._paused:
+                SoundManager.getInstance().playSound("pause.wav")
+                SoundManager.getInstance().pauseMusic()
+            else:
+                SoundManager.getInstance().unpauseMusic()
 
         elif action == ScreenState.actions["MAIN_MENU"] and not self._paused and self._state != ScreenState.state["MAIN_MENU"]:
             self._state = ScreenState.state["MAIN_MENU"]

@@ -1,5 +1,7 @@
 import os
 from tkinter.font import BOLD
+
+from modules.managers.soundManager import SoundManager
 from .basicManager import BasicManager
 from ..gameObjects.drawable import Drawable
 from ..gameObjects.backgrounds import *
@@ -9,9 +11,7 @@ from ..gameObjects.enemy import Enemy
 from ..UI.screenInfo import SCREEN_SIZE
 from .gamemodes import *
 from pygame.joystick import Joystick
-
-from pygame import Rect
-
+import pygame
 class GameManager(BasicManager):
 
     WORLD_SIZE = Vector2(2624, 240)
@@ -29,8 +29,8 @@ class GameManager(BasicManager):
         self._levelFile = levelFile
         self._mode = mode
         self._joysticks = joysticks
-
-        
+        # Start playing music
+        SoundManager.getInstance().playMusic("marioremix.mp3")        
         
 
     def load(self):
@@ -92,7 +92,6 @@ class GameManager(BasicManager):
             player.handleEvent(event)
 
     def update(self, seconds):
-        '''Return false if player dies'''
         # Update everything
         for player in self._players:
 
@@ -141,6 +140,8 @@ class GameManager(BasicManager):
                     else:
                         player.kill()
                         self._gameOver = True
+                        SoundManager.getInstance().stopMusic()
+                        
                         return
             
             hasFloor = False
@@ -170,6 +171,7 @@ class GameManager(BasicManager):
                 
                 if player._isDead:
                     self._gameOver = True
+                    SoundManager.getInstance().stopMusic()
                     return
 
                 player.update(seconds, GameManager.WORLD_SIZE)
@@ -187,3 +189,5 @@ class GameManager(BasicManager):
 
     def isGameOver(self):
         return self._gameOver
+    
+        

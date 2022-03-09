@@ -11,15 +11,17 @@ def main():
     # initialize the pygame module
     pygame.init()
     # load and set the logo
-
     pygame.display.set_caption("M@rio+")
+    # Initialize sounds
+    pygame.mixer.init()
+    pygame.mixer.music.load("./resources/music/marioremix.mp3")
 
     screen = pygame.display.set_mode(list(UPSCALED_SCREEN_SIZE))
 
     drawSurface = pygame.Surface(list(SCREEN_SIZE))
 
+    # Initialize joysticks
     joysticks: list[Joystick] = []
-
     try:
         pygame.joystick.init()
         try:
@@ -27,7 +29,6 @@ def main():
             joysticks.append(Joystick(1))
         except:
             print("one joystick")
-
     except:
         print("no joysticks")
 
