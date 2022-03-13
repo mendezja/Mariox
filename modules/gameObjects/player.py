@@ -1,4 +1,5 @@
 
+from modules.managers.soundManager import SoundManager
 from .vector2D import Vector2
 from .mobile import Mobile
 
@@ -116,6 +117,42 @@ class Player(Mobile):
                     self._pressedRight = True
                     self._state.manageState("right", self)
                     self._state.manageState("stopleft", self)
+        
+
+    def collideGround(self, yClip):
+       # print("collide")
+      
+        if self._velocity.y < 0: 
+            
+            self._state.manageState("fall", self)
+            self._velocity.y *= -1
+            self._position.y += yClip
+
+            return False
+
+        else:
+            self._state.manageState("ground", self)
+            self._position.y -= yClip
+            return True
+
+    def startFalling(self):
+        self._state.manageState("falling", self)
+
+    def collideWall(self, xClip):
+        self._state.manageState("ground", self)
+        if self._state._movement["left"] == True:
+            self._state.manageState("stopleft", self)
+            #self._state.manageState("right", self)
+            self._position.x += xClip
+
+        elif self._state._movement["right"] == True:
+            self._state.manageState("stopright", self)
+            #self._state.manageState("left", self)
+            self._position.x -= xClip
+
+    def kill(self):
+        SoundManager.getInstance().playSound("mario_die.wav")
+        super().kill()
 
     
 

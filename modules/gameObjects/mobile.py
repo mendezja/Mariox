@@ -1,4 +1,5 @@
 
+from modules.managers.soundManager import SoundManager
 from .animated import Animated
 from .vector2D import Vector2
 from ..managers.frameManager import FrameManager
@@ -166,6 +167,7 @@ class MobileState(object):
                     player.transitionState(self._state)
 
         elif action == "jump" and self._state == "standing":
+            SoundManager.getInstance().playSound("mario_jump.wav")
             self._state = "jumping"
             player.transitionState(self._state)
 

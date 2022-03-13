@@ -1,5 +1,7 @@
 import os
 from tkinter.font import BOLD
+
+from modules.managers.soundManager import SoundManager
 from .basicManager import BasicManager
 from ..gameObjects.drawable import Drawable
 from ..gameObjects.backgrounds import *
@@ -9,9 +11,7 @@ from ..gameObjects.enemy import Enemy
 from ..UI.screenInfo import SCREEN_SIZE
 from .gamemodes import *
 from pygame.joystick import Joystick
-
-from pygame import Rect
-
+import pygame
 class GameManager(BasicManager):
 
     WORLD_SIZE = Vector2(2624, 240)
@@ -29,6 +29,8 @@ class GameManager(BasicManager):
         self._levelFile = levelFile
         self._mode = mode
         self._joysticks = joysticks
+        SoundManager.getInstance().playMusic("marioremix.mp3")  
+        
         self._blocks: list[Drawable] = []
         self._decor: list[Drawable] = []
         self._enemies: list [Enemy] = []
@@ -96,7 +98,6 @@ class GameManager(BasicManager):
                 player.handleEvent(event)
 
     def update(self, seconds):
-        '''Return false if player dies'''
         # Update everything
         
         for player in self._players:
@@ -155,13 +156,14 @@ class GameManager(BasicManager):
 
                 if playerClipRect.width > 0:
                     # print (mario._state.getState(), ": ",playerClipRect.height, ": ",playerClipRect.width )
-                    if player._velocity.y > 0  and playerClipRect.height <= playerClipRect.width:
+                    if player._state.getState() == "falling" and playerClipRect.height <= playerClipRect.width:
                         enemy.kill()
-                        #self._enemies.remove(enemy)
                         break
                     else:
                         player.kill()
-                        #self._gameOver = True
+                        self._gameOver = True
+                        SoundManager.getInstance().stopMusic()
+                        
                         return
             
             hasFloor = False
@@ -191,7 +193,7 @@ class GameManager(BasicManager):
                 print (player._isDead)
                 if player._isDead:
                     self._gameOver = True
-                    
+                    SoundManager.getInstance().stopMusic()
                     return
 
                 player.update(seconds, GameManager.WORLD_SIZE)
@@ -209,6 +211,6 @@ class GameManager(BasicManager):
 
     def isGameOver(self):
         return self._gameOver
-
+    
     def isWon(self):
         return self._WINNER

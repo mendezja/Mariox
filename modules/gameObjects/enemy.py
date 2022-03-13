@@ -5,7 +5,7 @@ from ..managers.frameManager import FrameManager
 import pygame
 from pygame.event import Event
 
-
+from ..managers.soundManager import SoundManager
 
 class Enemy(Mobile):
 
@@ -49,6 +49,11 @@ class Enemy(Mobile):
         super().collideGround(yClip)
 
         self._state.manageState(self._state.getFacing(), self)
+    
+    def kill(self):
+        SoundManager.getInstance().playSound("mario_stomp.wav")
+        print("killed enemy")
+        super().kill()
         
 
 
