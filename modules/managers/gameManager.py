@@ -29,11 +29,6 @@ class GameManager(BasicManager):
         self._levelFile = levelFile
         self._mode = mode
         self._joysticks = joysticks
-
-        
-        
-
-    def load(self):
         self._blocks: list[Drawable] = []
         self._decor: list[Drawable] = []
         self._enemies: list [Enemy] = []
@@ -114,6 +109,9 @@ class GameManager(BasicManager):
 
         
         for player in self._players:
+            if player._isDead:
+                continue
+
             pRect = player.getCollisionRect()
             # Dectect if won for each player
             if pRect.clip(self._end.getCollisionRect()).width > 0:
@@ -146,6 +144,9 @@ class GameManager(BasicManager):
 
         # Update enemies/detect collision with player
         for enemy in self._enemies:
+            if enemy._isDead:
+                continue
+
             eRect = enemy.getCollisionRect()
 
             for player in self._players:
@@ -154,12 +155,13 @@ class GameManager(BasicManager):
 
                 if playerClipRect.width > 0:
                     # print (mario._state.getState(), ": ",playerClipRect.height, ": ",playerClipRect.width )
-                    if player._state.getState() == "falling" and playerClipRect.height <= playerClipRect.width:
-                        self._enemies.remove(enemy)
+                    if player._velocity.y > 0  and playerClipRect.height <= playerClipRect.width:
+                        enemy.kill()
+                        #self._enemies.remove(enemy)
                         break
                     else:
                         player.kill()
-                        self._gameOver = True
+                        #self._gameOver = True
                         return
             
             hasFloor = False
@@ -186,9 +188,10 @@ class GameManager(BasicManager):
         if seconds < 0.05:
 
             for player in self._players:
-                
+                print (player._isDead)
                 if player._isDead:
                     self._gameOver = True
+                    
                     return
 
                 player.update(seconds, GameManager.WORLD_SIZE)

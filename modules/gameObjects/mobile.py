@@ -19,6 +19,7 @@ class Mobile(Animated):
         self._rowList: dict[str, int] = {}
         self._framesPerSecondList: dict[str, int] = {}
         self._state = MobileState()
+        self._isDead = False
 
         self._row = 0
 
@@ -32,7 +33,6 @@ class Mobile(Animated):
         super().update(seconds)
 
         if self._state.isMoving():
-
             if self._state._movement["left"]:
                 self._velocity.x = -self._vSpeed
             elif self._state._movement["right"]:
@@ -43,7 +43,7 @@ class Mobile(Animated):
         if self._state.getState() == "standing":
             self._velocity.y = 0
         elif self._state.getState() == "falling":
-            self._velocity.y += self._jSpeed * seconds
+            self._velocity.y += self._jSpeed * seconds*1.2
         # elif self._state.getState() == "dying":
         #     self._velocity = Vector2(0, -1)
 
@@ -53,7 +53,7 @@ class Mobile(Animated):
 
         if newPosition.x < 0 or newPosition.x > boundaries.x - self.getSize()[0]:
             newPosition = self.getPosition() #+ self._velocity * seconds
-        if newPosition.y < 0 or newPosition.y > boundaries.y - self.getSize()[1]:
+        if  newPosition.y > boundaries.y - self.getSize()[1]:#newPosition.y < 0 or
             self.kill() 
         else:
             self.setPosition(newPosition)
@@ -75,7 +75,7 @@ class Mobile(Animated):
     def collideGround(self, yClip):
         if self._velocity.y < 0:   
             self._state.manageState("fall", self)
-            self._velocity.y *= -1
+            self._velocity.y *= -.8
             self._position.y += yClip
             return False
 
@@ -106,9 +106,11 @@ class Mobile(Animated):
             self._state.manageState("stopright", self)
     
     def kill(self):
-        # print("you dead son")
-        self._state.manageState("dead", self)
+        print("you dead son")
         self._isDead = True
+
+        self._state.manageState("dead", self)
+        #self._state.manageState("falling", self)
 
 
 
@@ -137,7 +139,7 @@ class MobileState(object):
             self._lastFacing = "right"
 
         return self._lastFacing
-        
+
     def manageState(self, action: str, player: Mobile):
         if action in self._movement.keys():
             if self._movement[action] == False:
@@ -148,6 +150,7 @@ class MobileState(object):
         elif action == "dead":
             self._state = "dead"
             player.transitionState(self._state)
+            #player.transitionState("falling")
 
         elif action.startswith("stop") and action[4:] in self._movement.keys():
             direction = action[4:]

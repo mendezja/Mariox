@@ -19,7 +19,7 @@ class Enemy(Mobile):
         self._nFrames = 2
         self._framesPerSecond = 2
 
-        self._isDead = False
+        #self._isDead = False
 
         self._nFramesList = {
             "walking": 2,

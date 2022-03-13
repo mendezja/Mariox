@@ -11,10 +11,10 @@ class Player(Mobile):
     def __init__(self, imageName: str, position: Vector2, joystick: Joystick = None):
         super().__init__(imageName, position)
         self._joystick = joystick
-        self._jumpTime = .06
+        self._jumpTime = .05
         self._vSpeed = 50
-        self._jSpeed = 80
-        self._isDead = False
+        self._jSpeed = 80*(1.3)
+        
 
         self._pressedLeft = False
         self._pressedRight = False
@@ -55,6 +55,7 @@ class Player(Mobile):
 
         if self._state.getState() == "jumping":
             self._velocity.y = -self._jSpeed
+            self._velocity.x *= .5
             self._jumpTimer -= seconds
             if self._jumpTimer < 0:
                 self._state.manageState("fall", self)
