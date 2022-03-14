@@ -8,9 +8,10 @@ from ..managers.soundManager import SoundManager
 import pygame
 from pygame.event import Event
 
+
 class Enemy(Mobile):
 
-    def __init__(self, enemyName: str, position: Vector2, offset = None, isSmart: bool = False):
+    def __init__(self, enemyName: str, position: Vector2, offset=None, isSmart: bool = False):
         super().__init__(enemyName, position, offset)
         self._killSound = "mario_stomp.wav"
         self._jumpTime = 0.01
@@ -52,13 +53,13 @@ class Enemy(Mobile):
 
         self._velocity.x *= -1
         if self._state.getFacing() == "right":
-            self._state.manageState("left", self)  
+            self._state.manageState("left", self)
         else:
             self._state.manageState("right", self)
 
         self.transitionState("falling")
-    
-    def updateCollisions (self, players: [Player], blocks: [Drawable]):
+
+    def updateCollisions(self, players: 'list[Player]', blocks: 'list[Drawable]'):
         if self._isDead:
             return
 
@@ -75,25 +76,25 @@ class Enemy(Mobile):
                     player.kill()
                     self._gameOver = True
                     SoundManager.getInstance().stopMusic()
-                
+
                     return
-            
+
             hasFloor = False
-            
+
         for block in blocks:
             clipRect = eRect.clip(block.getCollisionRect())
             if clipRect.width > 0:
-                if self._velocity.y > 0 and clipRect.width > clipRect.height :  # check virtical collide   clipRect.width > clipRect.height and
+                # check virtical collide   clipRect.width > clipRect.height and
+                if self._velocity.y > 0 and clipRect.width > clipRect.height:
                     self.collideGround(clipRect.height)
                     hasFloor = True
                     break
-                elif clipRect.width < clipRect.height: # check for horizontal collide
+                elif clipRect.width < clipRect.height:  # check for horizontal collide
                     self.collideWall(clipRect.width)
                     break
-            elif (eRect.move(0, 1)).colliderect(block.getCollisionRect()): # check for ground
+            elif (eRect.move(0, 1)).colliderect(block.getCollisionRect()):  # check for ground
                 hasFloor = True
                 break
-    
+
         if not hasFloor:
             self.fall()
-    
