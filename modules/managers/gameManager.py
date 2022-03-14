@@ -32,10 +32,11 @@ class GameManager(BasicManager):
         self._levelFile = levelFile
         self._mode = mode
         self._joysticks = joysticks
+
         # Start playing music
         SoundManager.getInstance().playMusic("marioremix.mp3")
 
-    def load(self):
+
         self._blocks: list[Drawable] = []
         self._decor: list[Drawable] = []
         self._enemies: list[Enemy] = []
@@ -58,21 +59,21 @@ class GameManager(BasicManager):
         for row in range(len(fileCharacters)):
             for col in range(len(fileCharacters[row])):
                 elemChar = fileCharacters[row][col]
-                if elemChar in self.BLOCKS_OFFSETS.keys():  # physics bound blocks
-                    self._blocks.append(Drawable("blocks.png", Vector2(
-                        col*tileSize, row*tileSize), self.BLOCKS_OFFSETS[elemChar]))
-                elif elemChar == "B":  # non-physics blocks
-                    self._decor.append(Drawable("blocks.png", Vector2(
-                        col*tileSize, row*tileSize), (1, 1)))
-                elif elemChar == "E":  # enemies
-                    self._enemies.append(
-                        Enemy("enemies.png",  Vector2(col*tileSize, row*tileSize)))
 
-                elif elemChar == "F":  # Flag
-                    self._end = Drawable("flagPost.png", Vector2(
-                        col*tileSize, row*tileSize))
+                if elemChar in self.BLOCKS_OFFSETS.keys(): #physics bound blocks
+                    self._blocks.append(Drawable("blocks.png", Vector2(col*tileSize, row*tileSize), self.BLOCKS_OFFSETS[elemChar]))
+                elif elemChar == "B": #non-physics blocks
+                    self._decor.append(Drawable("blocks.png", Vector2(col*tileSize, row*tileSize), (1,1)))
+                elif elemChar == "E": #enemies
+                    self._enemies.append(Enemy("enemies.png",  Vector2(col*tileSize, row*tileSize) ))
+                elif elemChar == "T":
+                    self._enemies.append(Enemy("turtle.png", Vector2(col*tileSize, row*tileSize)))
+                
+                elif elemChar == "F": # Flag
+                    self._end = Drawable("flagPost.png", Vector2(col*tileSize, row*tileSize))
 
-                elif elemChar == "P":  # player
+                elif elemChar == "P": #player
+
                     if len(self._joysticks) >= 1 and self._mode == SINGLE_PLAYER:
                         self._players.append(Player("mario.png", Vector2(
                             col*tileSize, row*tileSize), self._joysticks[0]))
@@ -120,6 +121,9 @@ class GameManager(BasicManager):
                 player, SCREEN_SIZE, GameManager.WORLD_SIZE, whichPlayer=whichPlayer)
 
         for player in self._players:
+            if player._isDead:
+                continue
+
             pRect = player.getCollisionRect()
             # Dectect if won for each player
             if pRect.clip(self._end.getCollisionRect()).width > 0:
@@ -140,8 +144,10 @@ class GameManager(BasicManager):
                     break
                 elif clipRect.width < clipRect.height:  # check for horizontal collide
                     player.collideWall(clipRect.width)
+
                     # break
                 elif (pRect.move(0, 1)).colliderect(block.getCollisionRect()):  # Check for ground
+
                     hasFloor = True
                     break
 
@@ -150,6 +156,9 @@ class GameManager(BasicManager):
 
         # Update enemies/detect collision with player
         for enemy in self._enemies:
+            if enemy._isDead:
+                continue
+
             eRect = enemy.getCollisionRect()
 
             for player in self._players:
@@ -158,7 +167,7 @@ class GameManager(BasicManager):
 
                 if playerClipRect.width > 0:
                     # print (mario._state.getState(), ": ",playerClipRect.height, ": ",playerClipRect.width )
-                    if player._state.getState() == "falling" and playerClipRect.height <= playerClipRect.width:
+                    if player._velocity.y > 0 and playerClipRect.height <= playerClipRect.width:#.getState() == "falling" 
                         enemy.kill()
                         break
                     else:
@@ -173,25 +182,29 @@ class GameManager(BasicManager):
             for block in self._blocks:
                 clipRect = eRect.clip(block.getCollisionRect())
 
-                if clipRect.width > 0:  # check virtical collide   clipRect.width > clipRect.height and
-                    enemy.collideGround(clipRect.height)
-                    hasFloor = True
-                    break
-                elif clipRect.width < clipRect.height:  # check for horizontal collide
-                    enemy.collideWall(clipRect.width)
-                    break
-                elif (eRect.move(0, 1)).colliderect(block.getCollisionRect()):  # check for ground
+                if clipRect.width > 0:
+                    if enemy._velocity.y > 0 and clipRect.width > clipRect.height :  # check virtical collide   clipRect.width > clipRect.height and
+                        enemy.collideGround(clipRect.height)
+                        hasFloor = True
+                        break
+                    elif clipRect.width < clipRect.height: # check for horizontal collide
+                        enemy.collideWall(clipRect.width)
+                        break
+                elif (eRect.move(0, 1)).colliderect(block.getCollisionRect()): # check for ground
+
                     hasFloor = True
                     break
 
             if not hasFloor:
-                enemy.updateMovement()
+
+                enemy.fall()
+                    
+
 
         # let others update based on the amount of time elapsed
         if seconds < 0.05:
 
             for player in self._players:
-
                 if player._isDead:
                     self._gameOver = True
                     SoundManager.getInstance().stopMusic()

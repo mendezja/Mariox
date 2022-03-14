@@ -134,13 +134,12 @@ class ScreenManager(BasicManager):
                 if choice == START_SINGLE_PLAYER:
                     self._game = GameManager(
                         SCREEN_SIZE, SINGLE_PLAYER, "world1.txt", self._joysticks)
-                    self._game.load()
+
                     self._state.manageState(
                         ScreenState.actions["START_GAME"], self)
                 elif choice == START_TWO_PLAYER:
                     self._game = GameManager(
                         SCREEN_SIZE, TWO_PLAYER,"world1.txt", self._joysticks)
-                    self._game.load()
                     self._state.manageState(
                         ScreenState.actions["START_GAME"], self)
                 elif choice == EXIT:

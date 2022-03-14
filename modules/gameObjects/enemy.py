@@ -9,8 +9,8 @@ from ..managers.soundManager import SoundManager
 
 class Enemy(Mobile):
 
-    def __init__(self, enemyName: str, position: Vector2):
-        super().__init__(enemyName, position)
+    def __init__(self, enemyName: str, position: Vector2, offset = None):
+        super().__init__(enemyName, position, offset)
 
         self._jumpTime = 0.01
         self._vSpeed = 50
@@ -19,7 +19,7 @@ class Enemy(Mobile):
         self._nFrames = 2
         self._framesPerSecond = 2
 
-        self._isDead = False
+        #self._isDead = False
 
         self._nFramesList = {
             "walking": 2,
@@ -49,83 +49,18 @@ class Enemy(Mobile):
         super().collideGround(yClip)
 
         self._state.manageState(self._state.getFacing(), self)
+    def collideWall(self, xClip):
+        super().collideWall(xClip)
+        self._velocity.x *= -1
+
+        if self._state.getFacing() == "right":
+            self._state.manageState("left", self)
+            
+        else:
+            self._state.manageState("right", self)
+        self.transitionState("falling")
     
     def kill(self):
         SoundManager.getInstance().playSound("mario_stomp.wav")
         print("killed enemy")
         super().kill()
-        
-
-
-# class EnemyState(object):
-#     def __init__(self, state="falling"):
-#         self._state = state
-
-#         self._movement = {
-#             "left": False,
-#             "right": False
-#         }
-
-#         self._lastFacing = "left"
-
-#     def isMoving(self):
-#         return True in self._movement.values()
-
-#     def isGrounded(self):
-#         return self._state == "walking" or self._state == "standing"
-
-#     def getFacing(self):
-#         if self._movement["left"] == True:
-#             self._lastFacing = "left"
-#         elif self._movement["right"] == True:
-#             self._lastFacing = "right"
-
-#         return self._lastFacing
-
-#     def manageState(self, action: str, enemy: Enemy):
-
-#         # if action in self._movement.keys():
-#         #     if self._movement[action] == False:
-#         #         self._movement[self._lastFacing] = False
-#         #         self._movement[action] = True
-#         #         self._lastFacing = action
-
-#         #         if self._state == "standing":
-                    
-#         #             enemy.transitionState("walking")
-
-#         if action in self._movement.keys():
-#             if self._movement[action] == False:
-#                 self._movement[action] = True
-#                 if self._state == "standing":
-#                     enemy.transitionState("walking")
-
-#         elif action.startswith("stop") and action[4:] in self._movement.keys():
-#             direction = action[4:]
-#             if self._movement[direction] == True:
-#                 self._movement[direction] = False
-#                 allStop = True
-#                 for move in self._movement.keys():
-#                     if self._movement[move] == True:
-#                         allStop = False
-#                         break
-
-#                 if allStop and self._state not in ["falling"]:
-#                     enemy.transitionState(self._state)
-
-#         elif action == "fall" and self._state != "falling":
-#             self._state = "falling"
-#             enemy.transitionState(self._state)
-
-#         elif action == "ground" and self._state == "falling":
-
-#             self._state = "standing"
-            
-
-#             if self.isMoving():
-#                 enemy.transitionState("walking")
-#             else:
-#                 enemy.transitionState(self._state)
-
-#     def getState(self):
-#         return self._state
