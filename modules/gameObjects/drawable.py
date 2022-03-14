@@ -37,16 +37,13 @@ class Drawable(object):
         offset = Vector2(min(max(0, position[0] + (size[0] // 2) - (screenSize[0] // 2)),
                              worldSize[0] - screenSize[0]),
                          min(max(0, position[1] + (size[1] // 2) - ((screenSize[1]) // 2)),
-                             worldSize[1] - screenSize[1] // 2) + 30)
+                             worldSize[1] - screenSize[1] // 2))
         if whichPlayer == 0:  # Bottom screen
-            cls.CAM_OFFSET2 = offset
+            cls.CAM_OFFSET2 = Vector2(offset.x, min(offset.y + 40, 120))
         elif whichPlayer == 1:  # Top screen
-            cls.CAM_OFFSET1 = offset
+            cls.CAM_OFFSET1 = Vector2(offset.x, min(offset.y + 40, 120))
         else:  # single player
-            cls.CAM_OFFSET1 = Vector2(min(max(0, position[0] + (size[0] // 2) - (screenSize[0] // 2)),
-                                          worldSize[0] - screenSize[0]),
-                                      min(max(0, position[1] + (size[1] // 2) - ((screenSize[1]) // 2)),
-                                          worldSize[1] - screenSize[1]))
+            cls.CAM_OFFSET1 = offset
 
     def __init__(self, imageName: str, position: tuple, offset=None, parallax=1):
         self._imageName = imageName
