@@ -36,7 +36,6 @@ class GameManager(BasicManager):
         # Start playing music
         SoundManager.getInstance().playMusic("marioremix.mp3")
 
-
         self._blocks: list[Drawable] = []
         self._decor: list[Drawable] = []
         self._enemies: list[Enemy] = []
@@ -60,32 +59,30 @@ class GameManager(BasicManager):
             for col in range(len(fileCharacters[row])):
                 elemChar = fileCharacters[row][col]
 
-                if elemChar in self.BLOCKS_OFFSETS.keys(): #physics bound blocks
-                    self._blocks.append(Drawable("blocks.png", Vector2(col*tileSize, row*tileSize), self.BLOCKS_OFFSETS[elemChar]))
-                elif elemChar == "B": #non-physics blocks
-                    self._decor.append(Drawable("blocks.png", Vector2(col*tileSize, row*tileSize), (1,1)))
-                elif elemChar == "E": #enemies
-                    self._enemies.append(Enemy("enemies.png",  Vector2(col*tileSize, row*tileSize) ))
+                if elemChar in self.BLOCKS_OFFSETS.keys():  # physics bound blocks
+                    self._blocks.append(Drawable("blocks.png", Vector2(
+                        col*tileSize, row*tileSize), self.BLOCKS_OFFSETS[elemChar]))
+                elif elemChar == "B":  # non-physics blocks
+                    self._decor.append(Drawable("blocks.png", Vector2(
+                        col*tileSize, row*tileSize), (1, 1)))
+                elif elemChar == "E":  # enemies
+                    self._enemies.append(
+                        Enemy("enemies.png",  Vector2(col*tileSize, row*tileSize)))
                 elif elemChar == "T":
-                    self._enemies.append(Enemy("turtle.png", Vector2(col*tileSize, row*tileSize), True))
-                
-                elif elemChar == "F": # Flag
-                    self._end = Drawable("flagPost.png", Vector2(col*tileSize, row*tileSize))
+                    self._enemies.append(
+                        Enemy("turtle.png", Vector2(col*tileSize, row*tileSize), True))
 
-                elif elemChar == "P": #player
+                elif elemChar == "F":  # Flag
+                    self._end = Drawable("flagPost.png", Vector2(
+                        col*tileSize, row*tileSize))
 
-                    if len(self._joysticks) >= 1 and self._mode == SINGLE_PLAYER:
+                elif elemChar == "1":  # player 1
                         self._players.append(Player("mario.png", Vector2(
-                            col*tileSize, row*tileSize), self._joysticks[0]))
-                    elif self._mode == TWO_PLAYER:
-                        self._players.append(Player("mario.png", Vector2(col*tileSize, row*tileSize), self._joysticks[0] if len(
-                            self._joysticks) == 2 else None))  # ,Vector2(10, GameManager.WORLD_SIZE.y - 48)
-                        self._players.append(Player("luigi.png", Vector2(
+                            col*tileSize, row*tileSize), self._joysticks[0] if len(self._joysticks) >= 1 else None))
+
+                elif elemChar == "2" and self._mode in [TWO_PLAYER, BATTLE]:
+                    self._players.append(Player("luigi.png", Vector2(
                             col*tileSize, row*tileSize), self._joysticks[1] if len(self._joysticks) == 2 else None))
-                    else:
-                        #print("Please insert joystick")
-                        self._players.append(Player("mario.png", Vector2(
-                            col*tileSize, row*tileSize)))  # edited for testing
 
     def draw(self, drawSurf: pygame.surface.Surface, whichPlayer=None):
 
@@ -99,7 +96,8 @@ class GameManager(BasicManager):
         for block in self._blocks:
             block.draw(drawSurf, whichPlayer)
 
-        self._end.draw(drawSurf, whichPlayer)
+        if self._end:
+            self._end.draw(drawSurf, whichPlayer)
         for enemy in self._enemies:
             enemy.draw(drawSurf, whichPlayer)
         for player in self._players:
@@ -124,6 +122,13 @@ class GameManager(BasicManager):
         # Update enemies/detect collision with player
         for player in self._players:
             self._WINNER = player.updateCollisions(self._blocks, self._end)
+            # pRect = self.getCollisionRect()
+
+        # # Dectect if won for each player
+        # if end != None:
+        #     if pRect.clip(end.getCollisionRect()).width > 0:
+        #         self.updateMovement()
+        #         return str(self._imageName)
 
         # Update enemies/detect collision with player
         for enemy in self._enemies:

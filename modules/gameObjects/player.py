@@ -132,15 +132,16 @@ class Player(Mobile):
             self._state.manageState("stopright", self)
     
 
-    def updateCollisions (self, blocks: [Drawable], end: Drawable):
+    def updateCollisions (self, blocks: 'list[Drawable]', end: Drawable):
         if self._isDead:
             return
         pRect = self.getCollisionRect()
 
         # Dectect if won for each player
-        if pRect.clip(end.getCollisionRect()).width > 0:
-            self.updateMovement()
-            return str(self._imageName)
+        if end != None:
+            if pRect.clip(end.getCollisionRect()).width > 0:
+                self.updateMovement()
+                return str(self._imageName)
             
         # Detect Gravity for each block
         hasFloor = False
