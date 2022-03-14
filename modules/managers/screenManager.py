@@ -57,6 +57,7 @@ class ScreenManager(BasicManager):
                                      center="both")
         self._gameOverMenu.setCursor(ScreenManager.RETURN_TO_MAIN)
     
+    
 
         # Create Game Won Menu
         self._gameWonMenu = CursorMenu("gameOver.png", fontName="default8")
@@ -114,13 +115,10 @@ class ScreenManager(BasicManager):
                         self._currentMenu = 1
                     elif event.key == pygame.K_3:
                         self._currentMenu = 2
-                if self._game.isGameOver():
-                    #time.sleep(2)
+                if self._game.isGameOver():   
                     self._state.manageState(
                         ScreenState.actions["GAME_OVER"], self)
-                    #time.sleep(10)
                 elif self._game.isWon() != None:
-                    #time.sleep(2)
                     # If two player change text
                     if self._game._mode == TWO_PLAYER:
                         winner = (self._game.isWon())[0:-4]
@@ -130,7 +128,7 @@ class ScreenManager(BasicManager):
                     self._gameWonText.setPosition(
                         SCREEN_SIZE // 2 - Vector2(gameWonTextSize[0]//2, gameWonTextSize[1]//2 + 50))
                     self._state.manageState(ScreenState.actions["GAME_WON"],self)
-                    #time.sleep(10)
+              
 
             elif self._state == ScreenState.state["MAIN_MENU"]:
                 choice = self._mainMenu.handleEvent(event)
@@ -232,13 +230,13 @@ class ScreenState(object):
             self._state = ScreenState.state["GAME_OVER_MENU"]
             time.sleep(1)
             screenManager.transitionState(self._state)
-            #time.sleep(1)
+        
 
         elif action == ScreenState.actions["GAME_WON"] and self._state == ScreenState.state["GAME"]:
             self._state = ScreenState.state["GAME_WON_MENU"]
             time.sleep(1)
             screenManager.transitionState(self._state)
-            #time.sleep(1)
+
             
     def __eq__(self, other):
         return self._state == other

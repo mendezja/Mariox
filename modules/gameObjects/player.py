@@ -2,6 +2,7 @@
 from modules.managers.soundManager import SoundManager
 from .vector2D import Vector2
 from .mobile import Mobile
+from .drawable import Drawable
 
 import pygame
 from pygame.event import Event
@@ -11,6 +12,8 @@ from pygame.joystick import Joystick
 class Player(Mobile):
     def __init__(self, imageName: str, position: Vector2, joystick: Joystick = None):
         super().__init__(imageName, position)
+        self._killSound = "mario_die.wav"
+
         self._joystick = joystick
         self._jumpTime = .05
         self._vSpeed = 50
@@ -61,8 +64,8 @@ class Player(Mobile):
             if self._jumpTimer < 0:
                 self._state.manageState("fall", self)
 
-    def startFalling(self):
-        self._state.manageState("falling", self)
+    # def startFalling(self):
+    #     self._state.manageState("falling", self)
 
    
 
@@ -127,38 +130,34 @@ class Player(Mobile):
             self._state.manageState("stopleft", self)
         if not pressed[pygame.K_RIGHT]: # and not self._pressedRight:
             self._state.manageState("stopright", self)
-        
-
-    def collideGround(self, yClip):
-       # print("collide")
-      
-        if self._velocity.y < 0: 
-            
-            self._state.manageState("fall", self)
-            self._velocity.y *= -1
-            self._position.y += yClip
-
-            return False
-
-        else:
-            self._state.manageState("ground", self)
-            self._position.y -= yClip
-            return True
-
     
 
-    def collideWall(self, xClip):
-        self._state.manageState("ground", self)
-        if self._state._movement["left"] == True:
-            self._state.manageState("stopleft", self)
-            #self._state.manageState("right", self)
-            self._position.x += xClip
+    def updateCollisions (self, blocks: [Drawable], end: Drawable):
+        if self._isDead:
+            return
+        pRect = self.getCollisionRect()
 
-        elif self._state._movement["right"] == True:
-            self._state.manageState("stopright", self)
-            #self._state.manageState("left", self)
-            self._position.x -= xClip
+        # Dectect if won for each player
+        if pRect.clip(end.getCollisionRect()).width > 0:
+            self.updateMovement()
+            return str(self._imageName)
+            
+        # Detect Gravity for each block
+        hasFloor = False
+        
+        for block in blocks:
+            clipRect = pRect.clip(block.getCollisionRect())
 
-    def kill(self):
-        SoundManager.getInstance().playSound("mario_die.wav")
-        super().kill()
+            if clipRect.width >= clipRect.height and clipRect.width > 0: # check virtical collide                     
+                hasFloor = self.collideGround(clipRect.height)
+                break
+            elif clipRect.width < clipRect.height: # check for horizontal collide
+                self.collideWall(clipRect.width)
+                break
+            elif (pRect.move(0, 1)).colliderect(block.getCollisionRect()): # Check for ground
+                hasFloor = True
+                break
+    
+        if not hasFloor:
+            self.fall()
+
