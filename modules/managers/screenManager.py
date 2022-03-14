@@ -40,6 +40,7 @@ class ScreenManager(BasicManager):
         self._mainMenu.addOption(EXIT, "Exit Game",
                                  SCREEN_SIZE // 2 + Vector2(0, 60),
                                  center="both")
+        self._mainMenu.setCursor(START_SINGLE_PLAYER)
 
         # Positon text for end menu
         gameOverTextSize = self._gameOverText.getSize()
@@ -54,6 +55,7 @@ class ScreenManager(BasicManager):
         self._gameOverMenu.addOption(EXIT, "Quit",
                                      SCREEN_SIZE // 2 + Vector2(0, 80),
                                      center="both")
+        self._gameOverMenu.setCursor(ScreenManager.RETURN_TO_MAIN)
     
     
 
@@ -64,6 +66,7 @@ class ScreenManager(BasicManager):
         self._gameWonMenu.addOption(EXIT, "Quit",
                                      SCREEN_SIZE // 2 + Vector2(0, 80),
                                      center="both")
+        self._gameWonMenu.setCursor(ScreenManager.RETURN_TO_MAIN)
 
     def draw(self, mainSurface: pygame.Surface):
         if self._state == ScreenState.state["GAME"]:
