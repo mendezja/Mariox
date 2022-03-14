@@ -59,6 +59,8 @@ class GameManager(BasicManager):
                     self._decor.append(Drawable("blocks.png", Vector2(col*tileSize, row*tileSize), (1,1)))
                 elif elemChar == "E": #enemies
                     self._enemies.append(Enemy("enemies.png",  Vector2(col*tileSize, row*tileSize) ))
+                elif elemChar == "T":
+                    self._enemies.append(Enemy("turtle.png", Vector2(col*tileSize, row*tileSize)))
                 
                 elif elemChar == "F": # Flag
                     self._end = Drawable("flagPost.png", Vector2(col*tileSize, row*tileSize))
@@ -133,7 +135,7 @@ class GameManager(BasicManager):
                     break
                 elif clipRect.width < clipRect.height: # check for horizontal collide
                     player.collideWall(clipRect.width)
-                    #break
+                    break
                 elif (pRect.move(0, 1)).colliderect(block.getCollisionRect()): # Check for ground
                     hasFloor = True
                     break
@@ -156,7 +158,7 @@ class GameManager(BasicManager):
 
                 if playerClipRect.width > 0:
                     # print (mario._state.getState(), ": ",playerClipRect.height, ": ",playerClipRect.width )
-                    if player._state.getState() == "falling" and playerClipRect.height <= playerClipRect.width:
+                    if player._velocity.y > 0 and playerClipRect.height <= playerClipRect.width:#.getState() == "falling" 
                         enemy.kill()
                         break
                     else:
@@ -170,27 +172,27 @@ class GameManager(BasicManager):
             
             for block in self._blocks:
                 clipRect = eRect.clip(block.getCollisionRect())
-
-                if  clipRect.width > 0:  # check virtical collide   clipRect.width > clipRect.height and
-                    enemy.collideGround(clipRect.height)
-                    hasFloor = True
-                    break
-                elif clipRect.width < clipRect.height: # check for horizontal collide
-                    enemy.collideWall(clipRect.width)
-                    break
+                if clipRect.width > 0:
+                    if enemy._velocity.y > 0 and clipRect.width > clipRect.height :  # check virtical collide   clipRect.width > clipRect.height and
+                        enemy.collideGround(clipRect.height)
+                        hasFloor = True
+                        break
+                    elif clipRect.width < clipRect.height: # check for horizontal collide
+                        enemy.collideWall(clipRect.width)
+                        break
                 elif (eRect.move(0, 1)).colliderect(block.getCollisionRect()): # check for ground
                     hasFloor = True
                     break
     
             if not hasFloor:
-                enemy.updateMovement()
+                enemy.fall()
                     
 
         # let others update based on the amount of time elapsed
         if seconds < 0.05:
 
             for player in self._players:
-                print (player._isDead)
+                #print (player._isDead)
                 if player._isDead:
                     self._gameOver = True
                     SoundManager.getInstance().stopMusic()

@@ -86,7 +86,7 @@ class Mobile(Animated):
             return True
     
     def collideWall(self, xClip):
-        self._state.manageState("ground", self)
+        
         if self._state._movement["left"] == True:
             self._state.manageState("stopleft", self)
             self._position.x += xClip
@@ -94,20 +94,15 @@ class Mobile(Animated):
         elif self._state._movement["right"] == True:
             self._state.manageState("stopright", self)
             self._position.x -= xClip
+
+        self._state.manageState("ground", self)
     
-    def updateMovement(self):
+    def fall (self): #to be used when gravity is needed
+        self._state.manageState("fall", self)   
 
-        pressed = pygame.key.get_pressed()
-
-        if not pressed[pygame.K_UP]:# and not self._pressedUp:
-            self._state.manageState("fall", self)
-        if not pressed[pygame.K_LEFT]:# and not self._pressedLeft:
-            self._state.manageState("stopleft", self)
-        if not pressed[pygame.K_RIGHT]: # and not self._pressedRight:
-            self._state.manageState("stopright", self)
     
     def kill(self):
-        print("you dead son")
+        #print("you dead son")
         self._isDead = True
 
         self._state.manageState("dead", self)
