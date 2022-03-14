@@ -60,7 +60,7 @@ class GameManager(BasicManager):
                 elif elemChar == "E": #enemies
                     self._enemies.append(Enemy("enemies.png",  Vector2(col*tileSize, row*tileSize) ))
                 elif elemChar == "T":
-                    self._enemies.append(Enemy("turtle.png", Vector2(col*tileSize, row*tileSize)))
+                    self._enemies.append(Enemy("turtle.png", Vector2(col*tileSize, row*tileSize), True))
                 
                 elif elemChar == "F": # Flag
                     self._end = Drawable("flagPost.png", Vector2(col*tileSize, row*tileSize))
@@ -110,83 +110,13 @@ class GameManager(BasicManager):
                 player, SCREEN_SIZE, GameManager.WORLD_SIZE, whichPlayer=whichPlayer)
 
 
-        
+        # Update enemies/detect collision with player
         for player in self._players:
-            if player._isDead:
-                continue
-
-            pRect = player.getCollisionRect()
-            # Dectect if won for each player
-            if pRect.clip(self._end.getCollisionRect()).width > 0:
-                player.updateMovement()
-                #self._gameWon = True
-                self._WINNER = str(player._imageName)
-                return
-                print(player, "won")
-                pass
-            # Detect Gravity for each block
-            hasFloor = False
-            
-            for block in self._blocks:
-                clipRect = pRect.clip(block.getCollisionRect())
-
-                if clipRect.width >= clipRect.height and clipRect.width > 0: # check virtical collide                     
-                    hasFloor = player.collideGround(clipRect.height)
-                    break
-                elif clipRect.width < clipRect.height: # check for horizontal collide
-                    player.collideWall(clipRect.width)
-                    break
-                elif (pRect.move(0, 1)).colliderect(block.getCollisionRect()): # Check for ground
-                    hasFloor = True
-                    break
-    
-            if not hasFloor:
-                player.fall()#updateMovement()
-
-        
+            self._WINNER = player.updateCollisions(self._blocks, self._end)
 
         # Update enemies/detect collision with player
         for enemy in self._enemies:
-            if enemy._isDead:
-                continue
-
-            eRect = enemy.getCollisionRect()
-
-            for player in self._players:
-                playerClipRect = eRect.clip(player.getCollisionRect())
-                # enemyClipRect = mario.getCollisionRect().clip(enemy.getCollisionRect())
-
-                if playerClipRect.width > 0:
-                    # print (mario._state.getState(), ": ",playerClipRect.height, ": ",playerClipRect.width )
-                    if player._velocity.y > 0 and playerClipRect.height <= playerClipRect.width:#.getState() == "falling" 
-                        enemy.kill()
-                        break
-                    else:
-                        player.kill()
-                        self._gameOver = True
-                        SoundManager.getInstance().stopMusic()
-                        
-                        return
-            
-            hasFloor = False
-            
-            for block in self._blocks:
-                clipRect = eRect.clip(block.getCollisionRect())
-                if clipRect.width > 0:
-                    if enemy._velocity.y > 0 and clipRect.width > clipRect.height :  # check virtical collide   clipRect.width > clipRect.height and
-                        enemy.collideGround(clipRect.height)
-                        hasFloor = True
-                        break
-                    elif clipRect.width < clipRect.height: # check for horizontal collide
-                        enemy.collideWall(clipRect.width)
-                        break
-                elif (eRect.move(0, 1)).colliderect(block.getCollisionRect()): # check for ground
-                    hasFloor = True
-                    break
-    
-            if not hasFloor:
-                enemy.fall()
-                    
+            enemy.updateCollisions(self._players, self._blocks)                    
 
         # let others update based on the amount of time elapsed
         if seconds < 0.05:

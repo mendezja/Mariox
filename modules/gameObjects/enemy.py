@@ -1,25 +1,25 @@
 from .vector2D import Vector2
 from .mobile import Mobile
+from .player import Player
+from .drawable import Drawable
 from ..managers.frameManager import FrameManager
+from ..managers.soundManager import SoundManager
 
 import pygame
 from pygame.event import Event
 
-from ..managers.soundManager import SoundManager
-
 class Enemy(Mobile):
 
-    def __init__(self, enemyName: str, position: Vector2, offset = None):
+    def __init__(self, enemyName: str, position: Vector2, offset = None, isSmart: bool = False):
         super().__init__(enemyName, position, offset)
-
+        self._killSound = "mario_stomp.wav"
         self._jumpTime = 0.01
         self._vSpeed = 50
         self._jSpeed = 100
+        self._isSmart = isSmart
 
         self._nFrames = 2
         self._framesPerSecond = 2
-
-        #self._isDead = False
 
         self._nFramesList = {
             "walking": 2,
@@ -41,26 +41,59 @@ class Enemy(Mobile):
             "standing": 1,
             "dead": 1
         }
-
-        #self._state = EnemyState()
         self.transitionState("falling")
 
     def collideGround(self, yClip):
         super().collideGround(yClip)
-
         self._state.manageState(self._state.getFacing(), self)
+
     def collideWall(self, xClip):
         super().collideWall(xClip)
-        self._velocity.x *= -1
 
+        self._velocity.x *= -1
         if self._state.getFacing() == "right":
-            self._state.manageState("left", self)
-            
+            self._state.manageState("left", self)  
         else:
             self._state.manageState("right", self)
+
         self.transitionState("falling")
     
-    def kill(self):
-        SoundManager.getInstance().playSound("mario_stomp.wav")
-        print("killed enemy")
-        super().kill()
+    def updateCollisions (self, players: [Player], blocks: [Drawable]):
+        if self._isDead:
+            return
+
+        eRect = self.getCollisionRect()
+
+        for player in players:
+            playerClipRect = eRect.clip(player.getCollisionRect())
+
+            if playerClipRect.width > 0:
+                if player._velocity.y > 0 and playerClipRect.height <= playerClipRect.width:
+                    self.kill()
+                    break
+                else:
+                    player.kill()
+                    self._gameOver = True
+                    SoundManager.getInstance().stopMusic()
+                
+                    return
+            
+            hasFloor = False
+            
+        for block in blocks:
+            clipRect = eRect.clip(block.getCollisionRect())
+            if clipRect.width > 0:
+                if self._velocity.y > 0 and clipRect.width > clipRect.height :  # check virtical collide   clipRect.width > clipRect.height and
+                    self.collideGround(clipRect.height)
+                    hasFloor = True
+                    break
+                elif clipRect.width < clipRect.height: # check for horizontal collide
+                    self.collideWall(clipRect.width)
+                    break
+            elif (eRect.move(0, 1)).colliderect(block.getCollisionRect()): # check for ground
+                hasFloor = True
+                break
+    
+        if not hasFloor:
+            self.fall()
+    

@@ -11,6 +11,7 @@ from pygame.joystick import Joystick
 class Mobile(Animated):
     def __init__(self, imageName, position, offset=None):
         super().__init__(imageName, position, offset)
+        self._killSound = None
         self._velocity = Vector2(0, 0)
         self._jumpTimer = 0
         self._jSpeed = 0
@@ -45,8 +46,7 @@ class Mobile(Animated):
             self._velocity.y = 0
         elif self._state.getState() == "falling":
             self._velocity.y += self._jSpeed * seconds*1.2
-        # elif self._state.getState() == "dying":
-        #     self._velocity = Vector2(0, -1)
+        
 
     def updatePosition(self, seconds, boundaries):
         '''Helper method for update'''
@@ -102,11 +102,11 @@ class Mobile(Animated):
 
     
     def kill(self):
-        #print("you dead son")
         self._isDead = True
-
         self._state.manageState("dead", self)
-        #self._state.manageState("falling", self)
+
+        if self._killSound != None:
+            SoundManager.getInstance().playSound(self._killSound)
 
 
 
