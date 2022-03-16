@@ -42,7 +42,7 @@ class GameManager(BasicManager):
         self._players: list[Player] = []
         self._end: Drawable = None
         self._gameOver = False
-        self._WINNER: Str = None  # gameWon = False
+        self._winner: Str = ""  # gameWon = False
 
         self._background = EfficientBackground(
             self._screenSize, "background.png", parallax=0)
@@ -77,12 +77,12 @@ class GameManager(BasicManager):
                         col*tileSize, row*tileSize))
 
                 elif elemChar == "1":  # player 1
-                        self._players.append(Player("mario.png", Vector2(
-                            col*tileSize, row*tileSize), self._joysticks[0] if len(self._joysticks) >= 1 else None))
+                    self._players.append(Player("mario.png", Vector2(
+                        col*tileSize, row*tileSize), self._joysticks[0] if len(self._joysticks) >= 1 else None, hasGun=(self._mode == BATTLE)))
 
                 elif elemChar == "2" and self._mode in [TWO_PLAYER, BATTLE]:
                     self._players.append(Player("luigi.png", Vector2(
-                            col*tileSize, row*tileSize), self._joysticks[1] if len(self._joysticks) == 2 else None))
+                        col*tileSize, row*tileSize), self._joysticks[1] if len(self._joysticks) == 2 else None, hasGun=(self._mode == BATTLE)))
 
     def draw(self, drawSurf: pygame.surface.Surface, whichPlayer=None):
 
@@ -102,6 +102,8 @@ class GameManager(BasicManager):
             enemy.draw(drawSurf, whichPlayer)
         for player in self._players:
             player.draw(drawSurf, whichPlayer)
+            for bullet in player.getBullets():
+                bullet.draw(drawSurf, whichPlayer)
 
     def handleEvent(self, event):
         if not self._gameOver:
@@ -118,10 +120,9 @@ class GameManager(BasicManager):
             Drawable.updateOffset(
                 player, SCREEN_SIZE, GameManager.WORLD_SIZE, whichPlayer=whichPlayer)
 
-
         # Update enemies/detect collision with player
         for player in self._players:
-            self._WINNER = player.updateCollisions(self._blocks, self._end)
+            self._winner = player.updateCollisions(self._blocks, self._end)
             # pRect = self.getCollisionRect()
 
         # # Dectect if won for each player
@@ -132,14 +133,25 @@ class GameManager(BasicManager):
 
         # Update enemies/detect collision with player
         for enemy in self._enemies:
-            enemy.updateCollisions(self._players, self._blocks)                    
+            enemy.updateCollisions(self._players, self._blocks)
 
+        for player in self._players:
+            for bullet in player.getBullets():
+                bullet.detectCollision(self._players)
+                
 
         # let others update based on the amount of time elapsed
         if seconds < 0.05:
 
             for player in self._players:
+                for bullet in player.getBullets():
+                    if bullet._isDead:
+                        player._bullets.remove(bullet)
+                    bullet.update(seconds)
                 if player._isDead:
+                    index = (self._players.index(player) +
+                             1) % 2  # Gets index of other player
+                    self._winner = self._players[index]._imageName
                     self._gameOver = True
                     SoundManager.getInstance().stopMusic()
                     return
@@ -161,4 +173,4 @@ class GameManager(BasicManager):
         return self._gameOver
 
     def isWon(self):
-        return self._WINNER
+        return self._winner

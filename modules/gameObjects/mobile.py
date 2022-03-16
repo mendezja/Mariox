@@ -104,7 +104,6 @@ class Mobile(Animated):
     def kill(self):
         self._isDead = True
         self._state.manageState("dead", self)
-
         if self._killSound != None:
             SoundManager.getInstance().playSound(self._killSound)
 

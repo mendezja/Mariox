@@ -71,9 +71,9 @@ class ScreenManager(BasicManager):
     def draw(self, mainSurface: pygame.Surface):
         if self._state == ScreenState.state["GAME"]:
 
-            if self._game._mode in [SINGLE_PLAYER]: # one screen
+            if self._game._mode in [SINGLE_PLAYER]:  # one screen
                 self._game.draw(mainSurface)
-            elif self._game._mode in [TWO_PLAYER, BATTLE]: # Two screens
+            elif self._game._mode in [TWO_PLAYER, BATTLE]:  # Two screens
                 drawSurfaces: list[pygame.Surface] = [pygame.Surface(
                     (SCREEN_SIZE.x, SCREEN_SIZE.y//2)) for x in range(2)]
                 self._game.draw(drawSurfaces[0], 0)
@@ -116,21 +116,23 @@ class ScreenManager(BasicManager):
                         self._currentMenu = 1
                     elif event.key == pygame.K_3:
                         self._currentMenu = 2
+
                 if self._game.isGameOver():
-                    self._state.manageState(
-                        ScreenState.actions["GAME_OVER"], self)
-                elif self._game.isWon() != None:
-                    # If two player change text
-                    if self._game._mode in [TWO_PLAYER, BATTLE]:
-                        winner = (self._game.isWon())[0:-4]
-                        self._gameWonText = Text(
-                            Vector2(0, 0), (winner.upper()+" Wins"))
-                    # Update text Position
-                    gameWonTextSize = self._gameWonText.getSize()
-                    self._gameWonText.setPosition(
-                        SCREEN_SIZE // 2 - Vector2(gameWonTextSize[0]//2, gameWonTextSize[1]//2 + 50))
-                    self._state.manageState(
-                        ScreenState.actions["GAME_WON"], self)
+                    if self._game.isWon():
+                        # If two player change text
+                        if self._game._mode in [TWO_PLAYER, BATTLE]:
+                            winner = (self._game.isWon())[0:-4]
+                            self._gameWonText = Text(
+                                Vector2(0, 0), (winner.upper()+" Wins"))
+                        # Update text Position
+                        gameWonTextSize = self._gameWonText.getSize()
+                        self._gameWonText.setPosition(
+                            SCREEN_SIZE // 2 - Vector2(gameWonTextSize[0]//2, gameWonTextSize[1]//2 + 50))
+                        self._state.manageState(
+                            ScreenState.actions["GAME_WON"], self)
+                    else:
+                        self._state.manageState(
+                            ScreenState.actions["GAME_OVER"], self)
 
             elif self._state == ScreenState.state["MAIN_MENU"]:
                 choice = self._mainMenu.handleEvent(event)
