@@ -1,6 +1,5 @@
 from ast import Str
 import os
-from tkinter.font import BOLD
 
 from modules.managers.soundManager import SoundManager
 from .basicManager import BasicManager
@@ -8,7 +7,7 @@ from ..gameObjects.drawable import Drawable
 from ..gameObjects.backgrounds import *
 from ..gameObjects.vector2D import Vector2
 from ..gameObjects.player import Player
-from ..gameObjects.enemy import Enemy
+from ..gameObjects.enemy import Enemy, Turtle
 from ..UI.screenInfo import SCREEN_SIZE
 from .gamemodes import *
 from pygame.joystick import Joystick
@@ -59,22 +58,17 @@ class GameManager(BasicManager):
             for col in range(len(fileCharacters[row])):
                 elemChar = fileCharacters[row][col]
 
-                if elemChar in self.BLOCKS_OFFSETS.keys():  # physics bound blocks
-                    self._blocks.append(Drawable("blocks.png", Vector2(
-                        col*tileSize, row*tileSize), self.BLOCKS_OFFSETS[elemChar]))
-                elif elemChar == "B":  # non-physics blocks
-                    self._decor.append(Drawable("blocks.png", Vector2(
-                        col*tileSize, row*tileSize), (1, 1)))
-                elif elemChar == "E":  # enemies
-                    self._enemies.append(
-                        Enemy("enemies.png",  Vector2(col*tileSize, row*tileSize)))
+                if elemChar in self.BLOCKS_OFFSETS.keys(): #physics bound blocks
+                    self._blocks.append(Drawable("blocks.png", Vector2(col*tileSize, row*tileSize), self.BLOCKS_OFFSETS[elemChar]))
+                elif elemChar == "B": #non-physics blocks
+                    self._decor.append(Drawable("blocks.png", Vector2(col*tileSize, row*tileSize), (1,1)))
+                elif elemChar == "E": #enemies
+                    self._enemies.append(Enemy("enemies.png",  Vector2(col*tileSize, row*tileSize)))
                 elif elemChar == "T":
-                    self._enemies.append(
-                        Enemy("turtle.png", Vector2(col*tileSize, row*tileSize), True))
-
-                elif elemChar == "F":  # Flag
-                    self._end = Drawable("flagPost.png", Vector2(
-                        col*tileSize, row*tileSize))
+                    self._enemies.append(Turtle(Vector2(col*tileSize, row*tileSize)))
+                
+                elif elemChar == "F": # Flag
+                    self._end = Drawable("flagPost.png", Vector2(col*tileSize, row*tileSize))
 
                 elif elemChar == "1":  # player 1
                     self._players.append(Player("mario.png", Vector2(
@@ -87,7 +81,6 @@ class GameManager(BasicManager):
     def draw(self, drawSurf: pygame.surface.Surface, whichPlayer=None):
 
         # Draw everything
-       # nameText = Text(Vector2(10, 10),)
 
         self._background.draw(drawSurf, whichPlayer)
 
@@ -100,8 +93,9 @@ class GameManager(BasicManager):
             self._end.draw(drawSurf, whichPlayer)
         for enemy in self._enemies:
             enemy.draw(drawSurf, whichPlayer)
+           # pygame.draw.rect(drawSurf,(0,0,0), enemy.getCollisionRect())
         for player in self._players:
-            player.draw(drawSurf, whichPlayer)
+            player.draw(drawSurf, whichPlayer, drawCollision = False)
             for bullet in player.getBullets():
                 bullet.draw(drawSurf, whichPlayer)
 
@@ -133,7 +127,11 @@ class GameManager(BasicManager):
 
         # Update enemies/detect collision with player
         for enemy in self._enemies:
-            enemy.updateCollisions(self._players, self._blocks)
+            if type(enemy) == Turtle:
+                enemy.updateCollisions(self._players, self._blocks,self._enemies )  
+                
+            else:
+                enemy.updateCollisions(self._players, self._blocks)                    
 
         for player in self._players:
             for bullet in player.getBullets():
@@ -149,9 +147,11 @@ class GameManager(BasicManager):
                         player._bullets.remove(bullet)
                     bullet.update(seconds)
                 if player._isDead:
-                    index = (self._players.index(player) +
+                    if self._mode in [TWO_PLAYER, BATTLE]:
+                        index = (self._players.index(player) +
                              1) % 2  # Gets index of other player
-                    self._winner = self._players[index]._imageName
+                        self._winner = self._players[index]._imageName
+                        #TODO show correct winner
                     self._gameOver = True
                     SoundManager.getInstance().stopMusic()
                     return

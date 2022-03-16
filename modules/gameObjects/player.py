@@ -17,9 +17,9 @@ class Player(Mobile):
         self._hasGun = hasGun
         self._bullets: list[Bullet] = []
         self._joystick = joystick
-        self._jumpTime = .05
+        self._jumpTime = .06
         self._vSpeed = 50
-        self._jSpeed = 80*(1.3)
+        self._jSpeed = 80*(1.4)
 
         self._pressedLeft = False
         self._pressedRight = False
@@ -82,8 +82,9 @@ class Player(Mobile):
                 self._state.manageState("right", self)
 
             elif event.key == pygame.K_SPACE and self._hasGun:
-                self._bullets.append(
-                    Bullet(self._position, self._state._lastFacing))
+                if len(self._bullets) < 5:
+                    self._bullets.append(
+                        Bullet(self._position, self._state._lastFacing))
 
         elif event.type == pygame.KEYUP:
 
@@ -101,9 +102,10 @@ class Player(Mobile):
             if event.button == 2 and event.instance_id == self._joystick.get_id():
                 self._pressedUp = True
                 self._state.manageState("jump", self)
-            elif event.button == 1 and event.instance_id == self._joystick.get_id() and self._hasGun:
-                self._bullets.append(
-                    Bullet(self._position, self._state._lastFacing))
+            elif event.button == 5 and event.instance_id == self._joystick.get_id() and self._hasGun:
+                if len(self._bullets) < 5:
+                    self._bullets.append(
+                        Bullet(self._position, self._state._lastFacing))
 
         elif event.type == pygame.JOYBUTTONUP:
             if event.button == 0:

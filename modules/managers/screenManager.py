@@ -133,7 +133,7 @@ class ScreenManager(BasicManager):
                     else:
                         self._state.manageState(
                             ScreenState.actions["GAME_OVER"], self)
-
+            # TODO make select button A instead of B
             elif self._state == ScreenState.state["MAIN_MENU"]:
                 choice = self._mainMenu.handleEvent(event)
                 if choice == START_SINGLE_PLAYER:
