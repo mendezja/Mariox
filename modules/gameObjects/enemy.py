@@ -8,9 +8,10 @@ from ..managers.soundManager import SoundManager
 import pygame
 from pygame.event import Event
 
+
 class Enemy(Mobile):
 
-    def __init__(self, enemyName: str, position: Vector2, offset = None):
+    def __init__(self, enemyName: str, position: Vector2, offset=None):
         super().__init__(enemyName, position, offset)
         self._killSound = "mario_stomp.wav"
         self._jumpTime = 0.01
@@ -55,58 +56,57 @@ class Enemy(Mobile):
 
         self._velocity.x *= -1
         if self._state.getFacing() == "right":
-            self._state.manageState("left", self)  
+            self._state.manageState("left", self)
         else:
             self._state.manageState("right", self)
 
         self.transitionState("walking")
-    
-    def updateCollisions (self, players: [Player], blocks: [Drawable]):
+
+    def updateCollisions(self, players: 'list[Player]', blocks: 'list[Drawable]'):
         if self._isDead:
             return
 
         eRect = self.getCollisionRect()
 
-
         for player in players:
             playerClipRect = eRect.clip(player.getCollisionRect())
 
             if playerClipRect.width > 0:
-                if player._velocity.y > 0 and playerClipRect.height <= playerClipRect.width:   
+                if player._velocity.y > 0 and playerClipRect.height <= playerClipRect.width:
                     self.kill()
                     break
                 else:
                     player.kill()
                     self._gameOver = True
-                    SoundManager.getInstance().stopMusic()                
+                    SoundManager.getInstance().stopMusic()
                     return
-            
+
         hasFloor = False
-            
+
         for block in blocks:
             clipRect = eRect.clip(block.getCollisionRect())
             if clipRect.width > 0:
-                if self._velocity.y > 0 and clipRect.width > clipRect.height :  # check virtical collide   clipRect.width > clipRect.height and
+                # check virtical collide   clipRect.width > clipRect.height and
+                if self._velocity.y > 0 and clipRect.width > clipRect.height:
                     self.collideGround(clipRect.height)
                     hasFloor = True
                     break
-                elif clipRect.width < clipRect.height: # check for horizontal collide
+                elif clipRect.width < clipRect.height:  # check for horizontal collide
                     self.collideWall(clipRect.width)
                     break
-            elif (eRect.move(0, 1)).colliderect(block.getCollisionRect()): # check for ground
+            elif (eRect.move(0, 1)).colliderect(block.getCollisionRect()):  # check for ground
                 hasFloor = True
                 break
-    
+
         if not hasFloor:
             self.fall()
-            
-       
+
 
 class Turtle(Enemy):
-    def __init__(self, position: Vector2, offset = None):
+    def __init__(self, position: Vector2, offset=None):
         super().__init__("turtle.png", position, offset)
         self._state = MobileState()
-        
+
         self._nFramesList.update({"sliding": 1})
         self._rowList.update({"sliding": 1})
         self._framesPerSecondList.update({"sliding": 1})
@@ -114,23 +114,21 @@ class Turtle(Enemy):
     def collideWall(self, xClip):
         super().collideWall(xClip)
 
-        if self._state.getState()  == "sliding":
+        if self._state.getState() == "sliding":
             self.transitionState("sliding")
-    
 
-    def updateCollisions (self, players: [Player], blocks: [Drawable], enemies: [Enemy]):
+    def updateCollisions(self, players: 'list[Player]', blocks: 'list[Drawable]', enemies: 'list[Enemy]'):
         if self._isDead:
             return
 
         eRect = self.getCollisionRect()
-
 
         for player in players:
             playerClipRect = eRect.clip(player.getCollisionRect())
 
             if playerClipRect.width > 0:
                 if player._velocity.y > 0 and playerClipRect.height//2 <= playerClipRect.width:
-                    if self._state.getState()  != "slidng":
+                    if self._state.getState() != "slidng":
                         self._state.manageState("hide", self)
 
                         player._state.manageState("ground", self)
@@ -138,47 +136,47 @@ class Turtle(Enemy):
 
                     else:
                         self._vSpeed = 0
-                    
+
                 else:
                     player.kill()
                     self._gameOver = True
                     SoundManager.getInstance().stopMusic()
                     return
 
-        if self._state.getState()  == "sliding":
+        if self._state.getState() == "sliding":
             for other in enemies:
                 otherClipRect = eRect.clip(other.getCollisionRect())
 
                 if otherClipRect.width > 0 and other != self:
-                    other.kill()              
+                    other.kill()
                     pass
 
-            
         hasFloor = False
-            
+
         for block in blocks:
             clipRect = eRect.clip(block.getCollisionRect())
             if clipRect.width > 0:
-                if self._velocity.y > 0 and clipRect.width > clipRect.height :  # check virtical collide   clipRect.width > clipRect.height and
+                # check virtical collide   clipRect.width > clipRect.height and
+                if self._velocity.y > 0 and clipRect.width > clipRect.height:
                     self.collideGround(clipRect.height)
                     hasFloor = True
                     break
-                elif clipRect.width < clipRect.height: # check for horizontal collide
+                elif clipRect.width < clipRect.height:  # check for horizontal collide
                     self.collideWall(clipRect.width)
                     break
-            elif (eRect.move(0, 1)).colliderect(block.getCollisionRect()): # check for ground
+            elif (eRect.move(0, 1)).colliderect(block.getCollisionRect()):  # check for ground
                 hasFloor = True
                 break
         if not hasFloor:
             if not self._state.getState() == "sliding":
-                
+
                 self.collideWall(0)
             else:
 
                 self._velocity.y = 50
                 return
 
-                
+
 # class TurtleState(MobileState):
 #     def __init__(self, state="falling"):
 #         super().__init__(state)

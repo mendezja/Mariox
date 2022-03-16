@@ -10,6 +10,7 @@ from .gamemodes import *
 from .soundManager import SoundManager
 import time
 
+
 class ScreenManager(BasicManager):
 
     RETURN_TO_MAIN = "returnToMain"
@@ -37,8 +38,10 @@ class ScreenManager(BasicManager):
         self._mainMenu.addOption(START_TWO_PLAYER, "Two-Player",
                                  SCREEN_SIZE // 2 + Vector2(0, 40),
                                  center="both")
+        self._mainMenu.addOption(
+            START_BATTLE, "Gun Game", SCREEN_SIZE // 2 + Vector2(0, 60), center="both")
         self._mainMenu.addOption(EXIT, "Exit Game",
-                                 SCREEN_SIZE // 2 + Vector2(0, 60),
+                                 SCREEN_SIZE // 2 + Vector2(0, 80),
                                  center="both")
         self._mainMenu.setCursor(START_SINGLE_PLAYER)
 
@@ -46,8 +49,7 @@ class ScreenManager(BasicManager):
         gameOverTextSize = self._gameOverText.getSize()
         self._gameOverText.setPosition(
             SCREEN_SIZE // 2 - Vector2(gameOverTextSize[0]//2, gameOverTextSize[1]//2 + 50))
-        
-        
+
         # Create Game Over Menu
         self._gameOverMenu = CursorMenu("gameOver.png", fontName="default8")
         self._gameOverMenu.addOption(ScreenManager.RETURN_TO_MAIN, "Return to Main Menu", SCREEN_SIZE // 2 + Vector2(0, 50),
@@ -56,24 +58,22 @@ class ScreenManager(BasicManager):
                                      SCREEN_SIZE // 2 + Vector2(0, 80),
                                      center="both")
         self._gameOverMenu.setCursor(ScreenManager.RETURN_TO_MAIN)
-    
-    
 
         # Create Game Won Menu
         self._gameWonMenu = CursorMenu("gameOver.png", fontName="default8")
         self._gameWonMenu.addOption(ScreenManager.RETURN_TO_MAIN, "Return to Main Menu", SCREEN_SIZE // 2 + Vector2(0, 50),
-                                     center="both")
+                                    center="both")
         self._gameWonMenu.addOption(EXIT, "Quit",
-                                     SCREEN_SIZE // 2 + Vector2(0, 80),
-                                     center="both")
+                                    SCREEN_SIZE // 2 + Vector2(0, 80),
+                                    center="both")
         self._gameWonMenu.setCursor(ScreenManager.RETURN_TO_MAIN)
 
     def draw(self, mainSurface: pygame.Surface):
         if self._state == ScreenState.state["GAME"]:
 
-            if self._game._mode == SINGLE_PLAYER:
+            if self._game._mode in [SINGLE_PLAYER]:  # one screen
                 self._game.draw(mainSurface)
-            elif self._game._mode == TWO_PLAYER:
+            elif self._game._mode in [TWO_PLAYER, BATTLE]:  # Two screens
                 drawSurfaces: list[pygame.Surface] = [pygame.Surface(
                     (SCREEN_SIZE.x, SCREEN_SIZE.y//2)) for x in range(2)]
                 self._game.draw(drawSurfaces[0], 0)
@@ -81,7 +81,8 @@ class ScreenManager(BasicManager):
                 mainSurface.blit(drawSurfaces[0], (0, 0))
                 mainSurface.blit(drawSurfaces[1], (0, SCREEN_SIZE.y // 2))
 
-                pygame.draw.line(mainSurface, (0,0,0), (0, SCREEN_SIZE.y//2), (SCREEN_SIZE.x ,SCREEN_SIZE.y//2), 2)
+                pygame.draw.line(
+                    mainSurface, (0, 0, 0), (0, SCREEN_SIZE.y//2), (SCREEN_SIZE.x, SCREEN_SIZE.y//2), 2)
 
             if self._state.isPaused():
                 self._pausedText.draw(
@@ -107,7 +108,7 @@ class ScreenManager(BasicManager):
         else:
             if self._state == ScreenState.state["GAME"] and not self._state.isPaused():
                 self._game.handleEvent(event)
-                
+
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_1:
                         self._currentMenu = 0
@@ -115,21 +116,24 @@ class ScreenManager(BasicManager):
                         self._currentMenu = 1
                     elif event.key == pygame.K_3:
                         self._currentMenu = 2
-                if self._game.isGameOver():   
-                    self._state.manageState(
-                        ScreenState.actions["GAME_OVER"], self)
-                elif self._game.isWon() != None:
-                    # If two player change text
-                    if self._game._mode == TWO_PLAYER:
-                        winner = (self._game.isWon())[0:-4]
-                        self._gameWonText = Text(Vector2(0, 0), (winner.upper()+" Wins" ))
-                    # Update text Position 
-                    gameWonTextSize = self._gameWonText.getSize()
-                    self._gameWonText.setPosition(
-                        SCREEN_SIZE // 2 - Vector2(gameWonTextSize[0]//2, gameWonTextSize[1]//2 + 50))
-                    self._state.manageState(ScreenState.actions["GAME_WON"],self)
-              
 
+                if self._game.isGameOver():
+                    if self._game.isWon():
+                        # If two player change text
+                        if self._game._mode in [TWO_PLAYER, BATTLE]:
+                            winner = (self._game.isWon())[0:-4]
+                            self._gameWonText = Text(
+                                Vector2(0, 0), (winner.upper()+" Wins"))
+                        # Update text Position
+                        gameWonTextSize = self._gameWonText.getSize()
+                        self._gameWonText.setPosition(
+                            SCREEN_SIZE // 2 - Vector2(gameWonTextSize[0]//2, gameWonTextSize[1]//2 + 50))
+                        self._state.manageState(
+                            ScreenState.actions["GAME_WON"], self)
+                    else:
+                        self._state.manageState(
+                            ScreenState.actions["GAME_OVER"], self)
+            # TODO make select button A instead of B
             elif self._state == ScreenState.state["MAIN_MENU"]:
                 choice = self._mainMenu.handleEvent(event)
                 if choice == START_SINGLE_PLAYER:
@@ -140,7 +144,12 @@ class ScreenManager(BasicManager):
                         ScreenState.actions["START_GAME"], self)
                 elif choice == START_TWO_PLAYER:
                     self._game = GameManager(
-                        SCREEN_SIZE, TWO_PLAYER,"world1.txt", self._joysticks)
+                        SCREEN_SIZE, TWO_PLAYER, "world1.txt", self._joysticks)
+                    self._state.manageState(
+                        ScreenState.actions["START_GAME"], self)
+                elif choice == START_BATTLE:
+                    self._game = GameManager(
+                        SCREEN_SIZE, BATTLE, "battleWorld1.txt", self._joysticks)
                     self._state.manageState(
                         ScreenState.actions["START_GAME"], self)
                 elif choice == EXIT:
@@ -178,7 +187,6 @@ class ScreenManager(BasicManager):
     def transitionState(self, state):
         if state == ScreenState.state["GAME"]:
             self._game.updateMovement()
-        
 
 
 class ScreenState(object):
@@ -230,14 +238,12 @@ class ScreenState(object):
             self._state = ScreenState.state["GAME_OVER_MENU"]
             time.sleep(1)
             screenManager.transitionState(self._state)
-        
 
         elif action == ScreenState.actions["GAME_WON"] and self._state == ScreenState.state["GAME"]:
             self._state = ScreenState.state["GAME_WON_MENU"]
             time.sleep(1)
             screenManager.transitionState(self._state)
 
-            
     def __eq__(self, other):
         return self._state == other
 

@@ -1,5 +1,5 @@
 
-from modules.managers.soundManager import SoundManager
+from modules.gameObjects.bullet import Bullet
 from .vector2D import Vector2
 from .mobile import Mobile
 from .drawable import Drawable
@@ -10,15 +10,16 @@ from pygame.joystick import Joystick
 
 
 class Player(Mobile):
-    def __init__(self, imageName: str, position: Vector2, joystick: Joystick = None):
+    def __init__(self, imageName: str, position: Vector2, joystick: Joystick = None, hasGun=False):
         super().__init__(imageName, position)
         self._killSound = "mario_die.wav"
 
+        self._hasGun = hasGun
+        self._bullets: list[Bullet] = []
         self._joystick = joystick
-        self._jumpTime = .05
+        self._jumpTime = .06
         self._vSpeed = 50
-        self._jSpeed = 80*(1.3)
-        
+        self._jSpeed = 80*(1.4)
 
         self._pressedLeft = False
         self._pressedRight = False
@@ -67,8 +68,6 @@ class Player(Mobile):
     # def startFalling(self):
     #     self._state.manageState("falling", self)
 
-   
-
     def handleEvent(self, event: Event):
         # Keyboard
         if event.type == pygame.KEYDOWN:
@@ -81,6 +80,11 @@ class Player(Mobile):
 
             elif event.key == pygame.K_RIGHT:
                 self._state.manageState("right", self)
+
+            elif event.key == pygame.K_SPACE and self._hasGun:
+                if len(self._bullets) < 5:
+                    self._bullets.append(
+                        Bullet(self._position, self._state._lastFacing))
 
         elif event.type == pygame.KEYUP:
 
@@ -98,6 +102,10 @@ class Player(Mobile):
             if event.button == 2 and event.instance_id == self._joystick.get_id():
                 self._pressedUp = True
                 self._state.manageState("jump", self)
+            elif event.button == 5 and event.instance_id == self._joystick.get_id() and self._hasGun:
+                if len(self._bullets) < 5:
+                    self._bullets.append(
+                        Bullet(self._position, self._state._lastFacing))
 
         elif event.type == pygame.JOYBUTTONUP:
             if event.button == 0:
@@ -124,40 +132,42 @@ class Player(Mobile):
 
         pressed = pygame.key.get_pressed()
 
-        if not pressed[pygame.K_UP]:# and not self._pressedUp:
+        if not pressed[pygame.K_UP]:  # and not self._pressedUp:
             self._state.manageState("fall", self)
-        if not pressed[pygame.K_LEFT]:# and not self._pressedLeft:
+        if not pressed[pygame.K_LEFT]:  # and not self._pressedLeft:
             self._state.manageState("stopleft", self)
-        if not pressed[pygame.K_RIGHT]: # and not self._pressedRight:
+        if not pressed[pygame.K_RIGHT]:  # and not self._pressedRight:
             self._state.manageState("stopright", self)
-    
 
-    def updateCollisions (self, blocks: [Drawable], end: Drawable):
+    def updateCollisions(self, blocks: 'list[Drawable]', end: Drawable):
         if self._isDead:
             return
         pRect = self.getCollisionRect()
 
         # Dectect if won for each player
-        if pRect.clip(end.getCollisionRect()).width > 0:
-            self.updateMovement()
-            return str(self._imageName)
-            
+        if end != None:
+            if pRect.clip(end.getCollisionRect()).width > 0:
+                self.updateMovement()
+                return str(self._imageName)
+
         # Detect Gravity for each block
         hasFloor = False
-        
+
         for block in blocks:
             clipRect = pRect.clip(block.getCollisionRect())
 
-            if clipRect.width >= clipRect.height and clipRect.width > 0: # check virtical collide                     
+            if clipRect.width >= clipRect.height and clipRect.width > 0:  # check virtical collide
                 hasFloor = self.collideGround(clipRect.height)
                 break
-            elif clipRect.width < clipRect.height: # check for horizontal collide
+            elif clipRect.width < clipRect.height:  # check for horizontal collide
                 self.collideWall(clipRect.width)
                 break
-            elif (pRect.move(0, 1)).colliderect(block.getCollisionRect()): # Check for ground
+            elif (pRect.move(0, 1)).colliderect(block.getCollisionRect()):  # Check for ground
                 hasFloor = True
                 break
-    
+
         if not hasFloor:
             self.fall()
 
+    def getBullets(self):
+        return self._bullets

@@ -28,7 +28,8 @@ class Drawable(object):
         "luigi.png": Rect(4, 4, 8, 12),
         "enemies.png": Rect(4, 3, 10, 13),
         "turtle.png": Rect(4, 4, 10, 12),
-        "flagPost.png": Rect(5, 9, 11, 155)
+        "flagPost.png": Rect(5, 9, 11, 155),
+        "bulletbill.png": Rect(6, 7, 19, 14)
     }
 
     @classmethod
@@ -79,7 +80,7 @@ class Drawable(object):
             newRect = self._position + self._image.get_rect()
         return newRect
 
-    def draw(self, surface: Surface, whichPlayer=None, noOffset=False, drawCollision = False):
+    def draw(self, surface: Surface, whichPlayer=None, noOffset=False, drawCollision=False):
         blitImage = self._image
         offset = None
 
@@ -96,13 +97,13 @@ class Drawable(object):
             self._position.x - offset.x)
         y = int(self._position.y) if noOffset else int(
             self._position.y - offset.y)
-        
-        surface.blit(blitImage, (x, y))
-        
-        if drawCollision: 
-            sRect = pygame.Surface((self.getCollisionRect().width, self.getCollisionRect().height)) # (self._image.get_rect().width, self._image.get_rect().height))
-            #pygame.draw.rect(sRect, (0,0,0), self.getCollisionRect())
-            print ((self.getCollisionRect().topleft))
-            surface.blit(sRect,  (self.getCollisionRect().topleft) )
 
-        
+        surface.blit(blitImage, (x, y))
+
+        if drawCollision:
+            # (self._image.get_rect().width, self._image.get_rect().height))
+            sRect = pygame.Surface(
+                (self.getCollisionRect().width, self.getCollisionRect().height))
+            #pygame.draw.rect(sRect, (0,0,0), self.getCollisionRect())
+            print((self.getCollisionRect().topleft))
+            surface.blit(sRect,  (self.getCollisionRect().topleft))
