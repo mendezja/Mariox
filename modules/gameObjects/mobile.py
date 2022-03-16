@@ -53,7 +53,9 @@ class Mobile(Animated):
         newPosition = self.getPosition() + self._velocity * seconds
 
         if newPosition.x < 0 or newPosition.x > boundaries.x - self.getSize()[0]:
-            newPosition = self.getPosition() #+ self._velocity * seconds
+            newPosition = self.getPosition()
+            self.collideWall(1)
+
         if  newPosition.y > boundaries.y - self.getSize()[1]:#newPosition.y < 0 or
             self.kill() 
         else:
@@ -145,8 +147,7 @@ class MobileState(object):
 
         elif action == "dead":
             self._state = "dead"
-            player.transitionState(self._state)
-            #player.transitionState("falling")
+            player.transitionState(self._state)\
 
         elif action.startswith("stop") and action[4:] in self._movement.keys():
             direction = action[4:]
@@ -178,6 +179,12 @@ class MobileState(object):
                 player.transitionState("walking")
             else:
                 player.transitionState(self._state)
+
+        if action == "hide":
+            self._state = "sliding"
+            player._vSpeed = 200
+
+            player.transitionState(self._state)
 
 
     def getState(self):

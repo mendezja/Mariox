@@ -8,7 +8,7 @@ from ..gameObjects.drawable import Drawable
 from ..gameObjects.backgrounds import *
 from ..gameObjects.vector2D import Vector2
 from ..gameObjects.player import Player
-from ..gameObjects.enemy import Enemy
+from ..gameObjects.enemy import Enemy, Turtle
 from ..UI.screenInfo import SCREEN_SIZE
 from .gamemodes import *
 from pygame.joystick import Joystick
@@ -65,9 +65,9 @@ class GameManager(BasicManager):
                 elif elemChar == "B": #non-physics blocks
                     self._decor.append(Drawable("blocks.png", Vector2(col*tileSize, row*tileSize), (1,1)))
                 elif elemChar == "E": #enemies
-                    self._enemies.append(Enemy("enemies.png",  Vector2(col*tileSize, row*tileSize) ))
+                    self._enemies.append(Enemy("enemies.png",  Vector2(col*tileSize, row*tileSize)))
                 elif elemChar == "T":
-                    self._enemies.append(Enemy("turtle.png", Vector2(col*tileSize, row*tileSize), True))
+                    self._enemies.append(Turtle(Vector2(col*tileSize, row*tileSize)))
                 
                 elif elemChar == "F": # Flag
                     self._end = Drawable("flagPost.png", Vector2(col*tileSize, row*tileSize))
@@ -90,7 +90,6 @@ class GameManager(BasicManager):
     def draw(self, drawSurf: pygame.surface.Surface, whichPlayer=None):
 
         # Draw everything
-       # nameText = Text(Vector2(10, 10),)
 
         self._background.draw(drawSurf, whichPlayer)
 
@@ -100,10 +99,12 @@ class GameManager(BasicManager):
             block.draw(drawSurf, whichPlayer)
 
         self._end.draw(drawSurf, whichPlayer)
+
         for enemy in self._enemies:
             enemy.draw(drawSurf, whichPlayer)
+           # pygame.draw.rect(drawSurf,(0,0,0), enemy.getCollisionRect())
         for player in self._players:
-            player.draw(drawSurf, whichPlayer)
+            player.draw(drawSurf, whichPlayer, drawCollision = False)
 
     def handleEvent(self, event):
         if not self._gameOver:
@@ -127,7 +128,11 @@ class GameManager(BasicManager):
 
         # Update enemies/detect collision with player
         for enemy in self._enemies:
-            enemy.updateCollisions(self._players, self._blocks)                    
+            if type(enemy) == Turtle:
+                enemy.updateCollisions(self._players, self._blocks,self._enemies )  
+                
+            else:
+                enemy.updateCollisions(self._players, self._blocks)                    
 
 
         # let others update based on the amount of time elapsed
