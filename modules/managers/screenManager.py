@@ -71,9 +71,9 @@ class ScreenManager(BasicManager):
     def draw(self, mainSurface: pygame.Surface):
         if self._state == ScreenState.state["GAME"]:
 
-            if self._game._mode in [SINGLE_PLAYER]:  # one screen
+            if self._game._mode in [SINGLE_PLAYER, BATTLE]:  # one screen
                 self._game.draw(mainSurface)
-            elif self._game._mode in [TWO_PLAYER, BATTLE]:  # Two screens
+            elif self._game._mode in [TWO_PLAYER]:  # Two screens
                 drawSurfaces: list[pygame.Surface] = [pygame.Surface(
                     (SCREEN_SIZE.x, SCREEN_SIZE.y//2)) for x in range(2)]
                 self._game.draw(drawSurfaces[0], 0)
