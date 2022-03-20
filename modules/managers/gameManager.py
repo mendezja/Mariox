@@ -43,8 +43,10 @@ class GameManager(BasicManager):
         self._gameOver = False
         self._winner: Str = ""  # gameWon = False
 
+        backgroundImage = "battleBackground.jpeg" if mode in [
+            BATTLE] else "background.png"
         self._background = EfficientBackground(
-            self._screenSize, "background.png", parallax=0)
+            self._screenSize, backgroundImage, parallax=0)
 
         file = open(os.path.join("resources", "levels", self._levelFile))
         fileCharacters = [[y for y in x]
@@ -58,17 +60,22 @@ class GameManager(BasicManager):
             for col in range(len(fileCharacters[row])):
                 elemChar = fileCharacters[row][col]
 
-                if elemChar in self.BLOCKS_OFFSETS.keys(): #physics bound blocks
-                    self._blocks.append(Drawable("blocks.png", Vector2(col*tileSize, row*tileSize), self.BLOCKS_OFFSETS[elemChar]))
-                elif elemChar == "B": #non-physics blocks
-                    self._decor.append(Drawable("blocks.png", Vector2(col*tileSize, row*tileSize), (1,1)))
-                elif elemChar == "E": #enemies
-                    self._enemies.append(Enemy("enemies.png",  Vector2(col*tileSize, row*tileSize)))
+                if elemChar in self.BLOCKS_OFFSETS.keys():  # physics bound blocks
+                    self._blocks.append(Drawable("blocks.png", Vector2(
+                        col*tileSize, row*tileSize), self.BLOCKS_OFFSETS[elemChar]))
+                elif elemChar == "B":  # non-physics blocks
+                    self._decor.append(Drawable("blocks.png", Vector2(
+                        col*tileSize, row*tileSize), (1, 1)))
+                elif elemChar == "E":  # enemies
+                    self._enemies.append(
+                        Enemy("enemies.png",  Vector2(col*tileSize, row*tileSize)))
                 elif elemChar == "T":
-                    self._enemies.append(Turtle(Vector2(col*tileSize, row*tileSize)))
-                
-                elif elemChar == "F": # Flag
-                    self._end = Drawable("flagPost.png", Vector2(col*tileSize, row*tileSize))
+                    self._enemies.append(
+                        Turtle(Vector2(col*tileSize, row*tileSize)))
+
+                elif elemChar == "F":  # Flag
+                    self._end = Drawable("flagPost.png", Vector2(
+                        col*tileSize, row*tileSize))
 
                 elif elemChar == "1":  # player 1
                     self._players.append(Player("mario.png", Vector2(
@@ -95,7 +102,7 @@ class GameManager(BasicManager):
             enemy.draw(drawSurf, whichPlayer)
            # pygame.draw.rect(drawSurf,(0,0,0), enemy.getCollisionRect())
         for player in self._players:
-            player.draw(drawSurf, whichPlayer, drawCollision = False)
+            player.draw(drawSurf, whichPlayer, drawCollision=False)
             for bullet in player.getBullets():
                 bullet.draw(drawSurf, whichPlayer)
 
@@ -109,8 +116,8 @@ class GameManager(BasicManager):
 
         for player in self._players:
 
-            whichPlayer = None if len(
-                self._players) == 1 else self._players.index(player)
+            whichPlayer = None if self._mode in [
+                SINGLE_PLAYER, BATTLE] else self._players.index(player)
             Drawable.updateOffset(
                 player, SCREEN_SIZE, GameManager.WORLD_SIZE, whichPlayer=whichPlayer)
 
@@ -128,15 +135,15 @@ class GameManager(BasicManager):
         # Update enemies/detect collision with player
         for enemy in self._enemies:
             if type(enemy) == Turtle:
-                enemy.updateCollisions(self._players, self._blocks,self._enemies )  
-                
+                enemy.updateCollisions(
+                    self._players, self._blocks, self._enemies)
+
             else:
-                enemy.updateCollisions(self._players, self._blocks)                    
+                enemy.updateCollisions(self._players, self._blocks)
 
         for player in self._players:
             for bullet in player.getBullets():
                 bullet.detectCollision(self._players)
-                
 
         # let others update based on the amount of time elapsed
         if seconds < 0.05:
@@ -149,9 +156,9 @@ class GameManager(BasicManager):
                 if player._isDead:
                     if self._mode in [TWO_PLAYER, BATTLE]:
                         index = (self._players.index(player) +
-                             1) % 2  # Gets index of other player
+                                 1) % 2  # Gets index of other player
                         self._winner = self._players[index]._imageName
-                        #TODO show correct winner
+                        # TODO show correct winner
                     self._gameOver = True
                     SoundManager.getInstance().stopMusic()
                     return

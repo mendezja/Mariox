@@ -55,7 +55,7 @@ class EfficientBackground(RepeatingSprite):
             dimensions[0] = self.getSize()[0] * 2
 
         if dimensions[1] < self.getSize()[1] * 2:
-            dimensions[1] = self.getSize[1] * 2
+            dimensions[1] = self.getSize()[1] * 2
 
         super().__init__(dimensions, imageName, position, offset, parallax)
 
