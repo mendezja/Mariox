@@ -106,7 +106,6 @@ class GameManager(BasicManager):
         for player in self._players:
             player.draw(drawSurf, whichPlayer, drawCollision = False)
 
-            # TODO edit gun to be proper class
             if player._gun != None:
                 player._gun.draw(drawSurf,whichPlayer)
 
@@ -173,7 +172,7 @@ class GameManager(BasicManager):
                 player.update(seconds, GameManager.WORLD_SIZE)
                 
                 if player._hasGun:
-                    player._gun._position = player.getPosition() + player._gunOffset
+                    player._gun.update(seconds)
 
             for enemy in self._enemies:
                 if enemy._isDead:

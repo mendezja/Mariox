@@ -3,7 +3,7 @@ from modules.gameObjects.bullet import Bullet
 from .vector2D import Vector2
 from .mobile import Mobile
 from .animated import Animated
-from .drawable import Drawable
+from .drawable import Drawable, BasicState
 
 import pygame
 from pygame.event import Event
@@ -17,7 +17,7 @@ class Player(Mobile):
 
         self._hasGun = hasGun
         self._bullets: list[Bullet] = []
-        self._gunOffset = Vector2(3,8)
+        #self._gunOffset = Vector2(3,8)
         self._joystick = joystick
         self._jumpTime = .06
         self._vSpeed = 50
@@ -32,7 +32,7 @@ class Player(Mobile):
 
         if self._hasGun:
             # self._image.
-            self._gun = Drawable("bazooka.png", position + self._gunOffset)
+            self._gun = Gun("bazooka.png",self)#Drawable("bazooka.png", position + self._gunOffset)
         else:
             self._gun = None
 
@@ -73,9 +73,6 @@ class Player(Mobile):
             self._jumpTimer -= seconds
             if self._jumpTimer < 0:
                 self._state.manageState("fall", self)
-
-    # def startFalling(self):
-    #     self._state.manageState("falling", self)
 
     def handleEvent(self, event: Event):
         # Keyboard
@@ -137,9 +134,6 @@ class Player(Mobile):
                     self._state.manageState("right", self)
                     self._state.manageState("stopleft", self)
 
-    # def updatePosition(self, seconds, boundaries):
-    #     super().updatePosition(seconds, boundaries)
-
 
     def updateMovement(self):
 
@@ -185,3 +179,43 @@ class Player(Mobile):
 
     def getBullets(self):
         return self._bullets
+
+
+
+class Gun(Animated):
+    _GUN_OFFSET = Vector2(0,0)#(-12,6)
+    def __init__(self, imageName: str, player: Player):
+        super().__init__(imageName, player.getPosition() + Gun._GUN_OFFSET)
+        self._owner = player
+        # center = self._image.width//2 + self._image.height//2
+        self._state = BasicState(player._state.getFacing())
+
+        self._row = 0
+        self._nFrames = 1
+        self._framesPerSecond = 1
+
+
+        self._nFramesList = {
+            "shooting": 1,
+            "flipping": 1
+        }
+
+        self._rowList = {
+            "shooting": 1,
+            "flipping": 1
+        }
+
+        self._framesPerSecondList = {
+            "shooting": 1,
+            "flipping": 1
+        }
+
+    def update(self, seconds):
+        super().update(seconds)
+        self.updatePosition(seconds)
+
+    def updatePosition(self, seconds):
+        '''Helper method for update'''
+        
+        self._state._setFacing(self._owner._state.getFacing())
+        self._position = self._owner.getPosition() + Gun._GUN_OFFSET
