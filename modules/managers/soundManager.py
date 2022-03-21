@@ -41,6 +41,8 @@ class SoundManager(object):
             "stage_clear.wav": _SFX_FOLDER,
             "mario_stomp.wav": _SFX_FOLDER,
             "marioremix.mp3": _MUSIC_FOLDER,
+            "northMemphis.mp3": _MUSIC_FOLDER,
+            "explosion.wav": _SFX_FOLDER
         }
 
         def __init__(self):

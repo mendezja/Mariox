@@ -5,11 +5,11 @@ from modules.gameObjects.vector2D import Vector2
 
 
 class Bullet(Animated):
-    def __init__(self, position, direction):
+    def __init__(self, position, direction, speed):
         super().__init__("bulletbill.png", position +
                          Vector2((16 if direction == "right" else -28), -8))
         self._state = BasicState(direction)
-        self._velocity = Vector2(70, 0)
+        self._velocity = Vector2(speed, 0)
         self._timeToLive = 3
         self._isDead = False
 
@@ -44,5 +44,8 @@ class Bullet(Animated):
     def detectCollision(self, players):
         for player in players:
             if player.getCollisionRect().clip(self.getCollisionRect()).width > 0:
-                player.kill()
+                player.kill(self)
                 return player
+    
+    def setDead(self):
+        self._isDead = True
