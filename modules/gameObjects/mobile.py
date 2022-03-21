@@ -8,6 +8,7 @@ import pygame
 from pygame.event import Event
 from pygame.joystick import Joystick
 
+
 class Mobile(Animated):
     def __init__(self, imageName, position, offset=None):
         super().__init__(imageName, position, offset)
@@ -29,7 +30,6 @@ class Mobile(Animated):
         self.updateVelocity(seconds)
         self.updatePosition(seconds, boundaries)
 
-
     def updateVelocity(self, seconds):
         '''Helper method for update'''
         super().update(seconds)
@@ -46,23 +46,29 @@ class Mobile(Animated):
             self._velocity.y = 0
         elif self._state.getState() == "falling":
             self._velocity.y += self._jSpeed * seconds*1.2
-        
 
     def updatePosition(self, seconds, boundaries):
         '''Helper method for update'''
-        newPosition = self.getPosition() + self._velocity * seconds
+        positionChange: Vector2 = self._velocity * seconds
+        newPosition = self.getPosition() + positionChange
+
+        # Todo delta
+        if positionChange.magnitude() > 3:
+            newPosition = newPosition - positionChange + \
+                (positionChange.normalize() * 3) # Change position by maximum of 3
 
         if newPosition.x < 0 or newPosition.x > boundaries.x - self.getSize()[0]:
             newPosition = self.getPosition()
             self.collideWall(1)
 
-        if  newPosition.y > boundaries.y - self.getSize()[1]:#newPosition.y < 0 or
-            self.kill() 
+        # newPosition.y < 0 or
+        if newPosition.y > boundaries.y - self.getSize()[1]:
+            self.kill()
         else:
             self.setPosition(newPosition)
 
     def transitionState(self, state):
-  
+
         if state == "jumping":
             self._jumpTimer = self._jumpTime
 
@@ -74,9 +80,8 @@ class Mobile(Animated):
         self.setImage(FrameManager.getInstance().getFrame(
             self._imageName, (self._frame, self._row)))
 
-    
     def collideGround(self, yClip):
-        if self._velocity.y < 0:   
+        if self._velocity.y < 0:
             self._state.manageState("fall", self)
             self._velocity.y *= -.8
             self._position.y += yClip
@@ -86,9 +91,9 @@ class Mobile(Animated):
             self._state.manageState("ground", self)
             self._position.y -= yClip
             return True
-    
+
     def collideWall(self, xClip):
-        
+
         if self._state._movement["left"] == True:
             self._state.manageState("stopleft", self)
             self._position.x += xClip
@@ -98,18 +103,15 @@ class Mobile(Animated):
             self._position.x -= xClip
 
         self._state.manageState("ground", self)
-    
-    def fall (self): #to be used when gravity is needed
-        self._state.manageState("fall", self)   
 
-    
+    def fall(self):  # to be used when gravity is needed
+        self._state.manageState("fall", self)
+
     def kill(self):
         self._isDead = True
         self._state.manageState("dead", self)
         if self._killSound != None:
             SoundManager.getInstance().playSound(self._killSound)
-
-
 
 
 class MobileState(object):
@@ -142,7 +144,7 @@ class MobileState(object):
             if self._movement[action] == False:
                 self._movement[action] = True
                 if self._state == "standing":
-                     player.transitionState("walking")
+                    player.transitionState("walking")
 
         elif action == "dead":
             self._state = "dead"
@@ -184,7 +186,6 @@ class MobileState(object):
             player._vSpeed = 200
 
             player.transitionState(self._state)
-
 
     def getState(self):
         return self._state
