@@ -23,7 +23,8 @@ class GameManager(BasicManager):
                       "<": (1, 0),  # End Leaves Right
                       ">": (0, 1),  # End Leaves Left
                       "W": (3, 0),  # Wall Brick
-                      "S": (2, 1)  # Stud Brick
+                      "S": (2, 1),  # Stud Brick]
+                      "Z": (7, 0)   # Scafold beam 
                       }
 
     def __init__(self, screenSize: Vector2, mode: str, levelFile: str, joysticks: 'list[Joystick]'):
@@ -42,9 +43,10 @@ class GameManager(BasicManager):
         self._end: Drawable = None
         self._gameOver = False
         self._winner: Str = ""  # gameWon = False
+        #self._splitScreen = True if self
 
         self._background = EfficientBackground(
-            self._screenSize, "background.png", parallax=0)
+            self._screenSize, "battleBackground.png" if mode == BATTLE else "background.png" , parallax=0)
 
         file = open(os.path.join("resources", "levels", self._levelFile))
         fileCharacters = [[y for y in x]
@@ -66,7 +68,6 @@ class GameManager(BasicManager):
                     self._enemies.append(Enemy("enemies.png",  Vector2(col*tileSize, row*tileSize)))
                 elif elemChar == "T":
                     self._enemies.append(Turtle(Vector2(col*tileSize, row*tileSize)))
-                
                 elif elemChar == "F": # Flag
                     self._end = Drawable("flagPost.png", Vector2(col*tileSize, row*tileSize))
 
@@ -95,7 +96,11 @@ class GameManager(BasicManager):
             enemy.draw(drawSurf, whichPlayer)
            # pygame.draw.rect(drawSurf,(0,0,0), enemy.getCollisionRect())
         for player in self._players:
-            player.draw(drawSurf, whichPlayer, drawCollision = False)
+            player.draw(drawSurf, whichPlayer, drawCollision = False)#, self._splitScreen)
+
+            if player._gun != None:
+                player._gun.draw(drawSurf,whichPlayer)
+
             for bullet in player.getBullets():
                 bullet.draw(drawSurf, whichPlayer)
 
@@ -112,7 +117,7 @@ class GameManager(BasicManager):
             whichPlayer = None if len(
                 self._players) == 1 else self._players.index(player)
             Drawable.updateOffset(
-                player, SCREEN_SIZE, GameManager.WORLD_SIZE, whichPlayer=whichPlayer)
+                player, SCREEN_SIZE, GameManager.WORLD_SIZE, whichPlayer=whichPlayer)#,) self._splitScreen)
 
         # Update enemies/detect collision with player
         for player in self._players:
@@ -157,6 +162,9 @@ class GameManager(BasicManager):
                     return
 
                 player.update(seconds, GameManager.WORLD_SIZE)
+                
+                if player._hasGun:
+                    player._gun._position = player.getPosition() + player._gunOffset
 
             for enemy in self._enemies:
                 if enemy._isDead:
@@ -168,6 +176,7 @@ class GameManager(BasicManager):
     def updateMovement(self):
         for player in self._players:
             player.updateMovement()
+            
 
     def isGameOver(self):
         return self._gameOver

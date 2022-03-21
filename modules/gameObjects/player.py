@@ -2,6 +2,7 @@
 from modules.gameObjects.bullet import Bullet
 from .vector2D import Vector2
 from .mobile import Mobile
+from .animated import Animated
 from .drawable import Drawable
 
 import pygame
@@ -16,6 +17,7 @@ class Player(Mobile):
 
         self._hasGun = hasGun
         self._bullets: list[Bullet] = []
+        self._gunOffset = Vector2(3,8)
         self._joystick = joystick
         self._jumpTime = .06
         self._vSpeed = 50
@@ -27,6 +29,13 @@ class Player(Mobile):
 
         self._nFrames = 2
         self._framesPerSecond = 2
+
+        if self._hasGun:
+            # self._image.
+            self._gun = Drawable("bazooka.png", position + self._gunOffset)
+        else:
+            self._gun = None
+
 
         self._nFramesList = {
             "walking": 2,
@@ -128,6 +137,10 @@ class Player(Mobile):
                     self._state.manageState("right", self)
                     self._state.manageState("stopleft", self)
 
+    # def updatePosition(self, seconds, boundaries):
+    #     super().updatePosition(seconds, boundaries)
+
+
     def updateMovement(self):
 
         pressed = pygame.key.get_pressed()
@@ -152,8 +165,9 @@ class Player(Mobile):
 
         # Detect Gravity for each block
         hasFloor = False
-
+        #TODO delata
         for block in blocks:
+
             clipRect = pRect.clip(block.getCollisionRect())
 
             if clipRect.width >= clipRect.height and clipRect.width > 0:  # check virtical collide
