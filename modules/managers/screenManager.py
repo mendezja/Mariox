@@ -102,21 +102,13 @@ class ScreenManager(BasicManager):
 
     def handleEvent(self, event):
         # Handle screen-changing events first
-        if event.type == pygame.KEYDOWN and event.key == pygame.K_p:
+        if (event.type == pygame.KEYDOWN and event.key == pygame.K_p) or (event.type == pygame.JOYBUTTONDOWN and event.button == 9):
             self._state.manageState(ScreenState.actions["PAUSE"], self)
         elif event.type == pygame.KEYDOWN and event.key == pygame.K_m:
             self._state.manageState(ScreenState.actions["MAIN_MENU"], self)
         else:
             if self._state == ScreenState.state["GAME"] and not self._state.isPaused():
                 self._game.handleEvent(event)
-
-                if event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_1:
-                        self._currentMenu = 0
-                    elif event.key == pygame.K_2:
-                        self._currentMenu = 1
-                    elif event.key == pygame.K_3:
-                        self._currentMenu = 2
 
                 if self._game.isGameOver():
                     if self._game.isWon():
@@ -134,7 +126,6 @@ class ScreenManager(BasicManager):
                     else:
                         self._state.manageState(
                             ScreenState.actions["GAME_OVER"], self)
-            # TODO make select button A instead of B
             elif self._state == ScreenState.state["MAIN_MENU"]:
                 choice = self._mainMenu.handleEvent(event)
                 if choice == START_SINGLE_PLAYER:

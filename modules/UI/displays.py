@@ -130,5 +130,5 @@ class CursorMenu(AbstractMenu):
                     self._current = newCurr
                     self._moveCursor()
         elif event.type == pygame.JOYBUTTONDOWN:
-            if event.button == 2:
+            if event.button == 8:
                 return self._current
