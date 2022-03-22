@@ -22,7 +22,7 @@ class Player(Mobile):
         self._bulletSpeed = 70
         self._lives = 3 if hasGun == True else 1
         self._joystick = joystick
-        self._jumpTime = .06
+        self._jumpTime = .05
         self._vSpeed = 50
         self._jSpeed = 80*(1.4)
 
@@ -35,7 +35,7 @@ class Player(Mobile):
 
         if self._hasGun:
             # self._image.
-            self._gun = Gun("bazooka.png",self)#Drawable("bazooka.png", position + self._gunOffset)
+            self._gun = Gun("Ak.png",self)#Drawable("bazooka.png", position + self._gunOffset)
         else:
             self._gun = None
 
@@ -93,7 +93,7 @@ class Player(Mobile):
             elif event.key == pygame.K_SPACE and self._hasGun:
                 if len(self._bullets) < 5:
                     self._bullets.append(
-                        Bullet(self._position, self._state._lastFacing))
+                        Bullet(self._position, self._state._lastFacing, self._bulletSpeed))
 
         elif event.type == pygame.KEYUP:
 
@@ -170,17 +170,35 @@ class Player(Mobile):
             clipRect = pRect.clip(block.getCollisionRect())
 
             if clipRect.width >= clipRect.height and clipRect.width > 0:  # check virtical collide
-                hasFloor = self.collideGround(clipRect.height)
+                if clipRect.height > block.getSize()[1]//3:
+                    hasFloor = self.collideGround(clipRect.height*2)
+                # elif clipRect.height < block.getSize()[1]//3 and self._velocity.y <0:
+                #     hasFloor = self.collideGround(block.getSize()[1])
+                else:
+                    hasFloor = self.collideGround(clipRect.height)
                 break
-            elif clipRect.width < clipRect.height:  # check for horizontal collide
+            elif clipRect.width < clipRect.height and clipRect.width > 0:  # check for horizontal collide
+                if self._imageName == "mario.png":
+                    print ("wall colide")
+                if clipRect.width < block.getSize()[0]//3:
+                    if self._imageName == "mario.png":
+                        print ("mini colide: ", clipRect.width)
+                    self.collideWall(clipRect.width+2)
+
                 self.collideWall(clipRect.width)
                 break
             elif (pRect.move(0, 1)).colliderect(block.getCollisionRect()):  # Check for ground
+                if self._imageName == "mario.png":
+                    print ("found floor")
                 hasFloor = True
                 break
-
+        
+        if self._imageName == "mario.png":
+                print (hasFloor)
         if not hasFloor:
             self.fall()
+        else:
+            self.collideGround(0)
 
     def getBullets(self):
         return self._bullets
@@ -207,12 +225,16 @@ class Player(Mobile):
 
 
 class Gun(Animated):
-    _GUN_OFFSET = Vector2(0,0)#(-12,6)
+    _GUN_OFFSET = Vector2(-12,-10)
     def __init__(self, imageName: str, player: Player):
         super().__init__(imageName, player.getPosition() + Gun._GUN_OFFSET)
         self._owner = player
-        # center = self._image.width//2 + self._image.height//2
+        
         self._state = BasicState(player._state.getFacing())
+        self._center = Vector2(self.getSize()[0]//2 , self.getSize()[1]//2)
+        self._offset = Gun._GUN_OFFSET + self._center 
+        self.updateOffset()
+        
 
         self._row = 0
         self._nFrames = 1
@@ -241,4 +263,11 @@ class Gun(Animated):
     def updatePosition(self, seconds):
         '''Helper method for update'''
         self._state._setFacing(self._owner._state.getFacing())
-        self._position = self._owner.getPosition() + Gun._GUN_OFFSET
+        self.updateOffset()
+        self._position =  self._owner._position + self._offset
+
+    def updateOffset(self):
+        if self._owner._state.getFacing() == "left":
+            self._offset.x = Gun._GUN_OFFSET.x - (self._center.x //2)
+        if self._owner._state.getFacing() == "right":
+            self._offset.x = Gun._GUN_OFFSET.x + (self._center.x )

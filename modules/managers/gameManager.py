@@ -89,14 +89,19 @@ class GameManager(BasicManager):
                 elif elemChar == "2" and self._mode in [TWO_PLAYER, BATTLE]:
                     self._players.append(Player("luigi.png", Vector2(
                         col*tileSize, row*tileSize), self._joysticks[1] if len(self._joysticks) == 2 else None, hasGun=(self._mode == BATTLE)))
+        if self._mode in [BATTLE]:
+            for player in self._players:
+                player.setSpeed(100)
+                player.setJump(120, 0.3)
+
 
         # Make one player faster
-        for player in self._players:
-            if player._imageName == "luigi.png":
-                player.setSpeed(100)
-            if player._imageName == "mario.png":
-                # player._bulletSpeed = 140
-                player.setJump(80*(2), 0.2)
+        # for player in self._players:
+        #     if player._imageName == "luigi.png":
+        #         player.setSpeed(100)
+        #     if player._imageName == "mario.png":
+        #         # player._bulletSpeed = 140
+        #         player.setJump(80*(2), 0.2)
 
     def draw(self, drawSurf: pygame.surface.Surface, whichPlayer=None):
 
@@ -113,9 +118,14 @@ class GameManager(BasicManager):
             self._end.draw(drawSurf, whichPlayer)
         for enemy in self._enemies:
             enemy.draw(drawSurf, whichPlayer)
-           # pygame.draw.rect(drawSurf,(0,0,0), enemy.getCollisionRect())
+            # pygame.draw.rect(drawSurf,(0,0,0), enemy.getCollisionRect())
         for player in self._players:
-            player.draw(drawSurf, whichPlayer, drawCollision = False)
+           # pygame.draw.rect(drawSurf,(0,0,0), player.getCollisionRect())
+            if player._imageName =="mario.png":
+                player.draw(drawSurf, whichPlayer, drawCollision = False)
+            else:
+                player.draw(drawSurf, whichPlayer, drawCollision = False)
+            
 
             if player._gun != None:
                 player._gun.draw(drawSurf,whichPlayer)
@@ -163,21 +173,23 @@ class GameManager(BasicManager):
                 bullet.detectCollision(self._players)
 
         # let others update based on the amount of time elapsed
-        if seconds < 0.05:
+        if seconds < 0.5:#10:#0.05:
 
             for player in self._players:
                 for bullet in player.getBullets():
                     if bullet._isDead:
                         player._bullets.remove(bullet)
+                    
                     bullet.update(seconds)
+
                 if player._isDead:
+                    self._gameOver = True
+                    SoundManager.getInstance().stopMusic()
+
                     if self._mode in [TWO_PLAYER, BATTLE]:
                         index = (self._players.index(player) +
                                  1) % 2  # Gets index of other player
-                        self._winner = self._players[index]._imageName
-                        # TODO show correct winner
-                    self._gameOver = True
-                    SoundManager.getInstance().stopMusic()
+                        self._winner = self._players[index]._imageName                    
                     return
 
                 player.update(seconds, GameManager.WORLD_SIZE)

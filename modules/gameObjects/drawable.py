@@ -24,8 +24,8 @@ class Drawable(object):
     CAM_OFFSET2 = Vector2(0, 0)
 
     _IMAGE_RECTS = {
-        "mario.png": Rect(4, 4, 8, 12),
-        "luigi.png": Rect(4, 4, 8, 12),
+        "mario.png": Rect(3, 4, 10, 12),
+        "luigi.png": Rect(3, 4, 10, 12),
         "enemies.png": Rect(4, 3, 10, 13),
         "turtle.png": Rect(4, 4, 10, 12),
         "flagPost.png": Rect(5, 9, 11, 155),

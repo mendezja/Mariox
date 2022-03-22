@@ -91,7 +91,7 @@ class Enemy(Mobile):
                     self.collideGround(clipRect.height)
                     hasFloor = True
                     break
-                elif clipRect.width < clipRect.height:  # check for horizontal collide
+                elif clipRect.width < clipRect.height and clipRect.width > 0:  # check for horizontal collide
                     self.collideWall(clipRect.width)
                     break
             elif (eRect.move(0, 1)).colliderect(block.getCollisionRect()):  # check for ground

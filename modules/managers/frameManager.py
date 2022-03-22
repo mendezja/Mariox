@@ -47,7 +47,7 @@ class FrameManager(object):
         _DEFAULT_FRAME = (32, 32)
 
         # A list of images that require to be loaded with transparency
-        _TRANSPARENCY = ["bazooka.png"]
+        _TRANSPARENCY = ["bazooka.png", "Ak.png"]
 
         # A list of images that require to be loaded with a color key
         _COLOR_KEY = ["enemies.png", "mario.png", "luigi.png",
