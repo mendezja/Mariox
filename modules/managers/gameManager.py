@@ -34,7 +34,10 @@ class GameManager(BasicManager):
         self._joysticks = joysticks
 
         # Start playing music
-        SoundManager.getInstance().playMusic("marioremix.mp3")
+        if self._mode == BATTLE:
+            SoundManager.getInstance().playMusic("northMemphis.mp3")
+        else:
+            SoundManager.getInstance().playMusic("marioremix.mp3")
 
         self._blocks: list[Drawable] = []
         self._decor: list[Drawable] = []
@@ -86,6 +89,14 @@ class GameManager(BasicManager):
                 elif elemChar == "2" and self._mode in [TWO_PLAYER, BATTLE]:
                     self._players.append(Player("luigi.png", Vector2(
                         col*tileSize, row*tileSize), self._joysticks[1] if len(self._joysticks) == 2 else None, hasGun=(self._mode == BATTLE)))
+
+        # Make one player faster
+        for player in self._players:
+            if player._imageName == "luigi.png":
+                player.setSpeed(100)
+            if player._imageName == "mario.png":
+                # player._bulletSpeed = 140
+                player.setJump(80*(2), 0.2)
 
     def draw(self, drawSurf: pygame.surface.Surface, whichPlayer=None):
 
@@ -191,3 +202,6 @@ class GameManager(BasicManager):
 
     def isWon(self):
         return self._winner
+
+    def getPlayers(self):
+        return self._players

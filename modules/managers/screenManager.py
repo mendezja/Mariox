@@ -74,6 +74,16 @@ class ScreenManager(BasicManager):
 
             if self._game._mode in [SINGLE_PLAYER, BATTLE]:  # one screen
                 self._game.draw(mainSurface)
+                if self._game._mode == BATTLE:
+                    p1Lives = Text(Vector2(10, 10), "P1:" + str(
+                        self._game.getPlayers()[0].getLives()))
+                    p2Lives = Text(Vector2(165, 10), "P2:" + str(
+                        self._game.getPlayers()[1].getLives()))
+
+                    p1Lives.draw(
+                        mainSurface, noOffset=True)
+                    p2Lives.draw(
+                        mainSurface, noOffset=True)
             elif self._game._mode in [TWO_PLAYER]:  # Two screens
                 drawSurfaces: list[pygame.Surface] = [pygame.Surface(
                     (SCREEN_SIZE.x, SCREEN_SIZE.y//2)) for x in range(2)]

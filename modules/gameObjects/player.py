@@ -1,10 +1,11 @@
 
+import time
 from modules.gameObjects.bullet import Bullet
 from .vector2D import Vector2
 from .mobile import Mobile
 from .animated import Animated
 from .drawable import Drawable, BasicState
-
+from ..managers.soundManager import SoundManager
 import pygame
 from pygame.event import Event
 from pygame.joystick import Joystick
@@ -17,7 +18,9 @@ class Player(Mobile):
 
         self._hasGun = hasGun
         self._bullets: list[Bullet] = []
-        #self._gunOffset = Vector2(3,8)
+        self._lastShot = time.clock_gettime(0)
+        self._bulletSpeed = 70
+        self._lives = 3 if hasGun == True else 1
         self._joystick = joystick
         self._jumpTime = .06
         self._vSpeed = 50
@@ -109,9 +112,11 @@ class Player(Mobile):
                 self._pressedUp = True
                 self._state.manageState("jump", self)
             elif event.button == 5 and event.instance_id == self._joystick.get_id() and self._hasGun:
-                if len(self._bullets) < 5:
+
+                if time.clock_gettime(0) - self._lastShot > 1:
                     self._bullets.append(
-                        Bullet(self._position, self._state._lastFacing))
+                        Bullet(self._position, self._state._lastFacing, self._bulletSpeed))
+                    self._lastShot = time.clock_gettime(0)
 
         elif event.type == pygame.JOYBUTTONUP:
             if event.button == 0:
@@ -179,6 +184,25 @@ class Player(Mobile):
 
     def getBullets(self):
         return self._bullets
+        
+    def kill(self, bullet: Bullet = None):
+        if bullet:
+            bullet.setDead()
+        SoundManager.getInstance().playSound("explosion.wav")
+        if self._lives > 1:
+            self._lives -= 1
+        else:
+            super().kill()
+
+    def getLives(self):
+        return self._lives
+
+    def setSpeed(self, speed):
+        self._vSpeed = speed
+
+    def setJump(self, speed, jtime):
+        self._jSpeed = speed
+        self._jumpTime = jtime
 
 
 
@@ -216,6 +240,5 @@ class Gun(Animated):
 
     def updatePosition(self, seconds):
         '''Helper method for update'''
-        
         self._state._setFacing(self._owner._state.getFacing())
         self._position = self._owner.getPosition() + Gun._GUN_OFFSET
