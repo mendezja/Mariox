@@ -14,6 +14,7 @@ import time
 class ScreenManager(BasicManager):
 
     RETURN_TO_MAIN = "returnToMain"
+    REPLAY = "replay"
 
     def __init__(self, joysticks: 'list[Joystick]'):
         super().__init__()
@@ -52,21 +53,25 @@ class ScreenManager(BasicManager):
 
         # Create Game Over Menu
         self._gameOverMenu = CursorMenu("gameOver.png", fontName="default8")
+        self._gameOverMenu.addOption(
+            ScreenManager.REPLAY, "Replay", SCREEN_SIZE // 2 + Vector2(0, 20), center="both")
         self._gameOverMenu.addOption(ScreenManager.RETURN_TO_MAIN, "Return to Main Menu", SCREEN_SIZE // 2 + Vector2(0, 50),
                                      center="both")
         self._gameOverMenu.addOption(EXIT, "Quit",
                                      SCREEN_SIZE // 2 + Vector2(0, 80),
                                      center="both")
-        self._gameOverMenu.setCursor(ScreenManager.RETURN_TO_MAIN)
+        self._gameOverMenu.setCursor(ScreenManager.REPLAY)
 
         # Create Game Won Menu
         self._gameWonMenu = CursorMenu("gameOver.png", fontName="default8")
+        self._gameWonMenu.addOption(
+            ScreenManager.REPLAY, "Replay", SCREEN_SIZE // 2 + Vector2(0, 20), center="both")
         self._gameWonMenu.addOption(ScreenManager.RETURN_TO_MAIN, "Return to Main Menu", SCREEN_SIZE // 2 + Vector2(0, 50),
                                     center="both")
         self._gameWonMenu.addOption(EXIT, "Quit",
                                     SCREEN_SIZE // 2 + Vector2(0, 80),
                                     center="both")
-        self._gameWonMenu.setCursor(ScreenManager.RETURN_TO_MAIN)
+        self._gameWonMenu.setCursor(ScreenManager.REPLAY)
 
     def draw(self, mainSurface: pygame.Surface):
         if self._state == ScreenState.state["GAME"]:
@@ -138,33 +143,28 @@ class ScreenManager(BasicManager):
             elif self._state == ScreenState.state["MAIN_MENU"]:
                 choice = self._mainMenu.handleEvent(event)
                 if choice == START_SINGLE_PLAYER:
-                    self._game = GameManager(
-                        SCREEN_SIZE, SINGLE_PLAYER, "world1.txt", self._joysticks)
-
-                    self._state.manageState(
-                        ScreenState.actions["START_GAME"], self)
+                    self.startGame(SINGLE_PLAYER)
                 elif choice == START_TWO_PLAYER:
-                    self._game = GameManager(
-                        SCREEN_SIZE, TWO_PLAYER, "world1.txt", self._joysticks)
-                    self._state.manageState(
-                        ScreenState.actions["START_GAME"], self)
+                    self.startGame(TWO_PLAYER)
                 elif choice == START_BATTLE:
-                    self._game = GameManager(
-                        SCREEN_SIZE, BATTLE, "battleWorld1.txt", self._joysticks)
-                    self._state.manageState(
-                        ScreenState.actions["START_GAME"], self)
+                    self.startGame(BATTLE)
                 elif choice == EXIT:
                     return EXIT
             elif self._state == ScreenState.state["GAME_OVER_MENU"]:
+                currentGameMode = self._game._mode
                 choice = self._gameOverMenu.handleEvent(event)
-                if choice == ScreenManager.RETURN_TO_MAIN:
+                if choice == ScreenManager.REPLAY:
+                    self.startGame(currentGameMode)
+                elif choice == ScreenManager.RETURN_TO_MAIN:
                     self._state.manageState(
                         ScreenState.actions["MAIN_MENU"], self)
                 elif choice == EXIT:
                     return EXIT
             elif self._state == ScreenState.state["GAME_WON_MENU"]:
                 choice = self._gameWonMenu.handleEvent(event)
-                if choice == ScreenManager.RETURN_TO_MAIN:
+                if choice == ScreenManager.REPLAY:
+                    self.startGame(currentGameMode)
+                elif choice == ScreenManager.RETURN_TO_MAIN:
                     self._state.manageState(
                         ScreenState.actions["MAIN_MENU"], self)
                 elif choice == EXIT:
@@ -189,6 +189,23 @@ class ScreenManager(BasicManager):
         if state == ScreenState.state["GAME"]:
             self._game.updateMovement()
 
+    def startGame(self, mode):
+        if mode == BATTLE:
+            self._game = GameManager(
+                SCREEN_SIZE, BATTLE, "battleWorld1.txt", self._joysticks)
+            self._state.manageState(
+                ScreenState.actions["START_GAME"], self)
+        elif mode == SINGLE_PLAYER:
+            self._game = GameManager(
+                SCREEN_SIZE, SINGLE_PLAYER, "world1.txt", self._joysticks)
+            self._state.manageState(
+                ScreenState.actions["START_GAME"], self)
+        elif mode == TWO_PLAYER:
+            self._game = GameManager(
+                SCREEN_SIZE, TWO_PLAYER, "world1.txt", self._joysticks)
+            self._state.manageState(
+                ScreenState.actions["START_GAME"], self)
+
 
 class ScreenState(object):
     # actions
@@ -198,7 +215,7 @@ class ScreenState(object):
         "START_GAME": "startGame",
         "CURSOR": "cursor",
         "GAME_OVER": "gameOver",
-        "GAME_WON": "gameWon"
+        "GAME_WON": "gameWon",
     }
 
     # state
@@ -244,6 +261,7 @@ class ScreenState(object):
             self._state = ScreenState.state["GAME_WON_MENU"]
             time.sleep(1)
             screenManager.transitionState(self._state)
+
 
     def __eq__(self, other):
         return self._state == other
