@@ -5,9 +5,13 @@ from modules.gameObjects.vector2D import Vector2
 
 
 class Bullet(Animated):
-    def __init__(self, position, direction, speed):
-        super().__init__("bulletbill.png", position +
-                         Vector2((16 if direction == "right" else -28), -8))
+    def __init__(self, name, position, direction, speed):
+        super().__init__(name, position)
+
+        if direction == "left":
+            self._position.x -= (18 + self.getSize()[0])
+        self._position.y -= self.getSize()[1]//2
+
         self._state = BasicState(direction)
         self._velocity = Vector2(speed, 0)
         self._timeToLive = 3
@@ -26,7 +30,7 @@ class Bullet(Animated):
         }
 
         self._framesPerSecondList = {
-            "flying": 5
+            "flying": 20
         }
 
     def update(self, seconds):

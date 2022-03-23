@@ -29,7 +29,8 @@ class Drawable(object):
         "enemies.png": Rect(4, 3, 10, 13),
         "turtle.png": Rect(4, 4, 10, 12),
         "flagPost.png": Rect(5, 9, 11, 155),
-        "bulletbill.png": Rect(6, 7, 19, 14)
+        "bulletbill.png": Rect(12, 7, 14, 14),
+        "akBullet.png": Rect(0, 2, 4, 10)
     }
 
     @classmethod

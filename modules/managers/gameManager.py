@@ -26,6 +26,7 @@ class GameManager(BasicManager):
                       "S": (2, 1),  # Stud Brick]
                       "Z": (7, 0)   # Scafold beam 
                       }
+    
 
     def __init__(self, screenSize: Vector2, mode: str, levelFile: str, joysticks: 'list[Joystick]'):
         self._screenSize = screenSize
@@ -35,7 +36,7 @@ class GameManager(BasicManager):
 
         # Start playing music
         if self._mode == BATTLE:
-            SoundManager.getInstance().playMusic("northMemphis.mp3")
+            SoundManager.getInstance().playMusic("northMemphis.mp3")#marioremix.mp3"
         else:
             SoundManager.getInstance().playMusic("marioremix.mp3")
 
@@ -48,7 +49,7 @@ class GameManager(BasicManager):
         self._winner: Str = ""  # gameWon = False
         #self._splitScreen = True if self
 
-        backgroundImage = "battleBackground.jpeg" if mode in [
+        backgroundImage = "battleBackground.png" if mode in [
             BATTLE] else "background.png"
         self._background = EfficientBackground(
             self._screenSize, backgroundImage, parallax=0)
@@ -127,8 +128,8 @@ class GameManager(BasicManager):
                 player.draw(drawSurf, whichPlayer, drawCollision = False)
             
 
-            if player._gun != None:
-                player._gun.draw(drawSurf,whichPlayer)
+            if player._currentGun != None:
+                player._currentGun.draw(drawSurf,whichPlayer)
 
             for bullet in player.getBullets():
                 bullet.draw(drawSurf, whichPlayer)
@@ -176,11 +177,15 @@ class GameManager(BasicManager):
         if seconds < 0.5:#10:#0.05:
 
             for player in self._players:
-                for bullet in player.getBullets():
-                    if bullet._isDead:
-                        player._bullets.remove(bullet)
-                    
-                    bullet.update(seconds)
+
+                if player._hasGun:
+                    for bullet in player.getBullets():
+                        if bullet._isDead:
+                            for gun in player._guns:
+                                if bullet in gun._bullets:
+                                    gun._bullets.remove(bullet)
+                        
+                        bullet.update(seconds)
 
                 if player._isDead:
                     self._gameOver = True
@@ -195,7 +200,7 @@ class GameManager(BasicManager):
                 player.update(seconds, GameManager.WORLD_SIZE)
                 
                 if player._hasGun:
-                    player._gun.update(seconds)
+                    player._currentGun.update(seconds)
 
             for enemy in self._enemies:
                 if enemy._isDead:

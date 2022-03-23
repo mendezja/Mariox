@@ -73,6 +73,9 @@ class Enemy(Mobile):
 
             if playerClipRect.width > 0:
                 if player._velocity.y > 0 and playerClipRect.height <= playerClipRect.width:
+                    player._state.manageState("ground", self)
+                    player._velocity.y *= -2
+                    # player._state.manageState("jump", self)
                     self.kill()
                     break
                 else:

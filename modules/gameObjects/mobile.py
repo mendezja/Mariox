@@ -82,8 +82,8 @@ class Mobile(Animated):
 
     def collideGround(self, yClip):
         
-        if self._imageName == "mario.png":
-            print(self._velocity.y)
+        # if self._imageName == "mario.png":
+        #     print(self._velocity.y)
         if self._velocity.y < 0:
             # self._state.manageState("fall", self)
             self._velocity.y *= -.8
