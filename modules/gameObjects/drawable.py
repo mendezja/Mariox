@@ -24,12 +24,13 @@ class Drawable(object):
     CAM_OFFSET2 = Vector2(0, 0)
 
     _IMAGE_RECTS = {
-        "mario.png": Rect(4, 4, 8, 12),
-        "luigi.png": Rect(4, 4, 8, 12),
+        "mario.png": Rect(3, 4, 10, 12),
+        "luigi.png": Rect(3, 4, 10, 12),
         "enemies.png": Rect(4, 3, 10, 13),
         "turtle.png": Rect(4, 4, 10, 12),
         "flagPost.png": Rect(5, 9, 11, 155),
-        "bulletbill.png": Rect(6, 7, 19, 14)
+        "bulletbill.png": Rect(12, 7, 14, 14),
+        "akBullet.png": Rect(0, 2, 4, 10)
     }
 
     @classmethod
@@ -46,9 +47,9 @@ class Drawable(object):
             cls.CAM_OFFSET1 = Vector2(offset.x, min(offset.y + 40, 120))
         else:  # single player
             cls.CAM_OFFSET1 = Vector2(min(max(0, position[0] + (size[0] // 2) - (screenSize[0] // 2)),
-                                          worldSize[0] - screenSize[0]),
+                                          worldSize[0] - screenSize[0]),#
                                       min(max(0, position[1] + (size[1] // 2) - ((screenSize[1]) // 2)),
-                                          worldSize[1] - screenSize[1]))
+                                          worldSize[1] - screenSize[1]))#
 
     def __init__(self, imageName: str, position: tuple, offset=None, parallax=1):
         self._imageName = imageName

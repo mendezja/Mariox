@@ -3,7 +3,8 @@ import time
 from modules.gameObjects.bullet import Bullet
 from .vector2D import Vector2
 from .mobile import Mobile
-from .drawable import Drawable
+from .animated import Animated
+from .drawable import Drawable, BasicState
 from ..managers.soundManager import SoundManager
 import pygame
 from pygame.event import Event
@@ -16,12 +17,12 @@ class Player(Mobile):
         self._killSound = "mario_die.wav"
 
         self._hasGun = hasGun
-        self._bullets: list[Bullet] = []
-        self._lastShot = time.clock_gettime(0)
-        self._bulletSpeed = 70
+        # self._bullets: list[Bullet] = []
+        # self._lastShot = time.clock_gettime(0)
+        # self._bulletSpeed = 70
         self._lives = 3 if hasGun == True else 1
         self._joystick = joystick
-        self._jumpTime = .06
+        self._jumpTime = .05
         self._vSpeed = 50
         self._jSpeed = 80*(1.4)
 
@@ -31,6 +32,15 @@ class Player(Mobile):
 
         self._nFrames = 2
         self._framesPerSecond = 2
+
+        if self._hasGun:
+            # self._image.
+            self._guns = [Gun("bazooka.png",self), Gun("ak47.png", self)]#Drawable("bazooka.png", position + self._gunOffset)
+            self._gunNum = 1
+            self._currentGun = self._guns[0]
+        else:
+            self._currentGun = None
+
 
         self._nFramesList = {
             "walking": 2,
@@ -69,9 +79,6 @@ class Player(Mobile):
             if self._jumpTimer < 0:
                 self._state.manageState("fall", self)
 
-    # def startFalling(self):
-    #     self._state.manageState("falling", self)
-
     def handleEvent(self, event: Event):
         # Keyboard
         if event.type == pygame.KEYDOWN:
@@ -86,9 +93,12 @@ class Player(Mobile):
                 self._state.manageState("right", self)
 
             elif event.key == pygame.K_SPACE and self._hasGun:
-                if len(self._bullets) < 5:
-                    self._bullets.append(
-                        Bullet(self._position, self._state._lastFacing))
+                self._currentGun.addBullets(self._position)
+                
+            elif event.key == pygame.K_2 and self._hasGun:
+                self._currentGun = self._guns[1]
+            elif event.key == pygame.K_1 and self._hasGun:
+                self._currentGun = self._guns[0]
 
         elif event.type == pygame.KEYUP:
 
@@ -106,12 +116,17 @@ class Player(Mobile):
             if event.button == 2 and event.instance_id == self._joystick.get_id():
                 self._pressedUp = True
                 self._state.manageState("jump", self)
-            elif event.button == 5 and event.instance_id == self._joystick.get_id() and self._hasGun:
 
-                if time.clock_gettime(0) - self._lastShot > 1:
-                    self._bullets.append(
-                        Bullet(self._position, self._state._lastFacing, self._bulletSpeed))
-                    self._lastShot = time.clock_gettime(0)
+            elif event.button == 5 and event.instance_id == self._joystick.get_id() and self._hasGun:
+                self._currentGun.addBullets(self._position)
+            elif event.button == 4 and event.instance_id == self._joystick.get_id() and self._hasGun:
+                self._gunNum +=1
+                self._currentGun = self._guns[self._gunNum %2]
+
+                # if time.clock_gettime(0) - self._lastShot > 1:
+                #     self._bullets.append(
+                #         Bullet(self._position, self._state._lastFacing, self._bulletSpeed))
+                #     self._lastShot = time.clock_gettime(0)
 
         elif event.type == pygame.JOYBUTTONUP:
             if event.button == 0:
@@ -133,6 +148,7 @@ class Player(Mobile):
                     self._pressedRight = True
                     self._state.manageState("right", self)
                     self._state.manageState("stopleft", self)
+
 
     def updateMovement(self):
 
@@ -160,33 +176,56 @@ class Player(Mobile):
         hasFloor = False
 
         for block in blocks:
+
             clipRect = pRect.clip(block.getCollisionRect())
 
             if clipRect.width >= clipRect.height and clipRect.width > 0:  # check virtical collide
-                hasFloor = self.collideGround(clipRect.height)
+                if clipRect.height > block.getSize()[1]//3:
+                    hasFloor = self.collideGround(clipRect.height*2)
+                # elif clipRect.height < block.getSize()[1]//3 and self._velocity.y <0:
+                #     hasFloor = self.collideGround(block.getSize()[1])
+                else:
+                    hasFloor = self.collideGround(clipRect.height)
                 break
-            elif clipRect.width < clipRect.height:  # check for horizontal collide
+            elif clipRect.width < clipRect.height and clipRect.width > 0:  # check for horizontal collide
+                # if self._imageName == "mario.png":
+                    # print ("wall colide")
+                if clipRect.width < block.getSize()[0]//3:
+                    # if self._imageName == "mario.png":
+                        # print ("mini colide: ", clipRect.width)
+                    self.collideWall(clipRect.width+2)
+
                 self.collideWall(clipRect.width)
                 break
             elif (pRect.move(0, 1)).colliderect(block.getCollisionRect()):  # Check for ground
+                # if self._imageName == "mario.png":
+                   # print ("found floor")
                 hasFloor = True
                 break
-
+        
+        # if self._imageName == "mario.png":
+              #  print (hasFloor)
         if not hasFloor:
             self.fall()
+        else:
+            self.collideGround(0)
 
     def getBullets(self):
-        return self._bullets
-
+        totalBullets = []
+        if self._hasGun:
+            for gun in self._guns:
+                totalBullets += gun.getBullets()
+        return totalBullets
+        
     def kill(self, bullet: Bullet = None):
         if bullet:
             bullet.setDead()
-        SoundManager.getInstance().playSound("explosion.wav")
+            #TODO add explosion
+            SoundManager.getInstance().playSound("explosion.wav")
         if self._lives > 1:
             self._lives -= 1
         else:
             super().kill()
-
     def getLives(self):
         return self._lives
 
@@ -196,3 +235,87 @@ class Player(Mobile):
     def setJump(self, speed, jtime):
         self._jSpeed = speed
         self._jumpTime = jtime
+
+
+
+class Gun(Animated):
+    _GUN_OFFSET = Vector2(-12,-10)
+    _bullet_names = {"ak47.png": "akBullet.png",
+                    "bazooka.png": "bulletbill.png"
+                    }
+    _bullet_speeds = {"ak47.png": 140,
+                    "bazooka.png": 70
+                    }
+    
+
+    def __init__(self, imageName: str, player: Player):
+        super().__init__(imageName, player.getPosition() + Gun._GUN_OFFSET)
+        self._owner = player
+        
+        self._state = BasicState(player._state.getFacing())
+        self._center = Vector2(self.getSize()[0]//2 , self.getSize()[1]//2)
+        self._offset = Gun._GUN_OFFSET + self._center 
+        self.updateOffset()
+
+        self._bullets: list[Bullet] = []
+        self._lastShot = time.clock_gettime(0)
+        self._bulletSpeed = Gun._bullet_speeds[imageName]
+        self._bulletName = Gun._bullet_names[imageName]
+        
+
+        self._row = 0
+        self._nFrames = 1
+        self._framesPerSecond = 1
+
+
+        self._nFramesList = {
+            "shooting": 1,
+            "flipping": 1
+        }
+
+        self._rowList = {
+            "shooting": 1,
+            "flipping": 1
+        }
+
+        self._framesPerSecondList = {
+            "shooting": 1,
+            "flipping": 1
+        }
+
+    def update(self, seconds):
+        super().update(seconds)
+        self.updatePosition(seconds)
+
+    def updatePosition(self, seconds):
+        '''Helper method for update'''
+        self._state._setFacing(self._owner._state.getFacing())
+        self.updateOffset()
+        self._position =  self._owner._position + self._offset
+
+    def updateOffset(self):
+        if self._owner._state.getFacing() == "left":
+            self._offset.x = Gun._GUN_OFFSET.x - (self._center.x //2)
+        if self._owner._state.getFacing() == "right":
+            self._offset.x = Gun._GUN_OFFSET.x + (self._center.x )
+    
+    def getBullets(self):
+        return self._bullets
+
+    def addBullets(self, position):
+        newPosition = position + Vector2(self._owner.getSize()[0], self._owner.getSize()[1]//2)
+        if self._imageName == "ak47.png":
+            self.addAkBullets(newPosition)
+        elif self._imageName == "bazooka.png":
+            self.addBazooBullet(newPosition)
+
+    def addAkBullets(self,position):
+        # if time.clock_gettime(0) - self._lastShot > :
+        self._bullets.append(
+                        Bullet(self._bulletName, position, self._state.getFacing(), self._bulletSpeed))
+
+    def addBazooBullet(self,position):
+        if time.clock_gettime(0) - self._lastShot > 1.5:
+                    self._bullets.append(
+                        Bullet(self._bulletName, position, self._state.getFacing(), self._bulletSpeed))
+                    self._lastShot = time.clock_gettime(0)

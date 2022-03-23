@@ -40,18 +40,19 @@ class FrameManager(object):
             "background.png": (2624, 240),
             "turtle.png": (17, 16),
             "enemies.png": (17, 16),  # create var here for enemies/mario
-            "bulletbill.png": (30, 22)
+            "bulletbill.png": (30, 22),
+            "akBullet.png":(12, 8)
         }
 
         # A default frame size
         _DEFAULT_FRAME = (32, 32)
 
         # A list of images that require to be loaded with transparency
-        _TRANSPARENCY = []
+        _TRANSPARENCY = ["bazooka.png", "ak47.png"]
 
         # A list of images that require to be loaded with a color key
         _COLOR_KEY = ["enemies.png", "mario.png", "luigi.png",
-                      "arrow.png", "flagPost.png", "turtle.png", "bulletbill.png"]
+                      "arrow.png", "flagPost.png", "turtle.png", "bulletbill.png", "akBullet.png"]
 
         def __init__(self):
             # Stores the surfaces indexed based on file name

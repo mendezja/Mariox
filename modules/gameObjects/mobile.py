@@ -53,7 +53,7 @@ class Mobile(Animated):
         newPosition = self.getPosition() + positionChange
 
         # Todo delta
-        if positionChange.magnitude() > 3:
+        if positionChange.magnitude() > 2:
             newPosition = newPosition - positionChange + \
                 (positionChange.normalize() * 3) # Change position by maximum of 3
 
@@ -81,28 +81,42 @@ class Mobile(Animated):
             self._imageName, (self._frame, self._row)))
 
     def collideGround(self, yClip):
+        
+        # if self._imageName == "mario.png":
+        #     print(self._velocity.y)
         if self._velocity.y < 0:
-            self._state.manageState("fall", self)
+            # self._state.manageState("fall", self)
             self._velocity.y *= -.8
             self._position.y += yClip
-            return False
+            # if self._velocity.x == 0:
+            #     self._position.x += 1
 
+            self._state.manageState("fall", self)
+            return False
+        
+        elif self._velocity.y == 0:
+            self._position.y -= 2*yClip
+            return False
         else:
             self._state.manageState("ground", self)
             self._position.y -= yClip
             return True
 
     def collideWall(self, xClip):
+        # if xClip
+        # self._velocity.x = -self._vSpeed
 
         if self._state._movement["left"] == True:
             self._state.manageState("stopleft", self)
             self._position.x += xClip
+            
 
         elif self._state._movement["right"] == True:
             self._state.manageState("stopright", self)
             self._position.x -= xClip
-
-        self._state.manageState("ground", self)
+        
+        # self._state.manageState("ground", self)
+        
 
     def fall(self):  # to be used when gravity is needed
         self._state.manageState("fall", self)

@@ -73,6 +73,9 @@ class Enemy(Mobile):
 
             if playerClipRect.width > 0:
                 if player._velocity.y > 0 and playerClipRect.height <= playerClipRect.width:
+                    player._state.manageState("ground", self)
+                    player._velocity.y *= -2
+                    # player._state.manageState("jump", self)
                     self.kill()
                     break
                 else:
@@ -91,7 +94,7 @@ class Enemy(Mobile):
                     self.collideGround(clipRect.height)
                     hasFloor = True
                     break
-                elif clipRect.width < clipRect.height:  # check for horizontal collide
+                elif clipRect.width < clipRect.height and clipRect.width > 0:  # check for horizontal collide
                     self.collideWall(clipRect.width)
                     break
             elif (eRect.move(0, 1)).colliderect(block.getCollisionRect()):  # check for ground

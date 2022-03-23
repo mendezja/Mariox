@@ -9,6 +9,7 @@ import pygame
 from .gamemodes import *
 from .soundManager import SoundManager
 import time
+import random 
 
 
 class ScreenManager(BasicManager):
@@ -24,6 +25,7 @@ class ScreenManager(BasicManager):
         self._gameOverText = Text(Vector2(0, 0), "Game Over")
         self._gameWonText = Text(Vector2(0, 0), "Winner")
         self._joysticks = joysticks
+
 
         pausedTextSize = self._pausedText.getSize()
         midPointX = SCREEN_SIZE.x // 2 - pausedTextSize[0] // 2
@@ -116,6 +118,7 @@ class ScreenManager(BasicManager):
 
     def handleEvent(self, event):
         # Handle screen-changing events first
+        # currentGameMode = self._game._mode
         if (event.type == pygame.KEYDOWN and event.key == pygame.K_p) or (event.type == pygame.JOYBUTTONDOWN and event.button == 9):
             self._state.manageState(ScreenState.actions["PAUSE"], self)
         elif event.type == pygame.KEYDOWN and event.key == pygame.K_m:
@@ -123,23 +126,22 @@ class ScreenManager(BasicManager):
         else:
             if self._state == ScreenState.state["GAME"] and not self._state.isPaused():
                 self._game.handleEvent(event)
-
-                if self._game.isGameOver():
-                    if self._game.isWon():
-                        # If two player change text
-                        if self._game._mode in [TWO_PLAYER, BATTLE]:
-                            winner = (self._game.isWon())[0:-4]
-                            self._gameWonText = Text(
-                                Vector2(0, 0), (winner.upper()+" Wins"))
-                        # Update text Position
-                        gameWonTextSize = self._gameWonText.getSize()
-                        self._gameWonText.setPosition(
-                            SCREEN_SIZE // 2 - Vector2(gameWonTextSize[0]//2, gameWonTextSize[1]//2 + 50))
-                        self._state.manageState(
-                            ScreenState.actions["GAME_WON"], self)
-                    else:
-                        self._state.manageState(
-                            ScreenState.actions["GAME_OVER"], self)
+                # if self._game.isGameOver():
+                #     if self._game.isWon() != None:
+                #         # If two player change text
+                #         if self._game._mode in [TWO_PLAYER, BATTLE]:
+                #             winner = (self._game.isWon())[0:-4]
+                #             self._gameWonText = Text(
+                #                 Vector2(0, 0), (winner.upper()+" Wins"))
+                #         # Update text Position
+                #         gameWonTextSize = self._gameWonText.getSize()
+                #         self._gameWonText.setPosition(
+                #             SCREEN_SIZE // 2 - Vector2(gameWonTextSize[0]//2, gameWonTextSize[1]//2 + 50))
+                #         self._state.manageState(
+                #             ScreenState.actions["GAME_WON"], self)
+                #     else:
+                #         self._state.manageState(
+                #             ScreenState.actions["GAME_OVER"], self)
             elif self._state == ScreenState.state["MAIN_MENU"]:
                 choice = self._mainMenu.handleEvent(event)
                 if choice == START_SINGLE_PLAYER:
@@ -161,6 +163,7 @@ class ScreenManager(BasicManager):
                 elif choice == EXIT:
                     return EXIT
             elif self._state == ScreenState.state["GAME_WON_MENU"]:
+                currentGameMode = self._game._mode
                 choice = self._gameWonMenu.handleEvent(event)
                 if choice == ScreenManager.REPLAY:
                     self.startGame(currentGameMode)
@@ -174,7 +177,22 @@ class ScreenManager(BasicManager):
         if self._state == ScreenState.state["GAME"] and not self._state.isPaused():
             self._game.update(seconds)
             if self._game.isGameOver():
-                self._state.manageState(ScreenState.actions["GAME_OVER"], self)
+                    if self._game.isWon() != None:
+                        # If two player change text
+                        if self._game._mode in [TWO_PLAYER, BATTLE]:
+                            winner = (self._game.isWon())[0:-4]
+                            self._gameWonText = Text(
+                                Vector2(0, 0), (winner.upper()+" Wins"))
+                        # Update text Position
+                        gameWonTextSize = self._gameWonText.getSize()
+                        self._gameWonText.setPosition(
+                            SCREEN_SIZE // 2 - Vector2(gameWonTextSize[0]//2, gameWonTextSize[1]//2 + 50))
+                        self._state.manageState(
+                            ScreenState.actions["GAME_WON"], self)
+                    else:
+                        self._state.manageState(
+                            ScreenState.actions["GAME_OVER"], self) 
+                                      
         elif self._state == ScreenState.state["MAIN_MENU"]:
             self._mainMenu.update(seconds)
         elif self._state == ScreenState.state["GAME_OVER_MENU"]:
@@ -192,7 +210,7 @@ class ScreenManager(BasicManager):
     def startGame(self, mode):
         if mode == BATTLE:
             self._game = GameManager(
-                SCREEN_SIZE, BATTLE, "battleWorld1.txt", self._joysticks)
+                SCREEN_SIZE, BATTLE, "battleWorld"+str(random.randint(1, 3))+".txt", self._joysticks)
             self._state.manageState(
                 ScreenState.actions["START_GAME"], self)
         elif mode == SINGLE_PLAYER:
@@ -254,12 +272,12 @@ class ScreenState(object):
 
         elif action == ScreenState.actions["GAME_OVER"] and self._state == ScreenState.state["GAME"]:
             self._state = ScreenState.state["GAME_OVER_MENU"]
-            time.sleep(1)
+            time.sleep(.5)
             screenManager.transitionState(self._state)
 
         elif action == ScreenState.actions["GAME_WON"] and self._state == ScreenState.state["GAME"]:
             self._state = ScreenState.state["GAME_WON_MENU"]
-            time.sleep(1)
+            time.sleep(.5)
             screenManager.transitionState(self._state)
 
 
