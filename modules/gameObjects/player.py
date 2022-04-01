@@ -20,7 +20,7 @@ class Player(Mobile):
         # self._bullets: list[Bullet] = []
         # self._lastShot = time.clock_gettime(0)
         # self._bulletSpeed = 70
-        self._lives = 3 if hasGun == True else 1
+        self._lives = 10 if hasGun == True else 1
         self._joystick = joystick
         self._jumpTime = .05
         self._vSpeed = 50
@@ -223,9 +223,16 @@ class Player(Mobile):
             #TODO add explosion
             SoundManager.getInstance().playSound("explosion.wav")
         if self._lives > 1:
-            self._lives -= 1
+            if  bullet._type == "AK":
+                self._lives -= 1
+            elif bullet._type == "BILL":
+                self._lives -= 5
+                if self._lives < 1:
+                    super().kill()
+        
         else:
             super().kill()
+            
     def getLives(self):
         return self._lives
 
@@ -311,11 +318,13 @@ class Gun(Animated):
 
     def addAkBullets(self,position):
         # if time.clock_gettime(0) - self._lastShot > :
-        self._bullets.append(
+        if len(self._bullets) < 4:
+            self._bullets.append(
                         Bullet(self._bulletName, position, self._state.getFacing(), self._bulletSpeed))
 
     def addBazooBullet(self,position):
-        if time.clock_gettime(0) - self._lastShot > 1.5:
-                    self._bullets.append(
-                        Bullet(self._bulletName, position, self._state.getFacing(), self._bulletSpeed))
-                    self._lastShot = time.clock_gettime(0)
+        if len (self._bullets) < 2: 
+            if time.clock_gettime(0) - self._lastShot > 1:
+                        self._bullets.append(
+                            Bullet(self._bulletName, position, self._state.getFacing(), self._bulletSpeed))
+                        self._lastShot = time.clock_gettime(0)
