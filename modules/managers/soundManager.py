@@ -7,6 +7,7 @@ Provides on-demand loading of sounds for a pygame program.
 """
 
 
+import random
 import pygame
 import os
 
@@ -40,10 +41,20 @@ class SoundManager(object):
             "pause.wav": _SFX_FOLDER,
             "stage_clear.wav": _SFX_FOLDER,
             "mario_stomp.wav": _SFX_FOLDER,
-            "marioremix.mp3": _MUSIC_FOLDER,
+            "explosion.wav": _SFX_FOLDER,
+            "marioRemix.mp3": _MUSIC_FOLDER,
             "northMemphis.mp3": _MUSIC_FOLDER,
-            "explosion.wav": _SFX_FOLDER
+            "bambini.mp3": _MUSIC_FOLDER,
+            "gallow.mp3": _MUSIC_FOLDER,
+            "marioOriginal.mp3": _MUSIC_FOLDER,
+            "resurrection.mp3": _MUSIC_FOLDER,
+            "solid.mp3": _MUSIC_FOLDER,
+            "thePurge.mp3": _MUSIC_FOLDER,
+            "venom.mp3": _MUSIC_FOLDER,
         }
+
+        _BATTLE_MUSIC = ["northMemphis", "bambini", "gallow",
+                         "resurrection", "solid", "thePurge", "venom"]
 
         def __init__(self):
             #
@@ -75,6 +86,10 @@ class SoundManager(object):
             pygame.mixer.music.play()
 
             self._musicStatus = "play"
+
+        def playBattleMusic(self):
+            fileName = random.choice(SoundManager._SM._BATTLE_MUSIC) + ".mp3"
+            self.playMusic(fileName)
 
         def stopMusic(self):
             pygame.mixer.music.stop()
