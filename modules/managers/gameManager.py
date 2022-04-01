@@ -154,13 +154,9 @@ class GameManager(BasicManager):
         # Update enemies/detect collision with player
         for player in self._players:
             self._winner = player.updateCollisions(self._blocks, self._end)
-            # pRect = self.getCollisionRect()
+        #     pRect = player.getCollisionRect()
 
-        # # Dectect if won for each player
-        # if end != None:
-        #     if pRect.clip(end.getCollisionRect()).width > 0:
-        #         self.updateMovement()
-        #         return str(self._imageName)
+        # # # Dectect if won for each player
 
         # Update enemies/detect collision with player
         for enemy in self._enemies:

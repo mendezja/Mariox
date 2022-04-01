@@ -11,5 +11,5 @@ WW...........WW
 .......B.......
 LLL....B....LLL
 .B.1...B...2.B.
-WWWWWWWWWWWWWWW
-...............
+GGGGGGGGGGGGGGG
+GGGGGGGGGGGGGGG

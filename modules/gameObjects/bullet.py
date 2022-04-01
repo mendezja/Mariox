@@ -16,6 +16,8 @@ class Bullet(Animated):
         self._velocity = Vector2(speed, 0)
         self._timeToLive = 3
         self._isDead = False
+        self._type = "AK" if name == "akBullet.png" else "BILL"
+        
 
         self._row = 0
         self._nFrames = 5
