@@ -36,9 +36,11 @@ class GameManager(BasicManager):
 
         # Start playing music
         if self._mode == BATTLE:
-            SoundManager.getInstance().playMusic("northMemphis.mp3")#marioremix.mp3"
-        else:
-            SoundManager.getInstance().playMusic("marioremix.mp3")
+            SoundManager.getInstance().playBattleMusic()
+        elif self._mode == SINGLE_PLAYER:
+            SoundManager.getInstance().playMusic("marioOriginal.mp3")
+        elif self._mode == TWO_PLAYER:
+            SoundManager.getInstance().playMusic("marioRemix.mp3")
 
         self._blocks: list[Drawable] = []
         self._decor: list[Drawable] = []
