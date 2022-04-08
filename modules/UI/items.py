@@ -12,7 +12,7 @@ class AbstractUIEntry(Drawable):
 
     _FONT_FOLDER = os.path.join("resources", "fonts")
     _DEFAULT_FONT = "PressStart2P.ttf"
-    _DEFAULT_SIZE = 16
+    _DEFAULT_SIZE = 8
 
     FONTS = {
         "default": pygame.font.Font(os.path.join(_FONT_FOLDER, _DEFAULT_FONT), _DEFAULT_SIZE),

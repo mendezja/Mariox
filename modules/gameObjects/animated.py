@@ -18,10 +18,10 @@ class Animated(Drawable):
     def update(self, seconds):
         if self._animate:
             self._animationTimer += seconds
-
-            if self._animationTimer > 1 / self._framesPerSecond:
-                self._frame += 1
-                self._frame %= self._nFrames
-                self._animationTimer -= 1 / self._framesPerSecond
-                self.setImage(FrameManager.getInstance().getFrame(
-                    self._imageName, (self._frame, self._row)))
+            if self._framesPerSecond != 0:
+                if self._animationTimer > 1 / self._framesPerSecond:
+                    self._frame += 1
+                    self._frame %= self._nFrames
+                    self._animationTimer -= 1 / self._framesPerSecond
+                    self.setImage(FrameManager.getInstance().getFrame(
+                        self._imageName, (self._frame, self._row)))

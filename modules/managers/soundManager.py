@@ -51,10 +51,11 @@ class SoundManager(object):
             "solid.mp3": _MUSIC_FOLDER,
             "thePurge.mp3": _MUSIC_FOLDER,
             "venom.mp3": _MUSIC_FOLDER,
+            "onepunchman.mp3": _MUSIC_FOLDER
         }
 
-        _BATTLE_MUSIC = ["northMemphis", "bambini", "gallow",
-                         "resurrection", "solid", "thePurge", "venom"]
+        _BATTLE_MUSIC = ["northMemphis", "bambini", 
+                        "resurrection",  "marioOriginal", "marioRemix", "onepunchman"]#"thePurge","gallow", "solid","venom",
 
         def __init__(self):
             #

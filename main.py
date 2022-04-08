@@ -62,7 +62,6 @@ def main():
                 RUNNING = False
                 break
 
-        # Update everything
 
         # Let our game clock tick at 60 fps
         gameClock.tick(60)
