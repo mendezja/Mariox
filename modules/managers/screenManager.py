@@ -1,7 +1,7 @@
 from pygame.joystick import Joystick
 from .basicManager import BasicManager
 from .gameManager import GameManager
-from ..UI.items import Text
+from ..gameObjects.items import Text
 from ..UI.displays import *
 from ..gameObjects.vector2D import Vector2
 from ..UI.screenInfo import SCREEN_SIZE
@@ -81,10 +81,8 @@ class ScreenManager(BasicManager):
             if self._game._mode in [SINGLE_PLAYER, BATTLE]:  # one screen
                 self._game.draw(mainSurface)
                 if self._game._mode == BATTLE:
-                    p1Lives = Text(Vector2(10, 10), "P1:" + str(
-                        self._game.getPlayers()[0].getLives()))
-                    p2Lives = Text(Vector2(165, 10), "P2:" + str(
-                        self._game.getPlayers()[1].getLives()))
+                    p1Lives = Text(Vector2(10, 5), "Mario" )#+ str(self._game.getPlayers()[0].getLives()))
+                    p2Lives = Text(Vector2(180, 5), "Luigi" )#+ str( self._game.getPlayers()[1].getLives()))
 
                     p1Lives.draw(
                         mainSurface, noOffset=True)
@@ -117,8 +115,8 @@ class ScreenManager(BasicManager):
             self._gameWonText.draw(mainSurface, noOffset=True)
 
     def handleEvent(self, event):
-        # Handle screen-changing events first
-        # currentGameMode = self._game._mode
+        # Handle screen-changing events first 
+
         if (event.type == pygame.KEYDOWN and event.key == pygame.K_p) or (event.type == pygame.JOYBUTTONDOWN and event.button == 9):
             self._state.manageState(ScreenState.actions["PAUSE"], self)
         elif event.type == pygame.KEYDOWN and event.key == pygame.K_m:
@@ -176,13 +174,15 @@ class ScreenManager(BasicManager):
     def update(self, seconds):
         if self._state == ScreenState.state["GAME"] and not self._state.isPaused():
             self._game.update(seconds)
-            if self._game.isGameOver():
+            if self._game.isGameOver(): 
                     if self._game.isWon() != None:
+
                         # If two player change text
                         if self._game._mode in [TWO_PLAYER, BATTLE]:
                             winner = (self._game.isWon())[0:-4]
                             self._gameWonText = Text(
-                                Vector2(0, 0), (winner.upper()+" Wins"))
+                                    Vector2(0, 0), (winner.upper()+" Wins"))
+    
                         # Update text Position
                         gameWonTextSize = self._gameWonText.getSize()
                         self._gameWonText.setPosition(
@@ -210,7 +210,7 @@ class ScreenManager(BasicManager):
     def startGame(self, mode):
         if mode == BATTLE:
             self._game = GameManager(
-                SCREEN_SIZE, BATTLE, "battleWorld"+str(random.randint(1, 3))+".txt", self._joysticks)
+                SCREEN_SIZE, BATTLE, "battleWorld"+str(random.randint(1, 5))+".txt", self._joysticks)
             self._state.manageState(
                 ScreenState.actions["START_GAME"], self)
         elif mode == SINGLE_PLAYER:

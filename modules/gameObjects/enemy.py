@@ -73,9 +73,8 @@ class Enemy(Mobile):
 
             if playerClipRect.width > 0:
                 if player._velocity.y > 0 and playerClipRect.height <= playerClipRect.width:
-                    player._state.manageState("ground", self)
-                    player._velocity.y *= -2
-                    # player._state.manageState("jump", self)
+                    player._state.manageState("ground", self) 
+                    player._state.manageState("jump", self)
                     self.kill()
                     break
                 else:
@@ -130,7 +129,7 @@ class Turtle(Enemy):
             playerClipRect = eRect.clip(player.getCollisionRect())
 
             if playerClipRect.width > 0:
-                if player._velocity.y > 0 and playerClipRect.height//2 <= playerClipRect.width:
+                if player._velocity.y > 0 and playerClipRect.height <= playerClipRect.width:
                     if self._state.getState() != "slidng":
                         self._state.manageState("hide", self)
 
@@ -178,16 +177,3 @@ class Turtle(Enemy):
 
                 self._velocity.y = 50
                 return
-
-
-# class TurtleState(MobileState):
-#     def __init__(self, state="falling"):
-#         super().__init__(state)
-
-#     def manageState(self, action: str, enemy: Mobile):
-#         super().manageState(action, enemy )
-#         if action == "hide":
-#             self._state = "sliding"
-#             enemy._vSpeed = 200
-
-#             enemy.transitionState(self._state)

@@ -48,8 +48,7 @@ class GameManager(BasicManager):
         self._players: list[Player] = []
         self._end: Drawable = None
         self._gameOver = False
-        self._winner: Str = ""  # gameWon = False
-        #self._splitScreen = True if self
+        self._winner: Str = ""   
 
         backgroundImage = "battleBackground.png" if mode in [
             BATTLE] else "background.png"
@@ -98,14 +97,6 @@ class GameManager(BasicManager):
                 player.setJump(120, 0.3)
 
 
-        # Make one player faster
-        # for player in self._players:
-        #     if player._imageName == "luigi.png":
-        #         player.setSpeed(100)
-        #     if player._imageName == "mario.png":
-        #         # player._bulletSpeed = 140
-        #         player.setJump(80*(2), 0.2)
-
     def draw(self, drawSurf: pygame.surface.Surface, whichPlayer=None):
 
         # Draw everything
@@ -120,10 +111,9 @@ class GameManager(BasicManager):
         if self._end:
             self._end.draw(drawSurf, whichPlayer)
         for enemy in self._enemies:
-            enemy.draw(drawSurf, whichPlayer)
-            # pygame.draw.rect(drawSurf,(0,0,0), enemy.getCollisionRect())
-        for player in self._players:
-           # pygame.draw.rect(drawSurf,(0,0,0), player.getCollisionRect())
+            enemy.draw(drawSurf, whichPlayer) 
+        for player in self._players: 
+            
             if player._imageName =="mario.png":
                 player.draw(drawSurf, whichPlayer, drawCollision = False)
             else:
@@ -132,9 +122,11 @@ class GameManager(BasicManager):
 
             if player._currentGun != None:
                 player._currentGun.draw(drawSurf,whichPlayer)
+                player.drawStats(drawSurf)
 
             for bullet in player.getBullets():
                 bullet.draw(drawSurf, whichPlayer)
+
 
     def handleEvent(self, event):
         if not self._gameOver:
@@ -149,14 +141,18 @@ class GameManager(BasicManager):
             whichPlayer = None if self._mode in [
                 SINGLE_PLAYER, BATTLE] else self._players.index(player)
             Drawable.updateOffset(
-                player, SCREEN_SIZE, GameManager.WORLD_SIZE, whichPlayer=whichPlayer)#,) self._splitScreen)
+                player, SCREEN_SIZE, GameManager.WORLD_SIZE, whichPlayer=whichPlayer)
 
         # Update enemies/detect collision with player
         for player in self._players:
-            self._winner = player.updateCollisions(self._blocks, self._end)
-        #     pRect = player.getCollisionRect()
+            self._winner = player.updateCollisions(self._blocks, self._end) # Dectects if won for each player
 
-        # # # Dectect if won for each player
+            if self._winner != None:
+                self._gameOver = True
+                return
+          
+
+        
 
         # Update enemies/detect collision with player
         for enemy in self._enemies:
@@ -175,15 +171,14 @@ class GameManager(BasicManager):
         if seconds < 0.5:#10:#0.05:
 
             for player in self._players:
-
                 if player._hasGun:
                     for bullet in player.getBullets():
                         if bullet._isDead:
                             for gun in player._guns:
                                 if bullet in gun._bullets:
-                                    gun._bullets.remove(bullet)
-                        
+                                    gun._bullets.remove(bullet)    
                         bullet.update(seconds)
+
 
                 if player._isDead:
                     self._gameOver = True

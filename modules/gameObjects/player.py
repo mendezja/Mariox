@@ -9,6 +9,7 @@ from ..managers.soundManager import SoundManager
 import pygame
 from pygame.event import Event
 from pygame.joystick import Joystick
+from .items import BasicItemManager, RectBarItem
 
 
 class Player(Mobile):
@@ -17,10 +18,7 @@ class Player(Mobile):
         self._killSound = "mario_die.wav"
 
         self._hasGun = hasGun
-        # self._bullets: list[Bullet] = []
-        # self._lastShot = time.clock_gettime(0)
-        # self._bulletSpeed = 70
-        self._lives = 10 if hasGun == True else 1
+        self._lives = 100 if hasGun == True else 1
         self._joystick = joystick
         self._jumpTime = .05
         self._vSpeed = 50
@@ -33,13 +31,20 @@ class Player(Mobile):
         self._nFrames = 2
         self._framesPerSecond = 2
 
-        if self._hasGun:
-            # self._image.
-            self._guns = [Gun("bazooka.png",self), Gun("ak47.png", self)]#Drawable("bazooka.png", position + self._gunOffset)
+        if self._hasGun: 
+            self._guns = [Gun("bazooka.png",self), Gun("ak47.png", self)]
             self._gunNum = 1
             self._currentGun = self._guns[0]
         else:
             self._currentGun = None
+
+
+        self._stats = BasicItemManager()
+        self._stats.addItem("health",
+                          RectBarItem(pygame.Rect(0,0,50,10),
+                                      initialValue=100,
+                                      maxValue=100,
+                                      backgroundColor=(0,0,0), position = (10,18) if imageName == "mario.png" else (180,18)))
 
 
         self._nFramesList = {
@@ -63,11 +68,13 @@ class Player(Mobile):
             "standing": 1,
             "jumping": 1,
             "falling": 8,
-            "dead": 1  # will likely depend on acceleration
+            "dead": 1  
         }
 
         self._state._lastFacing = "right"
         self.transitionState("falling")
+
+
 
     def updateVelocity(self, seconds):
         super().updateVelocity(seconds)
@@ -123,10 +130,7 @@ class Player(Mobile):
                 self._gunNum +=1
                 self._currentGun = self._guns[self._gunNum %2]
 
-                # if time.clock_gettime(0) - self._lastShot > 1:
-                #     self._bullets.append(
-                #         Bullet(self._position, self._state._lastFacing, self._bulletSpeed))
-                #     self._lastShot = time.clock_gettime(0)
+              
 
         elif event.type == pygame.JOYBUTTONUP:
             if event.button == 0:
@@ -168,43 +172,35 @@ class Player(Mobile):
 
         # Dectect if won for each player
         if end != None:
+           
             if pRect.clip(end.getCollisionRect()).width > 0:
-                self.updateMovement()
+                self.collideWall(0)
                 return str(self._imageName)
 
         # Detect Gravity for each block
         hasFloor = False
 
         for block in blocks:
-
             clipRect = pRect.clip(block.getCollisionRect())
 
             if clipRect.width >= clipRect.height and clipRect.width > 0:  # check virtical collide
                 if clipRect.height > block.getSize()[1]//3:
                     hasFloor = self.collideGround(clipRect.height*2)
-                # elif clipRect.height < block.getSize()[1]//3 and self._velocity.y <0:
-                #     hasFloor = self.collideGround(block.getSize()[1])
                 else:
                     hasFloor = self.collideGround(clipRect.height)
                 break
+
             elif clipRect.width < clipRect.height and clipRect.width > 0:  # check for horizontal collide
-                # if self._imageName == "mario.png":
-                    # print ("wall colide")
                 if clipRect.width < block.getSize()[0]//3:
-                    # if self._imageName == "mario.png":
-                        # print ("mini colide: ", clipRect.width)
                     self.collideWall(clipRect.width+2)
 
                 self.collideWall(clipRect.width)
                 break
+
             elif (pRect.move(0, 1)).colliderect(block.getCollisionRect()):  # Check for ground
-                # if self._imageName == "mario.png":
-                   # print ("found floor")
                 hasFloor = True
                 break
-        
-        # if self._imageName == "mario.png":
-              #  print (hasFloor)
+
         if not hasFloor:
             self.fall()
         else:
@@ -224,11 +220,14 @@ class Player(Mobile):
             SoundManager.getInstance().playSound("explosion.wav")
         if self._lives > 1:
             if  bullet._type == "AK":
-                self._lives -= 1
-            elif bullet._type == "BILL":
+                self._stats.decreaseItem("health", 5)
                 self._lives -= 5
-                if self._lives < 1:
-                    super().kill()
+            elif bullet._type == "BILL":
+                self._stats.decreaseItem("health", 10)
+                self._lives -= 10
+
+            if self._lives < 1:
+                super().kill()
         
         else:
             super().kill()
@@ -242,6 +241,8 @@ class Player(Mobile):
     def setJump(self, speed, jtime):
         self._jSpeed = speed
         self._jumpTime = jtime
+    def drawStats(self, drawSurf):
+      self._stats.draw(drawSurf)
 
 
 
@@ -317,7 +318,6 @@ class Gun(Animated):
             self.addBazooBullet(newPosition)
 
     def addAkBullets(self,position):
-        # if time.clock_gettime(0) - self._lastShot > :
         if len(self._bullets) < 4:
             self._bullets.append(
                         Bullet(self._bulletName, position, self._state.getFacing(), self._bulletSpeed))
