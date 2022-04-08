@@ -1,10 +1,7 @@
 import pygame, os
 from ..managers.frameManager import FrameManager
-from .drawable import Drawable
-from ..UI.screenInfo import adjustMousePos
-
-from ..gameObjects.drawable import Drawable
-# from ..UI.displays import HoverClickMenu
+from .drawable import Drawable 
+from ..gameObjects.drawable import Drawable 
 
 
 class BasicItemManager(Drawable):

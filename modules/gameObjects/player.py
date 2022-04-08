@@ -183,18 +183,18 @@ class Player(Mobile):
         for block in blocks:
             clipRect = pRect.clip(block.getCollisionRect())
 
-            if clipRect.width >= clipRect.height and clipRect.width > 0:  # check virtical collide
+            if clipRect.width >= clipRect.height and clipRect.width > 2:  # check virtical collide
                 if clipRect.height > block.getSize()[1]//3:
                     hasFloor = self.collideGround(clipRect.height*2)
                 else:
                     hasFloor = self.collideGround(clipRect.height)
                 break
 
-            elif clipRect.width < clipRect.height and clipRect.width > 0:  # check for horizontal collide
+            elif clipRect.width < clipRect.height and clipRect.width > 1:  # check for horizontal collide
                 if clipRect.width < block.getSize()[0]//3:
                     self.collideWall(clipRect.width+2)
-
-                self.collideWall(clipRect.width)
+                else:
+                    self.collideWall(clipRect.width)
                 break
 
             elif (pRect.move(0, 1)).colliderect(block.getCollisionRect()):  # Check for ground
@@ -218,13 +218,13 @@ class Player(Mobile):
             bullet.setDead()
             #TODO add explosion
             SoundManager.getInstance().playSound("explosion.wav")
-        if self._lives > 1:
+        if self._lives > 5:
             if  bullet._type == "AK":
                 self._stats.decreaseItem("health", 5)
                 self._lives -= 5
             elif bullet._type == "BILL":
-                self._stats.decreaseItem("health", 10)
-                self._lives -= 10
+                self._stats.decreaseItem("health", 20)
+                self._lives -= 20
 
             if self._lives < 1:
                 super().kill()
@@ -318,7 +318,7 @@ class Gun(Animated):
             self.addBazooBullet(newPosition)
 
     def addAkBullets(self,position):
-        if len(self._bullets) < 4:
+        if len(self._bullets) <= 4:
             self._bullets.append(
                         Bullet(self._bulletName, position, self._state.getFacing(), self._bulletSpeed))
 
