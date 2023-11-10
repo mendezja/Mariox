@@ -1,5 +1,6 @@
 
 import time
+import os
 from modules.gameObjects.bullet import Bullet
 from .vector2D import Vector2
 from .mobile import Mobile
@@ -12,10 +13,25 @@ from pygame.joystick import Joystick
 from .items import BasicItemManager, RectBarItem
 
 
+ACTIONS = {"0":"jump",
+            "1": "left",
+            "2":"right",
+            "3":"shoot",
+            "4": "swp_gun1",
+            "5": "swp_gun2", 
+            "6": "fall",
+            "7": "stopleft",
+            "8": "stopright"}
+
+UPDATE_SCRIPT = False
+
+
 class Player(Mobile):
-    def __init__(self, imageName: str, position: Vector2, joystick: Joystick = None, hasGun=False):
+    def __init__(self, imageName: str, position: Vector2, joystick: Joystick = None, hasGun=False, isBot=False):
         super().__init__(imageName, position)
         self._killSound = "mario_die.wav"
+
+        self._isBot = isBot
 
         self._hasGun = hasGun
         self._lives = 100 if hasGun == True else 1
@@ -38,6 +54,14 @@ class Player(Mobile):
         else:
             self._currentGun = None
 
+        if self._isBot and not UPDATE_SCRIPT:
+            f = open(os.path.join("resources", "bot_script", 'moves.txt'),"r" ) 
+            self.moves = [line.rstrip('\n') for line in f]
+            self.step = 0
+            # print(self.moves)
+
+        if not self._isBot and UPDATE_SCRIPT: open(os.path.join("resources", "bot_script", 'moves.txt'), "w").close()
+          
 
         self._stats = BasicItemManager()
         self._stats.addItem("health",
@@ -86,37 +110,110 @@ class Player(Mobile):
             if self._jumpTimer < 0:
                 self._state.manageState("fall", self)
 
+    def updateBot(self):
+
+        if self._isBot and not UPDATE_SCRIPT: 
+            # if script input invalid, not in
+            try:
+                script_action = self.moves[self.step]
+            except: 
+                script_action = None
+     
+     
+            if script_action in ACTIONS.keys():
+                action = int(script_action) 
+            else:
+                # print("INVALID ACYTION: "+ script_action)
+                action = None 
+            
+            self.step += 1
+            if action == 0:
+                self._state.manageState("jump", self)
+                # print("Bot Action:" + action)
+            elif action == 1:
+                self._state.manageState("left", self)
+                # print("Bot Action:" + action)
+            elif action == 2:
+                self._state.manageState("right", self)
+                # print("Bot Action:" + action)
+            elif self._hasGun:
+                if action == 3:
+                    self._currentGun.addBullets(self._position) 
+                elif action == 4:           
+                    self._currentGun = self._guns[1]
+                elif action == 5:
+                    self._currentGun = self._guns[0]
+            elif action == 6:
+                self._pressedUp = False
+                self._state.manageState("fall", self)
+            elif action == 7:
+                
+                self._pressedRight = False
+                self._state.manageState("stopright", self)
+            elif action == 8:
+                self._pressedLeft = False
+                self._state.manageState("stopleft", self)
+            elif action == None:
+                pass
+            else: 
+                raise Exception("error in bot ations: " + action)
+            
+        elif UPDATE_SCRIPT and self._isBot:
+            file1 = open(os.path.join("resources", "bot_script", 'moves.txt'), 'a')
+            file1.write(str (None)+ '\n')
+            file1.close()
+
+
     def handleEvent(self, event: Event):
+
+        # check control inputs: keyboard and Joystick
+
+        eventAction = None
         # Keyboard
         if event.type == pygame.KEYDOWN:
 
             if event.key == pygame.K_UP:
-                self._state.manageState("jump", self)
+                self._pressedUp = True
+                self._state.manageState("jump", self) 
+                eventAction = 0
 
             elif event.key == pygame.K_LEFT:
                 self._state.manageState("left", self)
+                eventAction= 1
 
             elif event.key == pygame.K_RIGHT:
                 self._state.manageState("right", self)
+                eventAction = 2
 
             elif event.key == pygame.K_SPACE and self._hasGun:
                 self._currentGun.addBullets(self._position)
+                eventAction = 3
                 
             elif event.key == pygame.K_2 and self._hasGun:
                 self._currentGun = self._guns[1]
+                eventAction = 4
             elif event.key == pygame.K_1 and self._hasGun:
                 self._currentGun = self._guns[0]
+                eventAction = 5
 
         elif event.type == pygame.KEYUP:
 
             if event.key == pygame.K_UP:
                 self._state.manageState("fall", self)
+                eventAction = 6
 
             elif event.key == pygame.K_LEFT:
                 self._state.manageState("stopleft", self)
+                eventAction= 7
 
             elif event.key == pygame.K_RIGHT:
                 self._state.manageState("stopright", self)
+                eventAction = 8
+        # print eventAction)
+        if UPDATE_SCRIPT and not self._isBot:
+            file1 = open(os.path.join("resources", "bot_script", 'moves.txt'), 'a')
+            file1.write(str (eventAction)+ '\n')
+            file1.close()
 
         # Joystick
         if event.type == pygame.JOYBUTTONDOWN:
@@ -130,7 +227,7 @@ class Player(Mobile):
                 self._gunNum +=1
                 self._currentGun = self._guns[self._gunNum %2]
 
-              
+            
 
         elif event.type == pygame.JOYBUTTONUP:
             if event.button == 0:
@@ -156,15 +253,20 @@ class Player(Mobile):
 
     def updateMovement(self):
 
-        pressed = pygame.key.get_pressed()
+        if self._isBot:
+            pass
+        else:
+            pressed = pygame.key.get_pressed() 
 
-        if not pressed[pygame.K_UP]:  # and not self._pressedUp:
-            self._state.manageState("fall", self)
-        if not pressed[pygame.K_LEFT]:  # and not self._pressedLeft:
-            self._state.manageState("stopleft", self)
-        if not pressed[pygame.K_RIGHT]:  # and not self._pressedRight:
-            self._state.manageState("stopright", self)
+            if not pressed[pygame.K_UP]:  # and not self._pressedUp:
+                self._state.manageState("fall", self)
+            if not pressed[pygame.K_LEFT]:  # and not self._pressedLeft:
+                self._state.manageState("stopleft", self)
+            if not pressed[pygame.K_RIGHT]:  # and not self._pressedRight:
+                self._state.manageState("stopright", self)
 
+    
+    
     def updateCollisions(self, blocks: 'list[Drawable]', end: Drawable):
         if self._isDead:
             return

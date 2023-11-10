@@ -35,7 +35,7 @@ class GameManager(BasicManager):
         self._joysticks = joysticks
 
         # Start playing music
-        if self._mode == BATTLE:
+        if self._mode in [BATTLE, BATTLE_AI]:
             SoundManager.getInstance().playBattleMusic()
         elif self._mode == SINGLE_PLAYER:
             SoundManager.getInstance().playMusic("marioOriginal.mp3")
@@ -51,7 +51,7 @@ class GameManager(BasicManager):
         self._winner: Str = ""   
 
         backgroundImage = "battleBackground.png" if mode in [
-            BATTLE] else "background.png"
+            BATTLE, BATTLE_AI] else "background.png"
         self._background = EfficientBackground(
             self._screenSize, backgroundImage, parallax=0)
 
@@ -86,12 +86,16 @@ class GameManager(BasicManager):
 
                 elif elemChar == "1":  # player 1
                     self._players.append(Player("mario.png", Vector2(
-                        col*tileSize, row*tileSize), self._joysticks[0] if len(self._joysticks) >= 1 else None, hasGun=(self._mode == BATTLE)))
+                        col*tileSize, row*tileSize), self._joysticks[0] if len(self._joysticks) >= 1 else None, hasGun=(self._mode in [BATTLE, BATTLE_AI])))
 
                 elif elemChar == "2" and self._mode in [TWO_PLAYER, BATTLE]:
                     self._players.append(Player("luigi.png", Vector2(
                         col*tileSize, row*tileSize), self._joysticks[1] if len(self._joysticks) == 2 else None, hasGun=(self._mode == BATTLE)))
-        if self._mode in [BATTLE]:
+                # TODO sever player contorol, Insert Bot linkly to do with control
+                elif elemChar == "2" and self._mode == BATTLE_AI:
+                    self._players.append(Player("luigi.png", Vector2(
+                        col*tileSize, row*tileSize), None, hasGun=True, isBot=True))
+        if self._mode in [BATTLE, BATTLE_AI]:
             for player in self._players:
                 player.setSpeed(100)
                 player.setJump(120, 0.3)
@@ -127,11 +131,18 @@ class GameManager(BasicManager):
             for bullet in player.getBullets():
                 bullet.draw(drawSurf, whichPlayer)
 
+    def updateBot(self):
+        if not self._gameOver:
+            for player in self._players:
+                if player._isBot:
+                    player.updateBot()
 
     def handleEvent(self, event):
         if not self._gameOver:
             for player in self._players:
-                player.handleEvent(event)
+                if not player._isBot:
+                    player.handleEvent(event)
+               
 
     def update(self, seconds):
         # Update everything
@@ -139,7 +150,7 @@ class GameManager(BasicManager):
         for player in self._players:
 
             whichPlayer = None if self._mode in [
-                SINGLE_PLAYER, BATTLE] else self._players.index(player)
+                SINGLE_PLAYER, BATTLE, BATTLE_AI] else self._players.index(player)
             Drawable.updateOffset(
                 player, SCREEN_SIZE, GameManager.WORLD_SIZE, whichPlayer=whichPlayer)
 
@@ -184,7 +195,7 @@ class GameManager(BasicManager):
                     self._gameOver = True
                     SoundManager.getInstance().stopMusic()
 
-                    if self._mode in [TWO_PLAYER, BATTLE]:
+                    if self._mode in [TWO_PLAYER, BATTLE, BATTLE_AI]:
                         index = (self._players.index(player) +
                                  1) % 2  # Gets index of other player
                         self._winner = self._players[index]._imageName                    

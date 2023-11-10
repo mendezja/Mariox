@@ -29,6 +29,7 @@ class Mobile(Animated):
     def update(self, seconds, boundaries):
         self.updateVelocity(seconds)
         self.updatePosition(seconds, boundaries)
+        # print(str(seconds) +" | " +self._state.getState() + " | " + str(self._state._movement) )
 
     def updateVelocity(self, seconds):
         '''Helper method for update'''

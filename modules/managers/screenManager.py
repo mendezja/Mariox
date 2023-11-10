@@ -36,15 +36,17 @@ class ScreenManager(BasicManager):
         # Create Main Menu
         self._mainMenu = CursorMenu("menuBackground.png", fontName="default8")
         self._mainMenu.addOption(START_SINGLE_PLAYER, "Single-Player",
-                                 SCREEN_SIZE // 2 + Vector2(0, 20),
+                                 SCREEN_SIZE // 2 + Vector2(0, 15),
                                  center="both")
         self._mainMenu.addOption(START_TWO_PLAYER, "Two-Player",
-                                 SCREEN_SIZE // 2 + Vector2(0, 40),
+                                 SCREEN_SIZE // 2 + Vector2(0, 30),
                                  center="both")
         self._mainMenu.addOption(
-            START_BATTLE, "Gun Game", SCREEN_SIZE // 2 + Vector2(0, 60), center="both")
+            START_BATTLE, "Gun Game", SCREEN_SIZE // 2 + Vector2(0, 45), center="both")
+        self._mainMenu.addOption(
+            START_BATTLE_AI, "Gun Game: CPU", SCREEN_SIZE // 2 + Vector2(0, 60), center="both")
         self._mainMenu.addOption(EXIT, "Exit Game",
-                                 SCREEN_SIZE // 2 + Vector2(0, 80),
+                                 SCREEN_SIZE // 2 + Vector2(0, 75),
                                  center="both")
         self._mainMenu.setCursor(START_SINGLE_PLAYER)
 
@@ -78,9 +80,9 @@ class ScreenManager(BasicManager):
     def draw(self, mainSurface: pygame.Surface):
         if self._state == ScreenState.state["GAME"]:
 
-            if self._game._mode in [SINGLE_PLAYER, BATTLE]:  # one screen
+            if self._game._mode in [SINGLE_PLAYER, BATTLE, BATTLE_AI]:  # one screen
                 self._game.draw(mainSurface)
-                if self._game._mode == BATTLE:
+                if self._game._mode in [BATTLE_AI, BATTLE]:
                     p1Lives = Text(Vector2(10, 5), "Mario" )#+ str(self._game.getPlayers()[0].getLives()))
                     p2Lives = Text(Vector2(180, 5), "Luigi" )#+ str( self._game.getPlayers()[1].getLives()))
 
@@ -114,6 +116,11 @@ class ScreenManager(BasicManager):
             self._gameWonMenu.draw(mainSurface)
             self._gameWonText.draw(mainSurface, noOffset=True)
 
+    def handelBot(self):
+        if self._state == ScreenState.state["GAME"] and not self._state.isPaused():
+            if self._game._mode == BATTLE_AI:
+                self._game.updateBot()
+    
     def handleEvent(self, event):
         # Handle screen-changing events first 
 
@@ -148,6 +155,8 @@ class ScreenManager(BasicManager):
                     self.startGame(TWO_PLAYER)
                 elif choice == START_BATTLE:
                     self.startGame(BATTLE)
+                elif choice == START_BATTLE_AI:
+                    self.startGame(BATTLE_AI)
                 elif choice == EXIT:
                     return EXIT
             elif self._state == ScreenState.state["GAME_OVER_MENU"]:
@@ -208,6 +217,11 @@ class ScreenManager(BasicManager):
             self._game.updateMovement()
 
     def startGame(self, mode):
+        if mode == BATTLE_AI:
+            self._game = GameManager(
+                SCREEN_SIZE, BATTLE_AI, "battleWorld3.txt", self._joysticks)
+            self._state.manageState(
+                ScreenState.actions["START_GAME"], self)
         if mode == BATTLE:
             self._game = GameManager(
                 SCREEN_SIZE, BATTLE, "battleWorld"+str(random.randint(1, 5))+".txt", self._joysticks)

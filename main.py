@@ -49,6 +49,7 @@ def main():
         pygame.display.flip()
 
         # event handling, gets all event from the eventqueue
+        # if event in pygame.event.get():
         for event in pygame.event.get():
             # only do something if the event is of type QUIT or ESCAPE is pressed
             if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
@@ -61,6 +62,9 @@ def main():
             if result == "exit":
                 RUNNING = False
                 break
+
+        # TODO continuasly updat via script if in game, 
+        screenManager.handelBot()
 
 
         # Let our game clock tick at 60 fps
