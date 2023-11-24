@@ -11,7 +11,7 @@ import pygame
 from pygame.event import Event
 from pygame.joystick import Joystick
 from .items import BasicItemManager, RectBarItem
-
+from typing import List
 
 ACTIONS = {"0":"jump",
             "1": "left",
@@ -309,7 +309,7 @@ class Player(Mobile):
             self.collideGround(0)
 
     def getBullets(self):
-        totalBullets = []
+        totalBullets: List[Bullet] = []
         if self._hasGun:
             for gun in self._guns:
                 totalBullets += gun.getBullets()

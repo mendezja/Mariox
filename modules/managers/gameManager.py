@@ -131,11 +131,11 @@ class GameManager(BasicManager):
             for bullet in player.getBullets():
                 bullet.draw(drawSurf, whichPlayer)
 
-    def updateBot(self):
+    def updateBot(self, action: str):
         if not self._gameOver:
             for player in self._players:
                 if player._isBot:
-                    player.updateBot()
+                    player.updateBot(action)
 
     def handleEvent(self, event):
         if not self._gameOver:
@@ -226,3 +226,23 @@ class GameManager(BasicManager):
 
     def getPlayers(self):
         return self._players
+
+    def getState(self):
+        """Gets state for RL agent, returns list of bullet states, the bot state, and the player state as a tuple"""
+        bulletsState = []
+        for player in self._players:
+            if player._hasGun:
+                    for bullet in player.getBullets():
+                        bulletsState.append((bullet._velocity, bullet._position, bullet._timeToLive))
+
+        botState = None
+        for player in self._players:
+            if player._isBot:
+                botState = (player._velocity, player._jSpeed, player._jumpTimer, player._lives, player._position)
+        
+        playerState = None
+        for player in self._players:
+            if player._isBot:
+                playerState = (player._velocity, player._jSpeed, player._jumpTimer, player._lives, player._position)
+        
+        return (bulletsState, botState, playerState)
