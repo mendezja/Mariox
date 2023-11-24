@@ -131,11 +131,11 @@ class GameManager(BasicManager):
             for bullet in player.getBullets():
                 bullet.draw(drawSurf, whichPlayer)
 
-    def updateBot(self, action: str):
+    def updateBot(self):
         if not self._gameOver:
             for player in self._players:
                 if player._isBot:
-                    player.updateBot(action)
+                    player.updateBot()
 
     def handleEvent(self, event):
         if not self._gameOver:
@@ -246,3 +246,25 @@ class GameManager(BasicManager):
                 playerState = (player._velocity, player._jSpeed, player._jumpTimer, player._lives, player._position)
         
         return (bulletsState, botState, playerState)
+    
+    def step(self):
+        """Steps the game forward one frame, returns the reward (positive reward for hitting the player, negative for getting hit) for the bot"""
+        initialBotHealth = None
+        initialPlayerHealth = None
+        for player in self._players:
+            if player._isBot:
+                initialBotHealth = player._lives
+            else:
+                initialPlayerHealth = player._lives
+
+        self.update(0.05)
+
+        finalBotHealth = None
+        finalPlayerHealth = None
+        for player in self._players:
+            if player._isBot:
+                finalBotHealth = player._lives
+            else:
+                finalPlayerHealth = player._lives
+        
+        return finalBotHealth - initialBotHealth + initialPlayerHealth - finalPlayerHealth
