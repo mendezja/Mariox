@@ -12,7 +12,7 @@ from ..UI.screenInfo import SCREEN_SIZE
 from .gamemodes import *
 from pygame.joystick import Joystick
 import pygame
-
+from ..utils.actions import Actions
 
 class GameManager(BasicManager):
 
@@ -145,6 +145,17 @@ class GameManager(BasicManager):
                
 
     def update(self, seconds):
+        # Test get state method
+        print(f"Reward: {self.getState()}")
+
+        initialBotHealth = None
+        initialPlayerHealth = None
+        for player in self._players:
+            if player._isBot:
+                initialBotHealth = player._lives
+            else:
+                initialPlayerHealth = player._lives
+
         # Update everything
 
         for player in self._players:
@@ -213,6 +224,18 @@ class GameManager(BasicManager):
 
                 enemy.update(seconds, GameManager.WORLD_SIZE)
 
+        finalBotHealth = None
+        finalPlayerHealth = None
+        for player in self._players:
+            if player._isBot:
+                finalBotHealth = player._lives
+            else:
+                finalPlayerHealth = player._lives
+        
+        if self._mode == BATTLE_AI:
+            reward = finalBotHealth - initialBotHealth + initialPlayerHealth - finalPlayerHealth
+            print(f"Reward: {reward}")
+
     def updateMovement(self):
         for player in self._players:
             player.updateMovement()
@@ -247,24 +270,3 @@ class GameManager(BasicManager):
         
         return (bulletsState, botState, playerState)
     
-    def step(self):
-        """Steps the game forward one frame, returns the reward (positive reward for hitting the player, negative for getting hit) for the bot"""
-        initialBotHealth = None
-        initialPlayerHealth = None
-        for player in self._players:
-            if player._isBot:
-                initialBotHealth = player._lives
-            else:
-                initialPlayerHealth = player._lives
-
-        self.update(0.05)
-
-        finalBotHealth = None
-        finalPlayerHealth = None
-        for player in self._players:
-            if player._isBot:
-                finalBotHealth = player._lives
-            else:
-                finalPlayerHealth = player._lives
-        
-        return finalBotHealth - initialBotHealth + initialPlayerHealth - finalPlayerHealth
