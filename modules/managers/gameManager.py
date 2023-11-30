@@ -28,20 +28,30 @@ class GameManager(BasicManager):
                       }
     
 
-    def __init__(self, screenSize: Vector2, mode: str, levelFile: str, joysticks: 'list[Joystick]'):
+    def __init__(self, screenSize: Vector2, mode: str, levelFile: str, joysticks: 'list[Joystick]', render_screen=True):
+        
         self._screenSize = screenSize
         self._levelFile = levelFile
         self._mode = mode
         self._joysticks = joysticks
 
-        # Start playing music
-        if self._mode in [BATTLE, BATTLE_AI]:
-            SoundManager.getInstance().playBattleMusic()
-        elif self._mode == SINGLE_PLAYER:
-            SoundManager.getInstance().playMusic("marioOriginal.mp3")
-        elif self._mode == TWO_PLAYER:
-            SoundManager.getInstance().playMusic("marioRemix.mp3")
-
+        # Allow for running program without music/visual displays 
+        if render_screen:
+            # Start playing music
+            if self._mode in [BATTLE, BATTLE_AI]:
+                SoundManager.getInstance().playBattleMusic()
+            elif self._mode == SINGLE_PLAYER:
+                SoundManager.getInstance().playMusic("marioOriginal.mp3")
+            elif self._mode == TWO_PLAYER:
+                SoundManager.getInstance().playMusic("marioRemix.mp3")
+            
+            # Set backhround Image
+            backgroundImage = "battleBackground.png" if mode in [
+                BATTLE, BATTLE_AI] else "background.png"
+            self._background = EfficientBackground(
+                self._screenSize, backgroundImage, parallax=0)
+        
+        # Lists to hold all elements
         self._blocks: list[Drawable] = []
         self._decor: list[Drawable] = []
         self._enemies: list[Enemy] = []
@@ -50,51 +60,71 @@ class GameManager(BasicManager):
         self._gameOver = False
         self._winner: Str = ""   
 
-        backgroundImage = "battleBackground.png" if mode in [
-            BATTLE, BATTLE_AI] else "background.png"
-        self._background = EfficientBackground(
-            self._screenSize, backgroundImage, parallax=0)
-
+        # Open map file, set world/tile sizes
         file = open(os.path.join("resources", "levels", self._levelFile))
         fileCharacters = [[y for y in x]
-                          for x in file.read().split("\n")]
+                        for x in file.read().split("\n")]
         tileSize = 16
 
         GameManager.WORLD_SIZE = Vector2(len(fileCharacters[0]) * tileSize,
-                                         len(fileCharacters) * tileSize)
+                                        len(fileCharacters) * tileSize)
 
+        # Scan world file, fill in elements lists
         for row in range(len(fileCharacters)):
             for col in range(len(fileCharacters[row])):
                 elemChar = fileCharacters[row][col]
 
-                if elemChar in self.BLOCKS_OFFSETS.keys():  # physics bound blocks
+                # Interactive block
+                if elemChar in self.BLOCKS_OFFSETS.keys(): 
                     self._blocks.append(Drawable("blocks.png", Vector2(
                         col*tileSize, row*tileSize), self.BLOCKS_OFFSETS[elemChar]))
-                elif elemChar == "B":  # non-physics blocks
+                
+                # Background Block
+                elif elemChar == "B": 
                     self._decor.append(Drawable("blocks.png", Vector2(
                         col*tileSize, row*tileSize), (1, 1)))
-                elif elemChar == "E":  # enemies
+
+                # Gumba
+                elif elemChar == "E": 
                     self._enemies.append(
                         Enemy("enemies.png",  Vector2(col*tileSize, row*tileSize)))
+
+                # Turtle
                 elif elemChar == "T":
                     self._enemies.append(
                         Turtle(Vector2(col*tileSize, row*tileSize)))
-
-                elif elemChar == "F":  # Flag
+                
+                # Flag 
+                elif elemChar == "F":  
                     self._end = Drawable("flagPost.png", Vector2(
                         col*tileSize, row*tileSize))
+                
+                # Player 1
+                elif elemChar == "1": 
 
-                elif elemChar == "1":  # player 1
-                    self._players.append(Player("mario.png", Vector2(
+                    # Make p1 a bot ONLY when screen is not displayed
+                    if not render_screen:
+                        self._players.append(Player("mario.png", Vector2(
+                            col*tileSize, row*tileSize), None, hasGun=True, isBot=True))
+                    # Usually p1 is a human player
+                    else:
+                       self._players.append(Player("mario.png", Vector2(
                         col*tileSize, row*tileSize), self._joysticks[0] if len(self._joysticks) >= 1 else None, hasGun=(self._mode in [BATTLE, BATTLE_AI])))
+                
+                # Player 2
+                elif elemChar == "2" and self._mode not in [SINGLE_PLAYER]: 
 
-                elif elemChar == "2" and self._mode in [TWO_PLAYER, BATTLE]:
-                    self._players.append(Player("luigi.png", Vector2(
-                        col*tileSize, row*tileSize), self._joysticks[1] if len(self._joysticks) == 2 else None, hasGun=(self._mode == BATTLE)))
-                # TODO sever player contorol, Insert Bot linkly to do with control
-                elif elemChar == "2" and self._mode == BATTLE_AI:
-                    self._players.append(Player("luigi.png", Vector2(
-                        col*tileSize, row*tileSize), None, hasGun=True, isBot=True))
+                    # Make p2 a bot if AI mode enabled
+                    if self._mode == BATTLE_AI: 
+                        self._players.append(Player("luigi.png", Vector2(
+                            col*tileSize, row*tileSize), None, hasGun=True, isBot=True))
+                    
+                    # Otherwise, p2 will also be human player
+                    else: 
+                        self._players.append(Player("luigi.png", Vector2(
+                            col*tileSize, row*tileSize), self._joysticks[1] if len(self._joysticks) == 2 else None, hasGun=(self._mode == BATTLE)))
+                
+
         if self._mode in [BATTLE, BATTLE_AI]:
             for player in self._players:
                 player.setSpeed(100)
@@ -104,7 +134,6 @@ class GameManager(BasicManager):
     def draw(self, drawSurf: pygame.surface.Surface, whichPlayer=None):
 
         # Draw everything
-
         self._background.draw(drawSurf, whichPlayer)
 
         for decor in self._decor:
@@ -116,27 +145,37 @@ class GameManager(BasicManager):
             self._end.draw(drawSurf, whichPlayer)
         for enemy in self._enemies:
             enemy.draw(drawSurf, whichPlayer) 
+
+        # Draw player compenents
         for player in self._players: 
-            
+            # TODO Lol why is this if a thing
             if player._imageName =="mario.png":
                 player.draw(drawSurf, whichPlayer, drawCollision = False)
             else:
                 player.draw(drawSurf, whichPlayer, drawCollision = False)
             
-
+            # Player guns
             if player._currentGun != None:
                 player._currentGun.draw(drawSurf,whichPlayer)
                 player.drawStats(drawSurf)
-
+            # Gun bullets
             for bullet in player.getBullets():
                 bullet.draw(drawSurf, whichPlayer)
 
+
+
+    # Used for bot control during Battle_AI
     def updateBot(self):
         if not self._gameOver:
-            for player in self._players:
-                if player._isBot:
-                    player.updateBot()
+            self._players[1].updateBot()
 
+    # Specifically for self-play Bot training
+    def updateBots(self, actions):
+        if not self._gameOver: 
+            self._players[0].updateBot(actions[0])
+            self._players[1].updateBot(actions[1])
+    
+    # Hand player moves, for human players
     def handleEvent(self, event):
         if not self._gameOver:
             for player in self._players:
@@ -144,22 +183,21 @@ class GameManager(BasicManager):
                     player.handleEvent(event)
                
 
+
     def update(self, seconds):
         # Test get state method
-        print(f"Reward: {self.getState()}")
+        # print(f"Reward: {self.getState()}")
 
-        initialBotHealth = None
-        initialPlayerHealth = None
+        # Record health for reward calculation
+        if self._mode == BATTLE_AI:
+            # Confirm identity
+            for player in self._players:
+                if player._imageName == "mario.png":
+                    initialHealth_mario = player._lives
+                else: initialHealth_luigi = player._lives
+
+        # Split screen updates
         for player in self._players:
-            if player._isBot:
-                initialBotHealth = player._lives
-            else:
-                initialPlayerHealth = player._lives
-
-        # Update everything
-
-        for player in self._players:
-
             whichPlayer = None if self._mode in [
                 SINGLE_PLAYER, BATTLE, BATTLE_AI] else self._players.index(player)
             Drawable.updateOffset(
@@ -171,10 +209,7 @@ class GameManager(BasicManager):
 
             if self._winner != None:
                 self._gameOver = True
-                return
-          
-
-        
+                return   
 
         # Update enemies/detect collision with player
         for enemy in self._enemies:
@@ -190,7 +225,7 @@ class GameManager(BasicManager):
                 bullet.detectCollision(self._players)
 
         # let others update based on the amount of time elapsed
-        if seconds < 0.5:#10:#0.05:
+        if seconds < 0.5:
 
             for player in self._players:
                 if player._hasGun:
@@ -223,18 +258,24 @@ class GameManager(BasicManager):
                     pass
 
                 enemy.update(seconds, GameManager.WORLD_SIZE)
-
-        finalBotHealth = None
-        finalPlayerHealth = None
-        for player in self._players:
-            if player._isBot:
-                finalBotHealth = player._lives
-            else:
-                finalPlayerHealth = player._lives
         
+        # Calculate Reward based on health
         if self._mode == BATTLE_AI:
-            reward = finalBotHealth - initialBotHealth + initialPlayerHealth - finalPlayerHealth
-            print(f"Reward: {reward}")
+
+            # Confirm using idenity
+            for player in self._players: 
+                if player._imageName == "mario.png":
+                    finalHealth_mario = player._lives
+                else: finalHealth_luigi = player._lives
+
+            reward_mario = finalHealth_mario - initialHealth_mario + initialHealth_luigi - finalHealth_luigi
+            reward_luigi = finalHealth_luigi - initialHealth_luigi + initialHealth_mario - finalHealth_mario
+            # print(f"Reward Mario: {reward_mario}")
+            # print(f"Reward Luigi: {reward_luigi}")
+
+            return (reward_mario, reward_luigi)
+
+
 
     def updateMovement(self):
         for player in self._players:

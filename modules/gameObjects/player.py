@@ -7,21 +7,12 @@ from .mobile import Mobile
 from .animated import Animated
 from .drawable import Drawable, BasicState
 from ..managers.soundManager import SoundManager
+from ..managers.gamemodes import ACTIONS
 import pygame
 from pygame.event import Event
 from pygame.joystick import Joystick
 from .items import BasicItemManager, RectBarItem
 from typing import List
-
-ACTIONS = {"0":"jump",
-            "1": "left",
-            "2":"right",
-            "3":"shoot",
-            "4": "swp_gun1",
-            "5": "swp_gun2", 
-            "6": "fall",
-            "7": "stopleft",
-            "8": "stopright"}
 
 UPDATE_SCRIPT = False
 
@@ -110,55 +101,64 @@ class Player(Mobile):
             if self._jumpTimer < 0:
                 self._state.manageState("fall", self)
 
-    def updateBot(self):
+    def updateBot(self, action=None): 
 
-        if self._isBot and not UPDATE_SCRIPT: 
-            # if script input invalid, not in
+        # If bot is CPU, select next move in script
+        if not action and self._isBot and not UPDATE_SCRIPT: 
+            # Select next action in moves script
             try:
-                script_action = self.moves[self.step]
+                action = self.moves[self.step]
             except: 
-                script_action = None
-     
-     
-            if script_action in ACTIONS.keys():
-                action = int(script_action) 
-            else:
-                # print("INVALID ACYTION: "+ script_action)
-                action = None 
-            
+                action = None
+
             self.step += 1
-            if action == 0:
-                self._state.manageState("jump", self)
-                # print("Bot Action:" + action)
-            elif action == 1:
-                self._state.manageState("left", self)
-                # print("Bot Action:" + action)
-            elif action == 2:
-                self._state.manageState("right", self)
-                # print("Bot Action:" + action)
-            elif self._hasGun:
-                if action == 3:
-                    self._currentGun.addBullets(self._position) 
-                elif action == 4:           
-                    self._currentGun = self._guns[1]
-                elif action == 5:
-                    self._currentGun = self._guns[0]
-            elif action == 6:
-                self._pressedUp = False
-                self._state.manageState("fall", self)
-            elif action == 7:
-                
-                self._pressedRight = False
-                self._state.manageState("stopright", self)
-            elif action == 8:
-                self._pressedLeft = False
-                self._state.manageState("stopleft", self)
-            elif action == None:
-                pass
-            else: 
-                raise Exception("error in bot ations: " + action)
-            
-        elif UPDATE_SCRIPT and self._isBot:
+     
+        # Map action str to int
+        # Confirm it is valid action - set to None otherwise
+        if action in list(ACTIONS.keys()):
+                action = int(action) 
+        else:
+                action = None 
+
+        
+        # Act according to action
+        if action == 0:
+            self._state.manageState("jump", self)
+        
+        elif action == 1:
+            self._state.manageState("left", self)
+           
+        elif action == 2:
+            self._state.manageState("right", self)
+
+        elif self._hasGun:
+            if action == 3:
+                self._currentGun.addBullets(self._position) 
+            elif action == 4:           
+                self._currentGun = self._guns[1]
+            elif action == 5:
+                self._currentGun = self._guns[0]
+        
+        elif action == 6:
+            self._pressedUp = False
+            self._state.manageState("fall", self)
+
+        elif action == 7:
+            self._pressedRight = False
+            self._state.manageState("stopright", self)
+
+        elif action == 8:
+            self._pressedLeft = False
+            self._state.manageState("stopleft", self)
+
+        elif action == None:
+            pass
+
+        else: 
+            raise Exception("Invalid Action: " + str(action))
+        
+        # Match Player speed using None, if updating script
+        if UPDATE_SCRIPT and self._isBot:
             file1 = open(os.path.join("resources", "bot_script", 'moves.txt'), 'a')
             file1.write(str (None)+ '\n')
             file1.close()

@@ -130,23 +130,8 @@ class ScreenManager(BasicManager):
             self._state.manageState(ScreenState.actions["MAIN_MENU"], self)
         else:
             if self._state == ScreenState.state["GAME"] and not self._state.isPaused():
-                self._game.handleEvent(event)
-                # if self._game.isGameOver():
-                #     if self._game.isWon() != None:
-                #         # If two player change text
-                #         if self._game._mode in [TWO_PLAYER, BATTLE]:
-                #             winner = (self._game.isWon())[0:-4]
-                #             self._gameWonText = Text(
-                #                 Vector2(0, 0), (winner.upper()+" Wins"))
-                #         # Update text Position
-                #         gameWonTextSize = self._gameWonText.getSize()
-                #         self._gameWonText.setPosition(
-                #             SCREEN_SIZE // 2 - Vector2(gameWonTextSize[0]//2, gameWonTextSize[1]//2 + 50))
-                #         self._state.manageState(
-                #             ScreenState.actions["GAME_WON"], self)
-                #     else:
-                #         self._state.manageState(
-                #             ScreenState.actions["GAME_OVER"], self)
+                self._game.handleEvent(event) 
+                
             elif self._state == ScreenState.state["MAIN_MENU"]:
                 choice = self._mainMenu.handleEvent(event)
                 if choice == START_SINGLE_PLAYER:

@@ -63,7 +63,6 @@ def main():
                 RUNNING = False
                 break
 
-        # TODO continuasly updat via script if in game, 
         screenManager.handelBot()
 
 
