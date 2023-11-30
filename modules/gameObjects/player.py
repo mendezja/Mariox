@@ -420,12 +420,12 @@ class Gun(Animated):
             self.addBazooBullet(newPosition)
 
     def addAkBullets(self,position):
-        if len(self._bullets) <= 4:
+        if len(self._bullets) < 3:
             self._bullets.append(
                         Bullet(self._bulletName, position, self._state.getFacing(), self._bulletSpeed))
 
     def addBazooBullet(self,position):
-        if len (self._bullets) < 2: 
+        if len (self._bullets) < 1: 
             if time.clock_gettime(0) - self._lastShot > 1:
                         self._bullets.append(
                             Bullet(self._bulletName, position, self._state.getFacing(), self._bulletSpeed))

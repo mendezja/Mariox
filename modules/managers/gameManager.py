@@ -293,21 +293,23 @@ class GameManager(BasicManager):
 
     def getState(self):
         """Gets state for RL agent, returns list of bullet states, the bot state, and the player state as a tuple"""
-        bulletsState = []
-        for player in self._players:
+        
+        bulletsState = [(Vector2(0.0,0.0), Vector2(0.0,0.0), 0) for _ in range(8)]
+        b_indx = 0
+        for player in self._players: 
             if player._hasGun:
                     for bullet in player.getBullets():
-                        bulletsState.append((bullet._velocity, bullet._position, bullet._timeToLive))
-
-        botState = None
-        for player in self._players:
-            if player._isBot:
-                botState = (player._velocity, player._jSpeed, player._jumpTimer, player._lives, player._position)
+                        bulletsState[b_indx] = ((bullet._velocity, bullet._position, bullet._timeToLive))
+                        b_indx +=1 
+                    
+        # Store player state info (velocity, vertical speed, )
+        luigiState, marioState = None, None
         
-        playerState = None
         for player in self._players:
-            if player._isBot:
-                playerState = (player._velocity, player._jSpeed, player._jumpTimer, player._lives, player._position)
+            if player._imageName == "mario.png":
+                marioState = (player._velocity, player._jSpeed, player._jumpTimer, player._lives, player._position)
+            elif player._imageName == "luigi.png":
+                luigiState = (player._velocity, player._jSpeed, player._jumpTimer, player._lives, player._position)
         
-        return (bulletsState, botState, playerState)
+        return (bulletsState, luigiState, marioState)
     
