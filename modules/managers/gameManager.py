@@ -306,10 +306,12 @@ class GameManager(BasicManager):
         luigiState, marioState = None, None
         
         for player in self._players:
+            gun_type = 0 if player._currentGun._imageName == "bazooka.png" else 1
+
             if player._imageName == "mario.png":
-                marioState = (player._velocity, player._jSpeed, player._jumpTimer, player._lives, player._position)
+                marioState = (player._velocity, player._lives, player._position, gun_type ) # player._jSpeed, player._jumpTimer,
             elif player._imageName == "luigi.png":
-                luigiState = (player._velocity, player._jSpeed, player._jumpTimer, player._lives, player._position)
+                luigiState = (player._velocity, player._lives, player._position,  gun_type) # player._jSpeed, player._jumpTimer,
         
         return (bulletsState, luigiState, marioState)
     

@@ -5,8 +5,8 @@ from modules.managers.gameManager import GameManager
 from modules.UI.screenInfo import SCREEN_SIZE, UPSCALED_SCREEN_SIZE 
 from modules.managers.gamemodes import *
 
-# must be < 0.4
-SECONDS = 0.01
+# must be < 0.5
+SECONDS = 0.017
 
 def main():
 
@@ -17,7 +17,7 @@ def main():
 
     # Initalize game (unique to AI bot training)
     game = GameManager(
-                SCREEN_SIZE, BATTLE_AI, "battleWorld3.txt", [], False)
+                SCREEN_SIZE, BATTLE_AI, "battleWorld3.txt", [], render_screen=False)
 
     # get action set info
     action_set = list(ACTIONS.keys())

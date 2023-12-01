@@ -37,8 +37,8 @@ def main():
     # Make a game clock for nice, smooth animations
     gameClock = pygame.time.Clock()
 
-    RUNNING = True
-
+    RUNNING = True 
+    
     while RUNNING:
 
         screenManager.draw(drawSurface)
@@ -71,8 +71,9 @@ def main():
 
         # Get some time in seconds
         seconds = min(0.5, gameClock.get_time() / 1000)
-
+     
         screenManager.update(seconds)
+
 
 
 if __name__ == "__main__":
