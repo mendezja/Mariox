@@ -313,5 +313,5 @@ class GameManager(BasicManager):
             elif player._imageName == "luigi.png":
                 luigiState = (player._velocity, player._lives, player._position,  gun_type) # player._jSpeed, player._jumpTimer,
         
-        return (bulletsState, luigiState, marioState)
+        return ( marioState, luigiState, bulletsState)
     

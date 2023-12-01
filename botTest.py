@@ -29,9 +29,9 @@ def main():
         # Print state info
         obs = game.getState() 
         print("\n\nSTATE OBS:")
-        print("Bullets: ", obs[0])
+        print("Mario: ", obs[0])
         print("Luigi: ", obs[1])
-        print("Mario: ", obs[2])
+        print("Bullets: ", obs[2])
 
         # Select Rand Actions
         actions = [action_set[random.randint(0,action_qty-1)] for _ in range(2)]
