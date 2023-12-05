@@ -1,9 +1,17 @@
+import os
+
+os.environ["KMP_DUPLICATE_LIB_OK"] = "True"
+
+import random, datetime
+from pathlib import Path
+
 import pygame
 import random
 from modules.managers.gameManager import GameManager
 from modules.UI.screenInfo import SCREEN_SIZE, UPSCALED_SCREEN_SIZE
 from modules.managers.gamemodes import *
 from modules.env import GunGameEnv
+from modules.agent import Mario
 import random
 from typing import Callable, Tuple
 
@@ -27,6 +35,18 @@ pygame.display.set_mode(list(UPSCALED_SCREEN_SIZE), flags=pygame.HIDDEN)
 
 # Initalize game env (unique to AI bot training)
 env = GunGameEnv()
+
+save_dir = Path("checkpoints") / datetime.datetime.now().strftime("%Y-%m-%dT%H-%M-%S")
+save_dir.mkdir(parents=True)
+
+checkpoint = None
+mario = Mario(
+    # 6 features for each player, 5 features for each of 8 bullets
+    state_dim=(52),
+    action_dim=env.action_qty,
+    save_dir=save_dir,
+    checkpoint=checkpoint,
+)
 
 
 def main():
