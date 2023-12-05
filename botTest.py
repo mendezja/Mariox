@@ -1,8 +1,7 @@
-
-import pygame  
+import pygame
 import random
 from modules.managers.gameManager import GameManager
-from modules.UI.screenInfo import SCREEN_SIZE, UPSCALED_SCREEN_SIZE 
+from modules.UI.screenInfo import SCREEN_SIZE, UPSCALED_SCREEN_SIZE
 from modules.managers.gamemodes import *
 from modules.env import GunGameEnv
 import random
@@ -19,29 +18,57 @@ from torch import distributions
 # must be < 0.5
 SECONDS = 0.017
 
+episodes = 10
+
+# Load pygame basics to keep it from getting upset
+pygame.init()
+pygame.display.set_caption("M@rio+")
+pygame.display.set_mode(list(UPSCALED_SCREEN_SIZE), flags=pygame.HIDDEN)
+
+# Initalize game env (unique to AI bot training)
+env = GunGameEnv()
+
+
 def main():
+    for e in range(episodes):
+        state = env.reset()
 
-    # Load pygame basics to keep it from getting upset 
-    pygame.init()
-    pygame.display.set_caption("M@rio+")
-    pygame.display.set_mode(list(UPSCALED_SCREEN_SIZE), flags=pygame.HIDDEN)
+        # get action set info
+        action_set = env.action_set
+        action_qty = env.action_qty
 
-    # Initalize game env (unique to AI bot training)
-    env = GunGameEnv()
+        gameOver = False
 
-    # get action set info
-    action_set = env.action_set
-    action_qty = env.action_qty
+        # While game is not won perform steps
+        while not gameOver:
+            # Select Rand Actions
+            actions = [action_set[random.randint(0, action_qty - 1)] for _ in range(2)]
 
-    # While game is not won perform steps
-    while not env.done:
+            # Step with actions and report
+            state, rewards, done = env.step(actions)
 
-        # Select Rand Actions
-        actions = [action_set[random.randint(0,action_qty-1)] for _ in range(2)]
+            # Prints out state, actions, and rewards when rewards are > 0 for debugging
+            if rewards[0] > 0 or rewards[1] > 0:
+                print("\n\nSTATE OBS:")
+                print("Mario: ", state[0])
+                print("Luigi: ", state[1])
+                print("Bullets: ", state[2])
 
-        # Step with actions and report
-        state, rewards, done = env.step(actions)
-        
-    
+                print("\nPLAYER ACTIONS:")
+                print("Mario: ", actions[0])
+                print("Luigi: ", actions[1])
+
+                print("\nPLAYER REWARDS:")
+                print("Mario: ", rewards[0])
+                print("Luigi: ", rewards[1])
+
+                print("\nMario health: ", env.game._players[0]._lives)
+                print("Luigi health: ", env.game._players[1]._lives)
+
+                print(f"\nEpisode {e}")
+
+            gameOver = done
+
+
 if __name__ == "__main__":
     main()

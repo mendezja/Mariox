@@ -244,7 +244,15 @@ class GameManager(BasicManager):
                     if self._mode in [TWO_PLAYER, BATTLE, BATTLE_AI]:
                         index = (self._players.index(player) +
                                  1) % 2  # Gets index of other player
-                        self._winner = self._players[index]._imageName                    
+                        self._winner = self._players[index]._imageName
+
+                        # Return large positive reward for winning, large negative for losing
+                        if self._winner == "mario.png":
+                            return (100, -100)
+                        else:
+                            return (-100, 100)
+                        
+
                     return
 
                 player.update(seconds, GameManager.WORLD_SIZE)
@@ -270,8 +278,8 @@ class GameManager(BasicManager):
 
             reward_mario = finalHealth_mario - initialHealth_mario + initialHealth_luigi - finalHealth_luigi
             reward_luigi = finalHealth_luigi - initialHealth_luigi + initialHealth_mario - finalHealth_mario
-            # print(f"Reward Mario: {reward_mario}")
-            # print(f"Reward Luigi: {reward_luigi}")
+            # print(f"\nReward Mario: {finalHealth_mario}, {initialHealth_mario}")
+            # print(f"\nReward Luigi: {finalHealth_luigi}, {initialHealth_luigi}")
 
             return (reward_mario, reward_luigi)
 
