@@ -43,7 +43,7 @@ class Mario:
             self.load(checkpoint)
 
         # Loss and optimizer
-        self.optimizer = torch.optim.Adam(self.net.parameters(), lr=0.00025)
+        self.optimizer = torch.optim.Adam(self.net.parameters(), lr=0.00035)
         self.loss_fn = torch.nn.SmoothL1Loss()
 
 
