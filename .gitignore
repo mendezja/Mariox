@@ -1,3 +1,7 @@
+# RL
+checkpoints/
+!checkpoints/mario/2023-12-07T12-15-28/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

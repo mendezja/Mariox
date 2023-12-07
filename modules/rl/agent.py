@@ -2,7 +2,7 @@ import torch
 import random, numpy as np
 from pathlib import Path
 
-from neural import MarioNet
+from modules.rl.neural import MarioNet
 from collections import deque
 
 
@@ -23,14 +23,14 @@ class Mario:
        
         self.curr_step = 0
         # Min number of experiences before training
-        self.burnin = 1e5  
+        self.burnin = 1e4  
         # Number of experiences between updates to Q online
         self.learn_every = 3 
         # Number of experiences between Q target and Q online
-        self.sync_every = 1e4   
+        self.sync_every = 1e3   
 
         # number of experiences between saving the network
-        self.save_every = 5e5   
+        self.save_every = 5e4   
         self.save_dir = save_dir
 
         self.use_cuda = torch.cuda.is_available()
@@ -69,14 +69,21 @@ class Mario:
         # Increment step
         self.curr_step += 1
         return action_idx
+    
 
     def cache(self, state, next_state, action, reward, done):
         """Store the experience to self.memory"""
-        state = torch.FloatTensor(state).cuda() if self.use_cuda else torch.FloatTensor(state)
-        next_state = torch.FloatTensor(next_state).cuda() if self.use_cuda else torch.FloatTensor(next_state)
-        action = torch.LongTensor([action]).cuda() if self.use_cuda else torch.LongTensor([action])
-        reward = torch.DoubleTensor([reward]).cuda() if self.use_cuda else torch.DoubleTensor([reward])
-        done = torch.BoolTensor([done]).cuda() if self.use_cuda else torch.BoolTensor([done])
+        # print(state)
+        state = torch.tensor(state, dtype=torch.float32)
+        next_state = torch.tensor(next_state, dtype=torch.float32)
+        action = torch.tensor([int(action)], dtype=torch.int32)
+        reward = torch.tensor([reward], dtype=torch.int32)
+        done = torch.tensor([done], dtype=torch.bool)
+        # state = torch.FloatTensor(state).cuda() if self.use_cuda else torch.FloatTensor(state)
+        # next_state = torch.FloatTensor(next_state).cuda() if self.use_cuda else torch.FloatTensor(next_state)
+        # action = torch.LongTensor([action]).cuda() if self.use_cuda else torch.LongTensor([action])
+        # reward = torch.DoubleTensor([reward]).cuda() if self.use_cuda else torch.DoubleTensor([reward])
+        # done = torch.BoolTensor([done]).cuda() if self.use_cuda else torch.BoolTensor([done])
 
         self.memory.append( (state, next_state, action, reward, done,) )
 
@@ -122,8 +129,12 @@ class Mario:
 
     def learn(self):
         """Update online action value (Q) function with a batch of experiences"""
+        # print("Current step: ", self.curr_step)
+        # print("Burnin: ", self.burnin)
+        # print("Save every: ", self.save_every)
         # If in sync step, sync target and online nets
         if self.curr_step % self.sync_every == 0:
+            # print("Syncing...")
             self.sync_Q_target()
 
         # If in save step, save nets
@@ -138,6 +149,8 @@ class Mario:
         if self.curr_step % self.learn_every != 0:
             return None, None
 
+        # print("got to this step")
+
         # Sample from memory
         state, next_state, action, reward, done = self.recall()
 
@@ -149,6 +162,8 @@ class Mario:
 
         # Backpropagate loss through Q_online
         loss = self.update_Q_online(td_est, td_tgt)
+
+        # print(td_est.mean().item(), loss)
 
         return (td_est.mean().item(), loss)
 

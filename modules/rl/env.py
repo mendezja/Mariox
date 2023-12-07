@@ -3,7 +3,7 @@ import random
 from modules.managers.gameManager import GameManager
 from modules.UI.screenInfo import SCREEN_SIZE, UPSCALED_SCREEN_SIZE
 from modules.managers.gamemodes import *
-
+import numpy as np
 
 # must be < 0.5
 SECONDS = 0.017
@@ -24,9 +24,16 @@ class GunGameEnv:
 
         rewards = self.game.update(SECONDS)
 
-        self.state = self.game.getState()
 
-        done = self.game.isWon()
+        state = self.game.getState()
+        mario_state = np.array(state[0])
+        luigi_state = np.array(state[1])
+        bullets_state = np.array(state[2]).flatten()
+        self.state = np.concatenate((mario_state, luigi_state, bullets_state))
+        
+        done = False
+        if self.game.isWon():
+            done = True
 
         return self.state, rewards, done
 
@@ -34,6 +41,10 @@ class GunGameEnv:
         self.game = GameManager(
             SCREEN_SIZE, BATTLE_AI, "battleWorld3.txt", [], render_screen=False
         )
-        self.state = self.game.getState()
+        state = self.game.getState()
+        mario_state = np.array(state[0])
+        luigi_state = np.array(state[1])
+        bullets_state = np.array(state[2]).flatten()
+        self.state = np.concatenate((mario_state, luigi_state, bullets_state))
         self.done = False
         return self.state
