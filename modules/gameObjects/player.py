@@ -41,7 +41,7 @@ class Player(Mobile):
         if self._hasGun: 
             self._guns = [Gun("bazooka.png",self), Gun("ak47.png", self)]
             self._gunNum = 1
-            self._currentGun = self._guns[0]
+            self._currentGun = self._guns[1]
         else:
             self._currentGun = None
 
@@ -134,20 +134,16 @@ class Player(Mobile):
         elif self._hasGun:
             if action == 3:
                 self._currentGun.addBullets(self._position) 
-            elif action == 4:           
-                self._currentGun = self._guns[1]
-            elif action == 5:
-                self._currentGun = self._guns[0]
         
-        elif action == 6:
+        elif action == 4:
             self._pressedUp = False
             self._state.manageState("fall", self)
 
-        elif action == 7:
+        elif action == 5:
             self._pressedRight = False
             self._state.manageState("stopright", self)
 
-        elif action == 8:
+        elif action == 6:
             self._pressedLeft = False
             self._state.manageState("stopleft", self)
 
@@ -189,26 +185,20 @@ class Player(Mobile):
                 self._currentGun.addBullets(self._position)
                 eventAction = 3
                 
-            elif event.key == pygame.K_2 and self._hasGun:
-                self._currentGun = self._guns[1]
-                eventAction = 4
-            elif event.key == pygame.K_1 and self._hasGun:
-                self._currentGun = self._guns[0]
-                eventAction = 5
 
         elif event.type == pygame.KEYUP:
 
             if event.key == pygame.K_UP:
                 self._state.manageState("fall", self)
-                eventAction = 6
+                eventAction = 4
 
             elif event.key == pygame.K_LEFT:
                 self._state.manageState("stopleft", self)
-                eventAction= 7
+                eventAction= 5
 
             elif event.key == pygame.K_RIGHT:
                 self._state.manageState("stopright", self)
-                eventAction = 8
+                eventAction = 6
         # print eventAction)
         if UPDATE_SCRIPT and not self._isBot:
             file1 = open(os.path.join("resources", "bot_script", 'moves.txt'), 'a')
@@ -353,7 +343,7 @@ class Gun(Animated):
     _bullet_names = {"ak47.png": "akBullet.png",
                     "bazooka.png": "bulletbill.png"
                     }
-    _bullet_speeds = {"ak47.png": 140,
+    _bullet_speeds = {"ak47.png": 200,
                     "bazooka.png": 70
                     }
     
