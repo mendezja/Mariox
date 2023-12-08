@@ -16,9 +16,9 @@ class Mario:
 
         # Exploration settings
         self.exploration_rate = 1
-        self.exploration_rate_decay = 0.99999975
+        self.exploration_rate_decay = 0.995
         self.exploration_rate_min = 0.1
-        self.gamma = 0.9
+        self.gamma = 0.92
 
        
         self.curr_step = 0
@@ -43,7 +43,7 @@ class Mario:
             self.load(checkpoint)
 
         # Loss and optimizer
-        self.optimizer = torch.optim.Adam(self.net.parameters(), lr=0.00025)
+        self.optimizer = torch.optim.Adam(self.net.parameters(), lr=0.0001)
         self.loss_fn = torch.nn.SmoothL1Loss()
 
 
