@@ -363,11 +363,11 @@ class GameManager(BasicManager):
             if player._hasGun:
                 for bullet in player.getBullets():
                     bulletsState[b_indx] = [
-                        float(bullet._velocity[0]),
-                        float(bullet._velocity[1]),
-                        float(bullet._position[0]),
-                        float(bullet._position[1]),
-                        float(bullet._timeToLive),
+                        float(bullet._velocity[0] / 100),
+                        float(bullet._velocity[1] / 100),
+                        float(bullet._position[0] / self.WORLD_SIZE[0]),
+                        float(bullet._position[1] / self.WORLD_SIZE[1]),
+                        float(bullet._timeToLive / 3),
                     ]
                     b_indx += 1
 
@@ -379,21 +379,21 @@ class GameManager(BasicManager):
 
             if player._imageName == "mario.png":
                 marioState = (
-                    float(player._velocity[0]),
-                    float(player._velocity[1]),
-                    float(player._position[0]),
-                    float(player._position[1]),
-                    float(player._lives),
+                    float(player._velocity[0] / 100),
+                    float(player._velocity[1] / 100),
+                    float(player._position[0] / self.WORLD_SIZE[0]),
+                    float(player._position[1] / self.WORLD_SIZE[1]),
+                    float(player._lives / 100),
                     float(gun_type),
                 )  # player._jSpeed, player._jumpTimer,
             elif player._imageName == "luigi.png":
                 luigiState = (
-                    float(player._velocity[0]),
-                    float(player._velocity[1]),
-                    float(player._position[0]),
-                    float(player._position[1]),
-                    float(player._lives),
-                    float(gun_type),
+                    float(player._velocity[0] / 100),
+                    float(player._velocity[1] / 100),
+                    float(player._position[0] / self.WORLD_SIZE[0]),
+                    float(player._position[1] / self.WORLD_SIZE[1]),
+                    float(player._lives / 100),
+                    float(gun_type / 3),
                 )  # player._jSpeed, player._jumpTimer,
 
         return (marioState, luigiState, bulletsState)

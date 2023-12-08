@@ -30,7 +30,11 @@ class GunGameEnv:
         luigi_state = np.array(state[1])
         bullets_state = np.array(state[2]).flatten()
         self.state = np.concatenate((mario_state, luigi_state, bullets_state))
-        
+
+        # print("Mario: ", mario_state) 
+        # print("Luigi: ", luigi_state)
+        # print("Bullets: ", bullets_state)
+
         done = False
         if self.game.isWon():
             done = True

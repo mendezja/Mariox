@@ -27,7 +27,7 @@ from torch import distributions
 # must be < 0.5
 SECONDS = 0.017
 
-episodes = 100
+episodes = 1000
 
 # Load pygame basics to keep it from getting upset
 pygame.init()
@@ -43,7 +43,8 @@ save_dir.mkdir(parents=True)
 logger = MetricLogger(save_dir)
 
 # Load checkpoint if available, change path to most recent
-MOST_RECENT_CHECKPOINT = "checkpoints/mario/2023-12-07T12-15-28/mario_net_20.chkpt"
+# MOST_RECENT_CHECKPOINT = "checkpoints/mario/2023-12-08T12-56-22/mario_net_19.chkpt"
+MOST_RECENT_CHECKPOINT = "NONE"
 checkpoint = (
     Path(MOST_RECENT_CHECKPOINT)
     if os.path.exists(MOST_RECENT_CHECKPOINT)
@@ -84,6 +85,7 @@ def main():
 
             # Step with actions for both players and report
             next_state, rewards, done = env.step(actions)
+            
             mario_reward = rewards[0]
 
             # Remember

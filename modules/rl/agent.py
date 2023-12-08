@@ -18,19 +18,19 @@ class Mario:
         self.exploration_rate = 1
         self.exploration_rate_decay = 0.99999975
         self.exploration_rate_min = 0.1
-        self.gamma = 0.9
+        self.gamma = 0.99
 
        
         self.curr_step = 0
         # Min number of experiences before training
-        self.burnin = 1e4  
+        self.burnin = 1e5  
         # Number of experiences between updates to Q online
         self.learn_every = 3 
         # Number of experiences between Q target and Q online
-        self.sync_every = 1e3   
+        self.sync_every = 1e5   
 
         # number of experiences between saving the network
-        self.save_every = 5e4   
+        self.save_every = 1e5   
         self.save_dir = save_dir
 
         self.use_cuda = torch.cuda.is_available()
@@ -149,8 +149,6 @@ class Mario:
         if self.curr_step % self.learn_every != 0:
             return None, None
 
-        # print("got to this step")
-
         # Sample from memory
         state, next_state, action, reward, done = self.recall()
 
@@ -162,8 +160,6 @@ class Mario:
 
         # Backpropagate loss through Q_online
         loss = self.update_Q_online(td_est, td_tgt)
-
-        # print(td_est.mean().item(), loss)
 
         return (td_est.mean().item(), loss)
 
