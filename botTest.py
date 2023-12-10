@@ -57,7 +57,7 @@ mario = Mario(
     state_dim=(52),
     action_dim=env.action_qty,
     save_dir=save_dir,
-    checkpoint=checkpoint,
+    checkpoint=checkpoint
 )
 
 def main():

@@ -225,8 +225,13 @@ class GameManager(BasicManager):
     # Specifically for self-play Bot training
     def updateBots(self, actions):
         if not self._gameOver:
-            self._players[0].updateBot(actions[0])
-            self._players[1].updateBot(actions[1])
+            state = self.getState()
+            mario_state = np.array(state[0])
+            luigi_state = np.array(state[1])
+            bullets_state = np.array(state[2]).flatten()
+            state = np.concatenate((mario_state, luigi_state, bullets_state))
+            self._players[0].updateBot(state=state, action=actions[0])
+            self._players[1].updateBot(state=state, action=actions[1])
 
     # Hand player moves, for human players
     def handleEvent(self, event):
