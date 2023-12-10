@@ -18,7 +18,7 @@ import datetime
 from pathlib import Path
 
 
-MOST_RECENT_CHECKPOINT = "checkpoints/mario/2023-12-09T10-55-06/mario_net_40.chkpt"
+MOST_RECENT_CHECKPOINT = "checkpoints/mario/2023-12-09T21-54-07/mario_net_1.chkpt"
 checkpoint = (
     Path(MOST_RECENT_CHECKPOINT)
     if os.path.exists(MOST_RECENT_CHECKPOINT)

@@ -145,7 +145,7 @@ class GameManager(BasicManager):
                                 self._joysticks[0]
                                 if len(self._joysticks) >= 1
                                 else None,
-                                hasGun=(self._mode in [BATTLE, BATTLE_AI]),
+                                hasGun=(self._mode in [BATTLE, BATTLE_AI])
                             )
                         )
 
@@ -160,7 +160,7 @@ class GameManager(BasicManager):
                                 None,
                                 hasGun=True,
                                 isBot=True,
-                                isGame=True
+                                isGame=False
                             )
                         )
 
