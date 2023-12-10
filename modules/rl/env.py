@@ -24,14 +24,9 @@ class GunGameEnv:
 
         rewards = self.game.update(SECONDS)
 
+        self.state = self.game.getState()
 
-        state = self.game.getState()
-        mario_state = np.array(state[0])
-        luigi_state = np.array(state[1])
-        bullets_state = np.array(state[2]).flatten()
-        self.state = np.concatenate((mario_state, luigi_state, bullets_state))
-
-        # print("Mario: ", mario_state) 
+        # print("Mario: ", mario_state)
         # print("Luigi: ", luigi_state)
         # print("Bullets: ", bullets_state)
 
@@ -45,10 +40,7 @@ class GunGameEnv:
         self.game = GameManager(
             SCREEN_SIZE, BATTLE_AI, "battleWorld3.txt", [], render_screen=False
         )
-        state = self.game.getState()
-        mario_state = np.array(state[0])
-        luigi_state = np.array(state[1])
-        bullets_state = np.array(state[2]).flatten()
-        self.state = np.concatenate((mario_state, luigi_state, bullets_state))
+        self.state = self.game.getState()
+
         self.done = False
         return self.state

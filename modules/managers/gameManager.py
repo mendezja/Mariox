@@ -13,7 +13,7 @@ from .gamemodes import *
 from pygame.joystick import Joystick
 import pygame
 from ..utils.actions import Actions
-
+import numpy as np
 
 class GameManager(BasicManager):
     WORLD_SIZE = None
@@ -213,7 +213,8 @@ class GameManager(BasicManager):
     # Used for bot control during Battle_AI
     def updateBot(self):
         if not self._gameOver:
-            self._players[1].updateBot()
+            action_idx = self._players[1].act(self.getState())
+            self._players[1].updateBot(action_idx)
 
     # Specifically for self-play Bot training
     def updateBots(self, actions):
@@ -396,4 +397,7 @@ class GameManager(BasicManager):
                     float(gun_type / 3),
                 )  # player._jSpeed, player._jumpTimer,
 
-        return (marioState, luigiState, bulletsState)
+        
+        self.state = np.concatenate((np.array(marioState), np.array(luigiState), np.array(bulletsState).flatten()))
+
+        return self.state

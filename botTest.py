@@ -51,8 +51,6 @@ checkpoint = (
     else None
 )
 
-print(checkpoint)
-
 mario = Mario(
     # 6 features for each player, 5 features for each of 8 bullets
     state_dim=(52),
