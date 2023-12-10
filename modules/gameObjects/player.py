@@ -16,6 +16,10 @@ from typing import List
 from modules.rl.agent import Mario
 import datetime
 from pathlib import Path
+import random
+
+action_set = list(ACTIONS.keys())
+action_qty = len(action_set)
 
 
 MOST_RECENT_CHECKPOINT = "checkpoints/mario/2023-12-09T21-54-07/mario_net_1.chkpt"
@@ -116,14 +120,17 @@ class Player(Mobile):
     def updateBot(self, state, action=None): 
 
         # If bot is CPU, select next move in script
-        if not action and self._isBot:
-            action = self.bot.act(state)
+        if not action and self._isBot:        
+            # Random  
+            action = int(action_set[random.randint(0, action_qty - 1)])
+
+            # Neural net
+            # action = self.bot.act(state)
      
         # Map action str to int
         # Confirm it is valid action - set to None otherwise
         if str(action) not in list(ACTIONS.keys()):
             action = None 
-
         
         # Act according to action
         if action == 0:
