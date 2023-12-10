@@ -62,7 +62,7 @@ class Player(Mobile):
                 action_dim=len(list(ACTIONS.keys())),
                 save_dir=save_dir,
                 checkpoint=checkpoint,
-                isGame = True
+                isGame=isGame
             )
 
 
