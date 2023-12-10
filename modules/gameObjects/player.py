@@ -122,10 +122,10 @@ class Player(Mobile):
         # If bot is CPU, select next move in script
         if not action and self._isBot:        
             # Random  
-            action = int(action_set[random.randint(0, action_qty - 1)])
+            # action = int(action_set[random.randint(0, action_qty - 1)])
 
             # Neural net
-            # action = self.bot.act(state)
+            action = self.bot.act(state)
      
         # Map action str to int
         # Confirm it is valid action - set to None otherwise
