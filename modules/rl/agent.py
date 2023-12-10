@@ -7,7 +7,7 @@ from collections import deque
 
 
 class Mario:
-    def __init__(self, state_dim, action_dim, save_dir, checkpoint=None):
+    def __init__(self, state_dim, action_dim, save_dir, checkpoint=None, isGame = False):
         # Assign state and action dimensions, create memory buffer
         self.state_dim = state_dim
         self.action_dim = action_dim
@@ -19,6 +19,12 @@ class Mario:
         self.exploration_rate_decay = 0.9999975
         self.exploration_rate_min = 0.1
         self.gamma = 0.9
+
+        self.isGame = isGame
+        if isGame:
+            self.exploration_rate = 0
+            self.exploration_rate_decay = 0
+            self.exploration_rate_min = 0
 
        
         self.curr_step = 0
@@ -57,6 +63,7 @@ class Mario:
         else:
             state = torch.FloatTensor(state).cuda() if self.use_cuda else torch.FloatTensor(state)
             state = state.unsqueeze(0)
+
             # Greedy action using online DQN
             action_values = self.net(state, model='online')
             # Get argmax of Q values

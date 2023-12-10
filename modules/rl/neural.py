@@ -9,11 +9,9 @@ class MarioNet(nn.Module):
         super().__init__()
 
         self.online = nn.Sequential(
-            nn.Linear(input_dim, 128),
+            nn.Linear(input_dim, 32),
             nn.ReLU(),
-            nn.Linear(128, 256),
-            nn.ReLU(),
-            nn.Linear(256, output_dim)
+            nn.Linear(32, output_dim)
             # nn.Conv2d(in_channels=c, out_channels=32, kernel_size=8, stride=4),
             # nn.ReLU(),
             # nn.Conv2d(in_channels=32, out_channels=64, kernel_size=4, stride=2),

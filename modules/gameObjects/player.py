@@ -13,12 +13,23 @@ from pygame.event import Event
 from pygame.joystick import Joystick
 from .items import BasicItemManager, RectBarItem
 from typing import List
+from modules.rl.agent import Mario
+import datetime
+from pathlib import Path
 
-UPDATE_SCRIPT = False
+
+MOST_RECENT_CHECKPOINT = "checkpoints/mario/2023-12-09T10-55-06/mario_net_40.chkpt"
+checkpoint = (
+    Path(MOST_RECENT_CHECKPOINT)
+    if os.path.exists(MOST_RECENT_CHECKPOINT)
+    else None
+)
+save_dir = Path("checkpoints/mario") / datetime.datetime.now().strftime("%Y-%m-%dT%H-%M-%S")
+save_dir.mkdir(parents=True)
 
 
 class Player(Mobile):
-    def __init__(self, imageName: str, position: Vector2, joystick: Joystick = None, hasGun=False, isBot=False):
+    def __init__(self, imageName: str, position: Vector2, joystick: Joystick = None, hasGun=False, isBot=False, isGame = False):
         super().__init__(imageName, position)
         self._killSound = "mario_die.wav"
 
@@ -45,14 +56,15 @@ class Player(Mobile):
         else:
             self._currentGun = None
 
-        if self._isBot and not UPDATE_SCRIPT:
-            f = open(os.path.join("resources", "bot_script", 'moves.txt'),"r" ) 
-            self.moves = [line.rstrip('\n') for line in f]
-            self.step = 0
-            # print(self.moves)
+        if self._isBot:
+            self.bot = Mario(
+                state_dim=(52),
+                action_dim=len(list(ACTIONS.keys())),
+                save_dir=save_dir,
+                checkpoint=checkpoint,
+                isGame = True
+            )
 
-        if not self._isBot and UPDATE_SCRIPT: open(os.path.join("resources", "bot_script", 'moves.txt'), "w").close()
-          
 
         self._stats = BasicItemManager()
         self._stats.addItem("health",
@@ -101,24 +113,16 @@ class Player(Mobile):
             if self._jumpTimer < 0:
                 self._state.manageState("fall", self)
 
-    def updateBot(self, action=None): 
+    def updateBot(self, state, action=None): 
 
         # If bot is CPU, select next move in script
-        if not action and self._isBot and not UPDATE_SCRIPT: 
-            # Select next action in moves script
-            try:
-                action = self.moves[self.step]
-            except: 
-                action = None
-
-            self.step += 1
+        if not action and self._isBot:
+            action = self.bot.act(state)
      
         # Map action str to int
         # Confirm it is valid action - set to None otherwise
-        if action in list(ACTIONS.keys()):
-                action = int(action) 
-        else:
-                action = None 
+        if str(action) not in list(ACTIONS.keys()):
+            action = None 
 
         
         # Act according to action
@@ -152,12 +156,6 @@ class Player(Mobile):
 
         else: 
             raise Exception("Invalid Action: " + str(action))
-        
-        # Match Player speed using None, if updating script
-        if UPDATE_SCRIPT and self._isBot:
-            file1 = open(os.path.join("resources", "bot_script", 'moves.txt'), 'a')
-            file1.write(str (None)+ '\n')
-            file1.close()
 
 
     def handleEvent(self, event: Event):
@@ -199,11 +197,6 @@ class Player(Mobile):
             elif event.key == pygame.K_RIGHT:
                 self._state.manageState("stopright", self)
                 eventAction = 6
-        # print eventAction)
-        if UPDATE_SCRIPT and not self._isBot:
-            file1 = open(os.path.join("resources", "bot_script", 'moves.txt'), 'a')
-            file1.write(str (eventAction)+ '\n')
-            file1.close()
 
         # Joystick
         if event.type == pygame.JOYBUTTONDOWN:

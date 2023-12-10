@@ -13,6 +13,7 @@ from .gamemodes import *
 from pygame.joystick import Joystick
 import pygame
 from ..utils.actions import Actions
+import numpy as np
 
 
 class GameManager(BasicManager):
@@ -159,6 +160,7 @@ class GameManager(BasicManager):
                                 None,
                                 hasGun=True,
                                 isBot=True,
+                                isGame=True
                             )
                         )
 
@@ -213,7 +215,12 @@ class GameManager(BasicManager):
     # Used for bot control during Battle_AI
     def updateBot(self):
         if not self._gameOver:
-            self._players[1].updateBot()
+            state = self.getState()
+            mario_state = np.array(state[0])
+            luigi_state = np.array(state[1])
+            bullets_state = np.array(state[2]).flatten()
+            state = np.concatenate((mario_state, luigi_state, bullets_state))
+            self._players[1].updateBot(state=state)
 
     # Specifically for self-play Bot training
     def updateBots(self, actions):
