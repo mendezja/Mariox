@@ -1,6 +1,6 @@
 # RL
 checkpoints/
-!checkpoints/mario/2023-12-07T12-15-28/
+!checkpoints/mario/2023-12-09T10-55-06/mario_net_40.chkpt
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
