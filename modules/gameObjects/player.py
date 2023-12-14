@@ -15,16 +15,16 @@ from .items import BasicItemManager, RectBarItem
 from typing import List
 import torch
 from pathlib import Path
-from ..rl.agent import Mario
+from ..rl.agent import Agent
 import datetime
 
 
 UPDATE_SCRIPT = False
-MOST_RECENT_CHECKPOINT = "checkpoints/mario/2023-12-08T13-40-34/mario_net_91.chkpt"
+MOST_RECENT_CHECKPOINT = "checkpoints/luigi/2023-12-14T09-53-39/mario_net_60.chkpt"
 STATE_DIM = 52
 ACTION_DIM = 9
 
-save_dir = Path("checkpoints/mario") / datetime.datetime.now().strftime("%Y-%m-%dT%H-%M-%S")
+save_dir = Path("checkpoints/luigi") / datetime.datetime.now().strftime("%Y-%m-%dT%H-%M-%S")
 save_dir.mkdir(parents=True)
 checkpoint = (
     Path(MOST_RECENT_CHECKPOINT)
@@ -46,7 +46,7 @@ class Player(Mobile):
 
         # RL agent
         self._isBot = isBot
-        self.agent = Mario(STATE_DIM, ACTION_DIM, save_dir=Path("checkpoints/mario/2023-12-08T13-40-34"))
+        self.agent = Agent(STATE_DIM, ACTION_DIM, save_dir, checkpoint)
         # self.net = MarioNet(STATE_DIM, ACTION_DIM).float()
         # self.use_cuda = torch.cuda.is_available()
         # self.action_set = list(ACTIONS.keys())

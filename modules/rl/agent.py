@@ -7,7 +7,7 @@ from collections import deque
 from ..managers.gamemodes import ACTIONS
 
 
-class Mario:
+class Agent:
     def __init__(self, state_dim, action_dim, save_dir, checkpoint=None):
         self.action_set = ACTIONS
 
