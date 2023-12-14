@@ -11,17 +11,9 @@ class MarioNet(nn.Module):
         self.online = nn.Sequential(
             nn.Linear(input_dim, 32),
             nn.ReLU(),
-            nn.Linear(32, output_dim)
-            # nn.Conv2d(in_channels=c, out_channels=32, kernel_size=8, stride=4),
-            # nn.ReLU(),
-            # nn.Conv2d(in_channels=32, out_channels=64, kernel_size=4, stride=2),
-            # nn.ReLU(),
-            # nn.Conv2d(in_channels=64, out_channels=64, kernel_size=3, stride=1),
-            # nn.ReLU(),
-            # nn.Flatten(),
-            # nn.Linear(3136, 512),
-            # nn.ReLU(),
-            # nn.Linear(512, output_dim),
+            nn.Linear(32, 64),  # Adding a new layer with output size 64
+            nn.ReLU(), 
+            nn.Linear(64, output_dim)
         )
 
         self.target = copy.deepcopy(self.online)
