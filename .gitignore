@@ -3,7 +3,11 @@ checkpoints/*
 !checkpoints/mario/
 
 checkpoints/mario/*
+# Training against bot randomly acting
 !checkpoints/mario/2023-12-08T13-40-34/
+# Selfplay 
+!checkpoints/mario/2023-12-14T09-53-39/
+!checkpoints/luigi/2023-12-14T09-53-39/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
