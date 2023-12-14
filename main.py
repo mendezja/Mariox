@@ -5,7 +5,6 @@ import os
 from modules.managers.screenManager import ScreenManager
 from modules.UI.screenInfo import SCREEN_SIZE, UPSCALED_SCREEN_SIZE
 
-
 def main():
 
     # initialize the pygame module

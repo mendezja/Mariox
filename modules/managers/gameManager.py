@@ -14,6 +14,8 @@ from pygame.joystick import Joystick
 import pygame
 from ..utils.actions import Actions
 import numpy as np
+from ..rl.checkpoints import battle_ai_ckp
+
 
 class GameManager(BasicManager):
     WORLD_SIZE = None
@@ -35,6 +37,7 @@ class GameManager(BasicManager):
         levelFile: str,
         joysticks: "list[Joystick]",
         render_screen=True,
+        checkpoint=None,
     ):
         self._screenSize = screenSize
         self._levelFile = levelFile
@@ -159,6 +162,7 @@ class GameManager(BasicManager):
                                 None,
                                 hasGun=True,
                                 isBot=True,
+                                checkpoint=(battle_ai_ckp if checkpoint else None)
                             )
                         )
 
@@ -176,6 +180,7 @@ class GameManager(BasicManager):
                         )
 
         if self._mode in [BATTLE, BATTLE_AI]:
+            self.checkpoint = checkpoint
             for player in self._players:
                 player.setSpeed(100)
                 player.setJump(120, 0.3)

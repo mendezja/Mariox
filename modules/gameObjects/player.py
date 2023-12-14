@@ -20,17 +20,11 @@ import datetime
 
 
 UPDATE_SCRIPT = False
-MOST_RECENT_CHECKPOINT = "checkpoints/luigi/2023-12-14T09-53-39/mario_net_60.chkpt"
 STATE_DIM = 52
 ACTION_DIM = 9
 
 save_dir = Path("checkpoints/luigi") / datetime.datetime.now().strftime("%Y-%m-%dT%H-%M-%S")
 save_dir.mkdir(parents=True)
-checkpoint = (
-    Path(MOST_RECENT_CHECKPOINT)
-    if os.path.exists(MOST_RECENT_CHECKPOINT)
-    else None
-)
 
 class Player(Mobile):
     def __init__(
@@ -40,6 +34,7 @@ class Player(Mobile):
         joystick: Joystick = None,
         hasGun=False,
         isBot=False,
+        checkpoint=None
     ):
         super().__init__(imageName, position)
         self._killSound = "mario_die.wav"

@@ -9,8 +9,7 @@ import pygame
 from .gamemodes import *
 from .soundManager import SoundManager
 import time
-import random 
-
+import random
 
 class ScreenManager(BasicManager):
 
