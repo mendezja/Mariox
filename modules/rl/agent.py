@@ -4,10 +4,13 @@ from pathlib import Path
 
 from modules.rl.neural import MarioNet
 from collections import deque
+from ..managers.gamemodes import ACTIONS
 
 
 class Mario:
     def __init__(self, state_dim, action_dim, save_dir, checkpoint=None):
+        self.action_set = ACTIONS
+
         # Assign state and action dimensions, create memory buffer
         self.state_dim = state_dim
         self.action_dim = action_dim
@@ -59,8 +62,11 @@ class Mario:
             state = state.unsqueeze(0)
             # Greedy action using online DQN
             action_values = self.net(state, model='online')
+            # print(action_values)
             # Get argmax of Q values
             action_idx = torch.argmax(action_values, axis=1).item()
+            # if self.action_set[str(action_idx)] == "shoot":
+            #     print("shot")
 
         # Decay exploration rate
         self.exploration_rate *= self.exploration_rate_decay

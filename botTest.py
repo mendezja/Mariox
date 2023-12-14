@@ -43,8 +43,8 @@ save_dir.mkdir(parents=True)
 logger = MetricLogger(save_dir)
 
 # Load checkpoint if available, change path to most recent
-# MOST_RECENT_CHECKPOINT = "checkpoints/mario/2023-12-08T12-56-22/mario_net_19.chkpt"
-MOST_RECENT_CHECKPOINT = "NONE"
+MOST_RECENT_CHECKPOINT = "checkpoints/mario/2023-12-08T13-40-34/mario_net_91.chkpt"
+# MOST_RECENT_CHECKPOINT = "NONE"
 checkpoint = (
     Path(MOST_RECENT_CHECKPOINT)
     if os.path.exists(MOST_RECENT_CHECKPOINT)

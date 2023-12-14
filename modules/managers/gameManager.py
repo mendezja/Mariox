@@ -213,7 +213,7 @@ class GameManager(BasicManager):
     # Used for bot control during Battle_AI
     def updateBot(self):
         if not self._gameOver:
-            action_idx = self._players[1].act(self.getState())
+            action_idx = self._players[1].agent.act(self.getState())
             self._players[1].updateBot(action_idx)
 
     # Specifically for self-play Bot training

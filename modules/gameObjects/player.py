@@ -15,12 +15,22 @@ from .items import BasicItemManager, RectBarItem
 from typing import List
 import torch
 from pathlib import Path
+from ..rl.agent import Mario
+import datetime
 
 
 UPDATE_SCRIPT = False
-NN_LOAD_PATH = "checkpoints/mario/2023-12-08T13-40-34/mario_net_40.chkpt"
+MOST_RECENT_CHECKPOINT = "checkpoints/mario/2023-12-08T13-40-34/mario_net_91.chkpt"
 STATE_DIM = 52
 ACTION_DIM = 9
+
+save_dir = Path("checkpoints/mario") / datetime.datetime.now().strftime("%Y-%m-%dT%H-%M-%S")
+save_dir.mkdir(parents=True)
+checkpoint = (
+    Path(MOST_RECENT_CHECKPOINT)
+    if os.path.exists(MOST_RECENT_CHECKPOINT)
+    else None
+)
 
 class Player(Mobile):
     def __init__(
@@ -36,12 +46,13 @@ class Player(Mobile):
 
         # RL agent
         self._isBot = isBot
-        self.net = MarioNet(STATE_DIM, ACTION_DIM).float()
-        self.use_cuda = torch.cuda.is_available()
-        self.action_set = list(ACTIONS.keys())
-        if isBot:
-            checkpoint = Path(NN_LOAD_PATH) if os.path.exists(NN_LOAD_PATH) else None
-            self.load(checkpoint)
+        self.agent = Mario(STATE_DIM, ACTION_DIM, save_dir=Path("checkpoints/mario/2023-12-08T13-40-34"))
+        # self.net = MarioNet(STATE_DIM, ACTION_DIM).float()
+        # self.use_cuda = torch.cuda.is_available()
+        # self.action_set = list(ACTIONS.keys())
+        # if isBot:
+        #     checkpoint = Path(NN_LOAD_PATH) if os.path.exists(NN_LOAD_PATH) else None
+        #     self.load(checkpoint)
 
         self._hasGun = hasGun
         self._lives = 100 if hasGun == True else 1
@@ -134,8 +145,11 @@ class Player(Mobile):
                     action = None
 
                 self.step += 1
-        
-        action = int(action)
+
+        try:
+            action = int(action)
+        except:
+            action = None
 
         # Act according to action
         if action == 0:
@@ -389,12 +403,14 @@ class Player(Mobile):
         # Get argmax of Q values
         action_idx = torch.argmax(action_values, axis=1).item()
         return action_idx
+    
+
 
 
 class Gun(Animated):
     _GUN_OFFSET = Vector2(-12, -10)
     _bullet_names = {"ak47.png": "akBullet.png", "bazooka.png": "bulletbill.png"}
-    _bullet_speeds = {"ak47.png": 140, "bazooka.png": 70}
+    _bullet_speeds = {"ak47.png": 140, "bazooka.png": 120}
 
     def __init__(self, imageName: str, player: Player):
         super().__init__(imageName, player.getPosition() + Gun._GUN_OFFSET)
