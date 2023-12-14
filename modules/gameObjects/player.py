@@ -134,6 +134,8 @@ class Player(Mobile):
                     action = None
 
                 self.step += 1
+        
+        action = int(action)
 
         # Act according to action
         if action == 0:
