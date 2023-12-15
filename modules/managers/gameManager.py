@@ -155,8 +155,8 @@ class GameManager(BasicManager):
                 elif elemChar == "2" and self._mode not in [SINGLE_PLAYER]:
                     # Make p2 a bot if AI mode enabled
                     if self._mode == BATTLE_AI:
-
-                        BATTLE_CKP = "checkpoints/luigi/2023-12-15T13-28-19/mario_net_23.chkpt"
+                        # Set checkpoint here when playing with main.py
+                        BATTLE_CKP = ""
                         battle_ai_ckp = (
                         Path(BATTLE_CKP)
                         if os.path.exists(BATTLE_CKP)
