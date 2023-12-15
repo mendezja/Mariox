@@ -354,15 +354,7 @@ class Player(Mobile):
     def drawStats(self, drawSurf):
         self._stats.draw(drawSurf)
 
-    def load(self, load_path):
-        """Load nn model from load_path"""
-        if not load_path.exists():
-            raise ValueError(f"{load_path} does not exist")
 
-        ckp = torch.load(load_path, map_location=("cuda" if self.agent.use_cuda else "cpu"))
-        state_dict = ckp.get("model")
-
-        self.agent.net.load_state_dict(state_dict)
 
     def act(self, state):
         """If bot, select action using policy"""

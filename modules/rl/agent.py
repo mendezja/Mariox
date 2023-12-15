@@ -23,7 +23,8 @@ class Agent:
         self.exploration_rate_min = 0.1
         self.gamma = 0.99
 
-        if isGame:
+        self.isGame = isGame
+        if self.isGame:
             self.exploration_rate = 0
             self.exploration_rate_decay = 0
             self.exploration_rate_min = 0
@@ -195,7 +196,11 @@ class Agent:
         ckp = torch.load(load_path, map_location=('cuda' if self.use_cuda else 'cpu'))
         exploration_rate = ckp.get('exploration_rate')
         state_dict = ckp.get('model')
+    
+        if not self.isGame:
+            print(f"Loading model at {load_path} with exploration rate {exploration_rate}")
+            self.exploration_rate = exploration_rate
+        else:
+            print(f"Loading game model at {load_path} with exploration rate {self.exploration_rate}")
 
-        print(f"Loading model at {load_path} with exploration rate {exploration_rate}")
         self.net.load_state_dict(state_dict)
-        self.exploration_rate = exploration_rate

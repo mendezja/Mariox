@@ -156,7 +156,7 @@ class GameManager(BasicManager):
                     # Make p2 a bot if AI mode enabled
                     if self._mode == BATTLE_AI:
 
-                        BATTLE_CKP = ""
+                        BATTLE_CKP = "checkpoints/luigi/2023-12-15T13-28-19/mario_net_23.chkpt"
                         battle_ai_ckp = (
                         Path(BATTLE_CKP)
                         if os.path.exists(BATTLE_CKP)

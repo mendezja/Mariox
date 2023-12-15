@@ -46,7 +46,7 @@ logger_luigi = MetricLogger(save_dir_luigi)
 
 # Load checkpoint if available, change path to most recent
 MOST_RECENT_CHECKPOINT_MARIO = ""
-MOST_RECENT_CHECKPOINT_LUIGI = ""
+MOST_RECENT_CHECKPOINT_LUIGI = "checkpoints/luigi/2023-12-15T13-28-19/mario_net_23.chkpt"
 # MOST_RECENT_CHECKPOINT = "NONE"
 checkpoint_mario = (
     Path(MOST_RECENT_CHECKPOINT_MARIO)
@@ -54,12 +54,10 @@ checkpoint_mario = (
     else None
 )
 checkpoint_luigi = (
-    Path(MOST_RECENT_CHECKPOINT_MARIO)
-    if os.path.exists(MOST_RECENT_CHECKPOINT_MARIO)
+    Path(MOST_RECENT_CHECKPOINT_LUIGI)
+    if os.path.exists(MOST_RECENT_CHECKPOINT_LUIGI)
     else None
 )
-
-print(checkpoint_luigi)
 
 mario = Agent(
     # 6 features for each player, 5 features for each of 8 bullets
