@@ -23,7 +23,6 @@ class Mario:
         self.exploration_rate_min = 0.1
         self.gamma = 0.99
 
-       
         self.curr_step = 0
         # Min number of experiences before training
         self.burnin = 1e5  
@@ -195,3 +194,5 @@ class Mario:
         print(f"Loading model at {load_path} with exploration rate {exploration_rate}")
         self.net.load_state_dict(state_dict)
         self.exploration_rate = exploration_rate
+
+

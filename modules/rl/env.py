@@ -15,7 +15,7 @@ class GunGameEnv:
             SCREEN_SIZE, BATTLE_AI, "battleWorld3.txt", [], render_screen=False
         )
         self.action_set = list(ACTIONS.keys())
-        self.action_qty = len(self.action_set)
+        self.action_qty = len(self.action_set) 
         self.state = self.game.getState()
         self.done = False
 
@@ -24,11 +24,7 @@ class GunGameEnv:
 
         rewards = self.game.update(SECONDS)
 
-        self.state = self.game.getState()
-
-        # print("Mario: ", mario_state)
-        # print("Luigi: ", luigi_state)
-        # print("Bullets: ", bullets_state)
+        self.state = self.game.getState() 
 
         done = False
         if self.game.isWon():

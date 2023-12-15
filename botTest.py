@@ -16,7 +16,7 @@ from modules.rl.metrics import MetricLogger
 import random
 from typing import Callable, Tuple
 
-import gym
+
 import matplotlib.pyplot as plt
 import numpy as np
 import torch
@@ -27,7 +27,7 @@ from torch import distributions
 # must be < 0.5
 SECONDS = 0.017
 
-episodes = 1000
+episodes = 100
 
 # Load pygame basics to keep it from getting upset
 pygame.init()
@@ -106,6 +106,12 @@ def main():
         if e % 10 == 0:
             logger.record(episode=e, epsilon=mario.exploration_rate, step=mario.curr_step)
 
+
+    state_dict = mario.net.state_dict()
+
+    # state_dict is a dictionary with parameter names as keys and parameter tensors as values
+    for name, param in state_dict.items():
+        print(name, param.size())
 
 
 if __name__ == "__main__":
