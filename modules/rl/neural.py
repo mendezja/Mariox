@@ -1,5 +1,8 @@
 from torch import nn
+import torch
 import copy
+import numpy as np
+
 
 
 class MarioNet(nn.Module):
@@ -33,9 +36,17 @@ class MarioNet(nn.Module):
         for p in self.target.parameters():
             p.requires_grad = False
 
-    def forward(self, input, model):
+    def forward(self, input, model, isPPO=False):
         """Forward pass"""
         if model == "online":
-            return self.online(input)
+            if isPPO ==False:
+                return self.online(input)
+            else:
+                if isinstance(input, np.ndarray):
+                    input = torch.tensor(input, dtype=torch.float)
+                #return torch.tensor(self.online(input), dtype=torch.float)
+                print(self.online(input))
+                return self.online(input)
+                
         elif model == "target":
             return self.target(input)
