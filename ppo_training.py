@@ -4,7 +4,7 @@ from modules.rl.env import GunGameEnv
 
 
 from collections import deque
-from modules.rl.agent_ppo import Agent
+from modules.rl.agent_ppo import Agent_PPO
 import numpy as np
 import matplotlib.pyplot as plt
 import torch
@@ -13,8 +13,10 @@ import pandas as pd
 # must be < 0.5
 SECONDS = 0.017
 
-episodes = 500
-threshold_score = 150
+SAVE_TRAINING = False
+
+episodes = 150
+threshold_score = 190
 
 # Load pygame basics to keep it from getting upset
 pygame.init()
@@ -34,7 +36,7 @@ print_every = 10
 
 def main():
     print("Start Training...")
-    agent = Agent(state_size, action_size, load_pretrained=False)
+    agent = Agent_PPO(state_size, action_size, load_pretrained=False)
     scores = run_ppo(env, agent, episodes)
     print("\nTraining finished.")
 
@@ -63,25 +65,26 @@ def main():
 
 def run_ppo(env, agent, num_episodes=100):
     scores = []
-    scores_window = deque(maxlen=100)
+    scores_window = deque(maxlen=print_every)
 
     for i_episode in range(1, num_episodes+1):
         agent.step(env)
-        max_score = agent.act(env)
+        max_score = agent.act_episode(env)
         scores.append(max_score)
         scores_window.append(max_score)
 
-        print('\r{}/{} Episode. Current score: {:.4f} Avg last 100 score: {:.4f}'.\
-            format(i_episode, num_episodes, max_score, np.mean(scores_window)), end="")
+        print('\r{}/{} Episode test score: {:.4f} Avg last {} score: {:.4f}'.\
+            format(i_episode, num_episodes, max_score, print_every, np.mean(scores_window)), end="")
         
         if i_episode % print_every == 0:
-            print('\r{}/{} Episode. Current score: {:.4f} Avg last 100 score: {:.4f}'.\
-                format(i_episode, num_episodes, max_score, np.mean(scores_window)))
+            print('\r{}/{} Episode test score: {:.4f} Avg last {} score: {:.4f}'.\
+                format(i_episode, num_episodes, max_score, print_every, np.mean(scores_window)))
 
         if np.mean(scores_window) > threshold_score:
-            agent.save()
-            print('\rEnvironment solved after {} episodes. Avg last 100 score: {:.4f}'.\
-                format(i_episode, np.mean(scores_window)))
+            if SAVE_TRAINING:
+                agent.save()
+            print('\rEnvironment solved after {} episodes. Avg last {} score: {:.4f}'.\
+                format(i_episode, print_every, np.mean(scores_window)))
             break
 
     return scores

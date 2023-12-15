@@ -1,5 +1,6 @@
 from collections import deque
 from modules.rl.neural import ActorCritic
+from modules.managers.gamemodes import ACTIONS
 import numpy as np
 import torch
 import random
@@ -28,7 +29,7 @@ CLIP_PARAM = 0.2            # clipping parameter for PPO surrogate
 
 # Training Constants
 NUM_STEPS_PER_ENV = 1024    # num of transitions we sample for each training iter
-MINIBATCH_SIZE = 128			# minibatch size 
+MINIBATCH_SIZE = 128		# minibatch size 
 EPOCHS = 8				    # optimize surrogate loss with K epochs  
 
 GRADIENT_CLIPPING = 2       # gradient clipping norm
@@ -38,93 +39,82 @@ GRADIENT_CLIPPING = 2       # gradient clipping norm
 GAMMA = 0.999               # discount factor for returns
 TAU = 0.95					# gae (generalized advantage estimation) param
 
-BASELINE = 0 #130
+BASELINE = 0 #reward structure is too sparse
+
+SELF_PLAY = True
 
 
-class Agent(): 
+class Agent_PPO(): 
 
     def __init__(self, state_size, action_size, load_pretrained=False):
         self.state_size = state_size
         self.action_size = action_size
+
+        self.action_set = list(ACTIONS.keys())
 
         self.ac_model = ActorCritic(state_size, action_size, HIDDEN_SIZE)
         self.ac_model_optim = optim.Adam(self.ac_model.parameters(), lr=LR)
         random.seed(SEED)
 
         self.use_cuda = torch.cuda.is_available()
-        
-        print('Number of trainable actor critic model parameters: ', \
-        	self.count_parameters())
 
         if load_pretrained:
-            print('Loading pre-trained actor critic model from checkpoint.')
-            self.ac_model.load_state_dict(torch.load("checkpoints/ac_model.pth", map_location=torch.device(DEVICE)))
+            # print('Loading pre-trained actor critic model from checkpoint.')
+            self.ac_model.load_state_dict(torch.load("checkpoints/bot_ac_model.pth", map_location=torch.device(DEVICE)))
 
 
     def count_parameters(self):
         return sum(p.numel() for p in self.ac_model.parameters() if p.requires_grad)
 
 
-    def act(self, env):
-        """ Run current action policy and check which score it is reaching.
-        """
-        # env_info = env.reset(train_mode=True)
-        # states = env_info.vector_observations
-        # states1 = states[0]
-        # states2 = states[1]
-        
-        state = torch.FloatTensor(state).cuda() if self.use_cuda else torch.FloatTensor(env.reset())
+    def act(self, state, both=False):
+        state = torch.FloatTensor(state).cuda() if self.use_cuda else torch.FloatTensor(state)
         state = state.unsqueeze(0)
-        action_set = env.action_set
+
+        with torch.no_grad(): 
+            mario_actions,log_probs1, _, values1 = self.ac_model(state) 
+            mario_action = torch.argmax(mario_actions, axis=1)[0].item()
+            if not SELF_PLAY:
+                mario_action = random.randint(0, self.action_size-1)
+
+            luigi_actions,log_probs1, _, values1 = self.ac_model(state)
+            luigi_action = torch.argmax(luigi_actions, axis=1).item()
+
+        actions = [self.action_set[mario_action], self.action_set[luigi_action]]
+        if both:
+          return actions
+
+        return actions[1]
+
+    def act_episode(self, env):
+        """ Run current action policy and check which score it is reaching.
+        """  
+        state = env.reset()
 
         scores = np.zeros(2)
         self.ac_model.eval()
 
-        while True:
-            with torch.no_grad():
-                # self-play: the same actor critic model is used for two players
-                
-                mario_actions, _, _, _ = self.ac_model(state) 
-                mario_action = torch.argmax(mario_actions, axis=1)[0].item()
-                luigi_actions, _, _, _ = self.ac_model(state)
-                luigi_action = torch.argmax(luigi_actions, axis=1).item()
+        while True: 
 
-            actions = [action_set[mario_action], action_set[luigi_action]]
-
-
-            # env_info =env.step(actions)
-            # next_states = env_info.vector_observations
-            # dones = env_info.local_done
-            # scores += env_info.rewards
-            # states = next_states
-            # states1 = states[0]
-            # states2 = states[1]
+            actions = self.act(state,both=True)
 
             next_state, rewards, dones = env.step(actions)
 
-            scores += rewards 
-            state = torch.FloatTensor(state).cuda() if self.use_cuda else torch.FloatTensor(next_state)
-            state = state.unsqueeze(0)
+            scores += rewards  
+            state = next_state
 
             if np.any(dones):
                 break
+
         self.ac_model.train()
         return np.max(scores)
 
 
     def step(self, env):
         """ Collect trajectories/episodes and invoke learning step.
-        Params
-        ======
-            env:            unity Tennis environment 
-        """
-        # env_info = env.reset()
-        # states = env_info.vector_observations
-        # states1 = states[0]
-        # states2 = states[1]
+        """ 
         state = torch.FloatTensor(state).cuda() if self.use_cuda else torch.FloatTensor(env.reset())
-        state = state.unsqueeze(0)
-        action_set = env.action_set
+        state = state.unsqueeze(0) 
 
         trajectory1 = deque()    # trajectory of player 1
         trajectory2 = deque()    # trajectory of player 2
@@ -133,21 +123,16 @@ class Agent():
             with torch.no_grad():
                 # self-play: the same actor critic model is used for two players
                 actions1, log_probs1, _, values1 = self.ac_model(state) 
-                mario_action = torch.argmax(actions1, axis=1).item()
+                mario_action = torch.argmax(actions1, axis=1).item() 
+
+                if not SELF_PLAY:
+                    mario_action = random.randint(0, self.action_size-1)
+                
                 actions2, log_probs2, _, values2 = self.ac_model(state)
                 luigi_action = torch.argmax(actions2, axis=1).item()
  
-            # actions = torch.cat((actions1, actions2), dim=0)
-            # env_info = env.step([actions.cpu().numpy()])
 
-            # next_state = env_info.vector_observations[0]
-            # next_state = env_info.vector_observations[1]
-
-            # rewards = env_info.rewards
-            # rewards1 = np.array(rewards[0]).reshape([1])
-            # rewards2 = np.array(rewards[1]).reshape([1])
-
-            actions = [action_set[mario_action], action_set[luigi_action]]
+            actions = [self.action_set[mario_action], self.action_set[luigi_action]]
 
             next_state, rewards, done = env.step(actions)
 
@@ -178,7 +163,9 @@ class Agent():
         trajectory2.append([state, pending_value2, None, None, None, None])
 
         # self-play: the same actor critic model is used for two players
-        self.learn(trajectory1, pending_value1)
+        if SELF_PLAY:
+            self.learn(trajectory1, pending_value1)
+
         self.learn(trajectory2, pending_value2)
 
         trajectory1.clear()
@@ -186,11 +173,7 @@ class Agent():
 
 
     def learn(self, trajectory, pending_value):
-        """ Make PPO learning step. 
-        Params
-        ======
-            trajectory:     trajectory/episode
-            pending_value:  pendig critic value from last state
+        """ Make PPO learning step.  
         """
         storage = deque()
         advantages = torch.Tensor(np.zeros((1, 1)))
@@ -213,13 +196,12 @@ class Agent():
         states, actions, log_probs_old, returns, advantages = map(lambda x: torch.cat(x, dim=0), zip(*storage))
         advantages = (advantages - advantages.mean()) / advantages.std()
 
-        storage.clear()
-        # print(states.shape, actions.shape, log_probs_old.shape, returns.shape, advantages.shape)
+        storage.clear() 
         dataset = torch.utils.data.TensorDataset(states, actions, log_probs_old, returns, advantages)
         dataloader = torch.utils.data.DataLoader(dataset, batch_size=MINIBATCH_SIZE, shuffle=True)
         dataiter = iter(dataloader)
        
-        # update the actor critic modelK_EPOCHS times
+        # update the actor critic model K_EPOCHS times
         for _ in range(EPOCHS):
             # sample states, actions, log_probs_old, returns, advantages
             sampled_states, sampled_actions, sampled_log_probs_old, sampled_returns, sampled_advantages = next(dataiter)

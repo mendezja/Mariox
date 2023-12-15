@@ -16,6 +16,7 @@ from typing import List
 import torch
 from pathlib import Path
 from ..rl.agent import Mario
+from ..rl.agent_ppo import Agent_PPO
 import datetime
 
 
@@ -23,6 +24,8 @@ UPDATE_SCRIPT = False
 MOST_RECENT_CHECKPOINT = "checkpoints/mario/2023-12-08T13-40-34/mario_net_91.chkpt"
 STATE_DIM = 52
 ACTION_DIM = 9
+
+RL_ALGO = None # 'PPO'
 
 save_dir = Path("checkpoints/mario") / datetime.datetime.now().strftime("%Y-%m-%dT%H-%M-%S")
 save_dir.mkdir(parents=True)
@@ -46,13 +49,20 @@ class Player(Mobile):
 
         # RL agent
         self._isBot = isBot
-        self.agent = Mario(STATE_DIM, ACTION_DIM, save_dir=Path("checkpoints/mario/2023-12-08T13-40-34"))
-        # self.net = MarioNet(STATE_DIM, ACTION_DIM).float()
-        # self.use_cuda = torch.cuda.is_available()
-        # self.action_set = list(ACTIONS.keys())
-        # if isBot:
-        #     checkpoint = Path(NN_LOAD_PATH) if os.path.exists(NN_LOAD_PATH) else None
-        #     self.load(checkpoint)
+        if self._isBot:
+            if RL_ALGO == 'DDQN':
+                self.agent = Mario(STATE_DIM, ACTION_DIM, save_dir=Path("checkpoints/mario/2023-12-08T13-40-34"))
+                # self.net = MarioNet(STATE_DIM, ACTION_DIM).float()
+                # self.use_cuda = torch.cuda.is_available()
+                # self.action_set = list(ACTIONS.keys())
+                # if isBot:
+                #     checkpoint = Path(NN_LOAD_PATH) if os.path.exists(NN_LOAD_PATH) else None
+                #     self.load(checkpoint)
+            if RL_ALGO =='PPO':
+                self.agent = Agent_PPO(STATE_DIM, ACTION_DIM, load_pretrained=True)
+
+
+
 
         self._hasGun = hasGun
         self._lives = 100 if hasGun == True else 1
@@ -74,6 +84,7 @@ class Player(Mobile):
             self._currentGun = self._guns[0]
         else:
             self._currentGun = None
+
 
         if self._isBot and not UPDATE_SCRIPT:
             f = open(os.path.join("resources", "bot_script", "moves.txt"), "r")
@@ -144,12 +155,13 @@ class Player(Mobile):
                 except:
                     action = None
 
-                self.step += 1
+                self.step += 1 
 
         try:
             action = int(action)
         except:
             action = None
+
 
         # Act according to action
         if action == 0:

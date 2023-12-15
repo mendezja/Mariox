@@ -5,6 +5,8 @@ checkpoints/*
 checkpoints/mario/*
 !checkpoints/mario/2023-12-08T13-40-34/
 
+past_ppo_plots/*
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

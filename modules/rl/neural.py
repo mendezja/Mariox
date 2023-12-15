@@ -45,17 +45,20 @@ class MarioNet(nn.Module):
 class ActorCritic(nn.Module):
     """PPO"""
     def __init__(self, num_inputs, num_outputs, hidden_size, std=0.0):
-        # super(ActorCritic, self).__init__()
         super().__init__()
 
         self.actor = nn.Sequential(
             self.layer_init(nn.Linear(num_inputs, hidden_size)),
+            nn.Tanh(),
+            self.layer_init(nn.Linear(hidden_size, hidden_size)),
             nn.Tanh(),
             self.layer_init(nn.Linear(hidden_size, num_outputs)),
         )
 
         self.critic = nn.Sequential(
             self.layer_init(nn.Linear(num_inputs, hidden_size)),
+            nn.Tanh(),
+            self.layer_init(nn.Linear(hidden_size, hidden_size)),
             nn.Tanh(),
             self.layer_init(nn.Linear(hidden_size, 1), std=1.0),
         )
