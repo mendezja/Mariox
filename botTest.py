@@ -26,7 +26,7 @@ from torch import distributions
 # must be < 0.5
 SECONDS = 0.017
 
-episodes = 1000
+episodes = 2000
 
 # Load pygame basics to keep it from getting upset
 pygame.init()
@@ -58,6 +58,8 @@ checkpoint_luigi = (
     if os.path.exists(MOST_RECENT_CHECKPOINT_MARIO)
     else None
 )
+
+print(checkpoint_luigi)
 
 mario = Agent(
     # 6 features for each player, 5 features for each of 8 bullets

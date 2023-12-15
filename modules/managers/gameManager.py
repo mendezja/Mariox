@@ -15,7 +15,6 @@ from pygame.joystick import Joystick
 import pygame
 from ..utils.actions import Actions
 import numpy as np
-from ..rl.checkpoints import battle_ai_ckp
 
 
 class GameManager(BasicManager):
@@ -156,12 +155,14 @@ class GameManager(BasicManager):
                 elif elemChar == "2" and self._mode not in [SINGLE_PLAYER]:
                     # Make p2 a bot if AI mode enabled
                     if self._mode == BATTLE_AI:
+
                         BATTLE_CKP = ""
                         battle_ai_ckp = (
                         Path(BATTLE_CKP)
                         if os.path.exists(BATTLE_CKP)
                         else None
                         )
+
                         self._players.append(
                             Player(
                                 "luigi.png",
@@ -230,8 +231,8 @@ class GameManager(BasicManager):
     # Specifically for self-play Bot training
     def updateBots(self, actions):
         if not self._gameOver:
-            self._players[0].updateBot(self.getState(), actions[0])
-            self._players[1].updateBot(self.getState(), actions[1])
+            self._players[0].updateBot(state=self.getState(), action=int(actions[0]))
+            self._players[1].updateBot(state=self.getState(), action=int(actions[1]))
 
     # Hand player moves, for human players
     def handleEvent(self, event):

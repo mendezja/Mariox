@@ -4,7 +4,6 @@ from modules.managers.gameManager import GameManager
 from modules.UI.screenInfo import SCREEN_SIZE, UPSCALED_SCREEN_SIZE
 from modules.managers.gamemodes import *
 import numpy as np
-from .checkpoints import training_ckp
 
 # must be < 0.5
 SECONDS = 0.017
@@ -13,7 +12,7 @@ class GunGameEnv:
     def __init__(self) -> None:
         self.game = GameManager(
             # Set checkpoint 
-            SCREEN_SIZE, BATTLE_AI, "battleWorld3.txt", [], render_screen=False, checkpoint=training_ckp
+            SCREEN_SIZE, BATTLE_AI, "battleWorld3.txt", [], render_screen=False
         )
         self.action_set = list(ACTIONS.keys())
         self.action_qty = len(self.action_set)

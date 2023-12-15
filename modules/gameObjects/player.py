@@ -16,7 +16,11 @@ from typing import List
 import torch
 from pathlib import Path
 from ..rl.agent import Agent
-import datetime
+import datetime, random
+
+action_set = list(ACTIONS.keys())
+action_qty = len(action_set)
+
 
 
 UPDATE_SCRIPT = False
@@ -35,6 +39,7 @@ class Player(Mobile):
         hasGun=False,
         isBot=False,
         checkpoint=None,
+        isGame=True
     ):
         super().__init__(imageName, position)
         self._killSound = "mario_die.wav"
@@ -42,7 +47,7 @@ class Player(Mobile):
         # RL agent
         self._isBot = isBot
         if self._isBot:
-            self.agent = Agent(STATE_DIM, ACTION_DIM, save_dir, checkpoint)
+            self.agent = Agent(STATE_DIM, ACTION_DIM, save_dir, checkpoint, isGame=isGame)
 
         self._hasGun = hasGun
         self._lives = 100 if hasGun == True else 1
@@ -123,11 +128,10 @@ class Player(Mobile):
         if not action and self._isBot:        
             # Random  
             # action = int(action_set[random.randint(0, action_qty - 1)])
-
+            
             # Neural net
-            action = self.agent.act(state)
+            action = int(self.agent.act(state))
      
-        # Map action str to int
         # Confirm it is valid action - set to None otherwise
         if str(action) not in list(ACTIONS.keys()):
             action = None 
@@ -325,8 +329,8 @@ class Player(Mobile):
             SoundManager.getInstance().playSound("explosion.wav")
         if self._lives > 5:
             if bullet._type == "AK":
-                self._stats.decreaseItem("health", 5)
-                self._lives -= 20
+                self._stats.decreaseItem("health", 10)
+                self._lives -= 10
             elif bullet._type == "BILL":
                 self._stats.decreaseItem("health", 20)
                 self._lives -= 20
@@ -355,7 +359,7 @@ class Player(Mobile):
         if not load_path.exists():
             raise ValueError(f"{load_path} does not exist")
 
-        ckp = torch.load(load_path, map_location=("cuda" if self.use_cuda else "cpu"))
+        ckp = torch.load(load_path, map_location=("cuda" if self.agent.use_cuda else "cpu"))
         state_dict = ckp.get("model")
 
         self.agent.net.load_state_dict(state_dict)
@@ -364,7 +368,7 @@ class Player(Mobile):
         """If bot, select action using policy"""
         state = (
             torch.FloatTensor(state).cuda()
-            if self.use_cuda
+            if self.agent.use_cuda
             else torch.FloatTensor(state)
         )
         state = state.unsqueeze(0)
