@@ -14,11 +14,9 @@ ACTIONS = {"0":"jump",
             "1": "left",
             "2":"right",
             "3":"shoot",
-            "4": "swp_gun1",
-            "5": "swp_gun2", 
-            "6": "fall",
-            "7": "stopleft",
-            "8": "stopright"}
+            "4": "fall",
+            "5": "stopleft",
+            "6": "stopright"}
 
 # Exit
 EXIT = "exit"

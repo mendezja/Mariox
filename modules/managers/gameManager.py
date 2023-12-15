@@ -1,5 +1,6 @@
 from ast import Str
 import os
+from pathlib import Path
 
 from modules.managers.soundManager import SoundManager
 from .basicManager import BasicManager
@@ -155,6 +156,12 @@ class GameManager(BasicManager):
                 elif elemChar == "2" and self._mode not in [SINGLE_PLAYER]:
                     # Make p2 a bot if AI mode enabled
                     if self._mode == BATTLE_AI:
+                        BATTLE_CKP = ""
+                        battle_ai_ckp = (
+                        Path(BATTLE_CKP)
+                        if os.path.exists(BATTLE_CKP)
+                        else None
+                        )
                         self._players.append(
                             Player(
                                 "luigi.png",
@@ -162,7 +169,7 @@ class GameManager(BasicManager):
                                 None,
                                 hasGun=True,
                                 isBot=True,
-                                checkpoint=(battle_ai_ckp if checkpoint else None)
+                                checkpoint=battle_ai_ckp
                             )
                         )
 
@@ -218,14 +225,13 @@ class GameManager(BasicManager):
     # Used for bot control during Battle_AI
     def updateBot(self):
         if not self._gameOver:
-            action_idx = self._players[1].agent.act(self.getState())
-            self._players[1].updateBot(action_idx)
+            self._players[1].updateBot(state=self.getState())
 
     # Specifically for self-play Bot training
     def updateBots(self, actions):
         if not self._gameOver:
-            self._players[0].updateBot(actions[0])
-            self._players[1].updateBot(actions[1])
+            self._players[0].updateBot(self.getState(), actions[0])
+            self._players[1].updateBot(self.getState(), actions[1])
 
     # Hand player moves, for human players
     def handleEvent(self, event):

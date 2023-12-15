@@ -8,7 +8,7 @@ from ..managers.gamemodes import ACTIONS
 
 
 class Agent:
-    def __init__(self, state_dim, action_dim, save_dir, checkpoint=None):
+    def __init__(self, state_dim, action_dim, save_dir, checkpoint=None, isGame = True):
         self.action_set = ACTIONS
 
         # Assign state and action dimensions, create memory buffer
@@ -23,6 +23,10 @@ class Agent:
         self.exploration_rate_min = 0.1
         self.gamma = 0.99
 
+        if isGame:
+            self.exploration_rate = 0
+            self.exploration_rate_decay = 0
+            self.exploration_rate_min = 0
        
         self.curr_step = 0
         # Min number of experiences before training

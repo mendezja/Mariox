@@ -9,11 +9,11 @@ class MarioNet(nn.Module):
         super().__init__()
 
         self.online = nn.Sequential(
-            nn.Linear(input_dim, 32),
+            nn.Linear(input_dim, 128),
             nn.ReLU(),
-            nn.Linear(32, 64),  # Adding a new layer with output size 64
+            nn.Linear(128, 128),
             nn.ReLU(), 
-            nn.Linear(64, output_dim)
+            nn.Linear(128, output_dim)
         )
 
         self.target = copy.deepcopy(self.online)

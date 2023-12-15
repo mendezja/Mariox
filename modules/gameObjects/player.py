@@ -21,7 +21,7 @@ import datetime
 
 UPDATE_SCRIPT = False
 STATE_DIM = 52
-ACTION_DIM = 9
+ACTION_DIM = 7
 
 save_dir = Path("checkpoints/luigi") / datetime.datetime.now().strftime("%Y-%m-%dT%H-%M-%S")
 save_dir.mkdir(parents=True)
@@ -34,20 +34,15 @@ class Player(Mobile):
         joystick: Joystick = None,
         hasGun=False,
         isBot=False,
-        checkpoint=None
+        checkpoint=None,
     ):
         super().__init__(imageName, position)
         self._killSound = "mario_die.wav"
 
         # RL agent
         self._isBot = isBot
-        self.agent = Agent(STATE_DIM, ACTION_DIM, save_dir, checkpoint)
-        # self.net = MarioNet(STATE_DIM, ACTION_DIM).float()
-        # self.use_cuda = torch.cuda.is_available()
-        # self.action_set = list(ACTIONS.keys())
-        # if isBot:
-        #     checkpoint = Path(NN_LOAD_PATH) if os.path.exists(NN_LOAD_PATH) else None
-        #     self.load(checkpoint)
+        if self._isBot:
+            self.agent = Agent(STATE_DIM, ACTION_DIM, save_dir, checkpoint)
 
         self._hasGun = hasGun
         self._lives = 100 if hasGun == True else 1
@@ -66,15 +61,9 @@ class Player(Mobile):
         if self._hasGun:
             self._guns = [Gun("bazooka.png", self), Gun("ak47.png", self)]
             self._gunNum = 1
-            self._currentGun = self._guns[0]
+            self._currentGun = self._guns[1]
         else:
-            self._currentGun = None
-
-        if self._isBot and not UPDATE_SCRIPT:
-            f = open(os.path.join("resources", "bot_script", "moves.txt"), "r")
-            self.moves = [line.rstrip("\n") for line in f]
-            self.step = 0
-            # print(self.moves)
+            self._currentGun = None            
 
         if not self._isBot and UPDATE_SCRIPT:
             open(os.path.join("resources", "bot_script", "moves.txt"), "w").close()
@@ -128,23 +117,20 @@ class Player(Mobile):
             if self._jumpTimer < 0:
                 self._state.manageState("fall", self)
 
-    def updateBot(self, action=None):
+    def updateBot(self, state, action=None):
         """Update bot with action (index)"""
-        # If bot is CPU, select next move in script
-        if not action and self._isBot:
-            if not UPDATE_SCRIPT:
-                # Select next action in moves script
-                try:
-                    action = self.moves[self.step]
-                except:
-                    action = None
+        # If bot is CPU, select next move
+        if not action and self._isBot:        
+            # Random  
+            # action = int(action_set[random.randint(0, action_qty - 1)])
 
-                self.step += 1
-
-        try:
-            action = int(action)
-        except:
-            action = None
+            # Neural net
+            action = self.agent.act(state)
+     
+        # Map action str to int
+        # Confirm it is valid action - set to None otherwise
+        if str(action) not in list(ACTIONS.keys()):
+            action = None 
 
         # Act according to action
         if action == 0:
@@ -159,20 +145,16 @@ class Player(Mobile):
         elif self._hasGun:
             if action == 3:
                 self._currentGun.addBullets(self._position)
-            elif action == 4:
-                self._currentGun = self._guns[1]
-            elif action == 5:
-                self._currentGun = self._guns[0]
 
-        elif action == 6:
+        elif action == 4:
             self._pressedUp = False
             self._state.manageState("fall", self)
 
-        elif action == 7:
+        elif action == 5:
             self._pressedRight = False
             self._state.manageState("stopright", self)
 
-        elif action == 8:
+        elif action == 6:
             self._pressedLeft = False
             self._state.manageState("stopleft", self)
 
@@ -211,25 +193,18 @@ class Player(Mobile):
                 self._currentGun.addBullets(self._position)
                 eventAction = 3
 
-            elif event.key == pygame.K_2 and self._hasGun:
-                self._currentGun = self._guns[1]
-                eventAction = 4
-            elif event.key == pygame.K_1 and self._hasGun:
-                self._currentGun = self._guns[0]
-                eventAction = 5
-
         elif event.type == pygame.KEYUP:
             if event.key == pygame.K_UP:
                 self._state.manageState("fall", self)
-                eventAction = 6
+                eventAction = 4
 
             elif event.key == pygame.K_LEFT:
                 self._state.manageState("stopleft", self)
-                eventAction = 7
+                eventAction = 5
 
             elif event.key == pygame.K_RIGHT:
                 self._state.manageState("stopright", self)
-                eventAction = 8
+                eventAction = 6
         # print eventAction)
         if UPDATE_SCRIPT and not self._isBot:
             file1 = open(os.path.join("resources", "bot_script", "moves.txt"), "a")
@@ -351,7 +326,7 @@ class Player(Mobile):
         if self._lives > 5:
             if bullet._type == "AK":
                 self._stats.decreaseItem("health", 5)
-                self._lives -= 5
+                self._lives -= 20
             elif bullet._type == "BILL":
                 self._stats.decreaseItem("health", 20)
                 self._lives -= 20
@@ -383,7 +358,7 @@ class Player(Mobile):
         ckp = torch.load(load_path, map_location=("cuda" if self.use_cuda else "cpu"))
         state_dict = ckp.get("model")
 
-        self.net.load_state_dict(state_dict)
+        self.agent.net.load_state_dict(state_dict)
 
     def act(self, state):
         """If bot, select action using policy"""
@@ -394,7 +369,7 @@ class Player(Mobile):
         )
         state = state.unsqueeze(0)
         # Greedy action using online DQN
-        action_values = self.net(state, model="online")
+        action_values = self.agent.net(state, model="online")
         # Get argmax of Q values
         action_idx = torch.argmax(action_values, axis=1).item()
         return action_idx
@@ -405,7 +380,7 @@ class Player(Mobile):
 class Gun(Animated):
     _GUN_OFFSET = Vector2(-12, -10)
     _bullet_names = {"ak47.png": "akBullet.png", "bazooka.png": "bulletbill.png"}
-    _bullet_speeds = {"ak47.png": 140, "bazooka.png": 120}
+    _bullet_speeds = {"ak47.png": 200, "bazooka.png": 120}
 
     def __init__(self, imageName: str, player: Player):
         super().__init__(imageName, player.getPosition() + Gun._GUN_OFFSET)
