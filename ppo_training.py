@@ -13,10 +13,10 @@ import pandas as pd
 # must be < 0.5
 SECONDS = 0.017
 
-SAVE_TRAINING = False
+SAVE_TRAINING = True
 
 episodes = 150
-threshold_score = 190
+threshold_score = 170
 
 # Load pygame basics to keep it from getting upset
 pygame.init()

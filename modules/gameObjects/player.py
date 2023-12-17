@@ -21,11 +21,11 @@ import datetime
 
 
 UPDATE_SCRIPT = False
+
+RL_ALGO =  'PPO'
 MOST_RECENT_CHECKPOINT = "checkpoints/mario/2023-12-08T13-40-34/mario_net_91.chkpt"
 STATE_DIM = 52
 ACTION_DIM = 9
-
-RL_ALGO = None # 'PPO'
 
 save_dir = Path("checkpoints/mario") / datetime.datetime.now().strftime("%Y-%m-%dT%H-%M-%S")
 save_dir.mkdir(parents=True)

@@ -15,7 +15,7 @@ print(f"Use cuda: {use_cuda} -- device: {DEVICE}")
 
 # Enviroment Constant
 SEED = 42
-# NUM_ENVS = 16                  
+MAX_EPISODES = 100000
 
 # Network Constants
 LR = 5e-4     
@@ -23,9 +23,8 @@ HIDDEN_SIZE = 256
 
 # Learning Constants
 USE_ENTROPY = True        
-ENTROPY_WEIGHT = 0.001      
+ENTROPY_WEIGHT = 0.005      
 CLIP_PARAM = 0.2            # clipping parameter for PPO surrogate
-# TARGET_KL = 0.015
 
 # Training Constants
 NUM_STEPS_PER_ENV = 1024    # num of transitions we sample for each training iter
@@ -38,8 +37,7 @@ GRADIENT_CLIPPING = 2       # gradient clipping norm
 # Other Constants
 GAMMA = 0.999               # discount factor for returns
 TAU = 0.95					# gae (generalized advantage estimation) param
-
-BASELINE = 0 #reward structure is too sparse
+BASELINE = 0                #reward structure is too sparse
 
 SELF_PLAY = True
 
@@ -55,12 +53,13 @@ class Agent_PPO():
         self.ac_model = ActorCritic(state_size, action_size, HIDDEN_SIZE)
         self.ac_model_optim = optim.Adam(self.ac_model.parameters(), lr=LR)
         random.seed(SEED)
+        self.max = 0
 
         self.use_cuda = torch.cuda.is_available()
 
         if load_pretrained:
             # print('Loading pre-trained actor critic model from checkpoint.')
-            self.ac_model.load_state_dict(torch.load("checkpoints/bot_ac_model.pth", map_location=torch.device(DEVICE)))
+            self.ac_model.load_state_dict(torch.load("checkpoints/final_ac_model/ac_model.pth", map_location=torch.device(DEVICE)))
 
 
     def count_parameters(self):
@@ -91,10 +90,11 @@ class Agent_PPO():
         """  
         state = env.reset()
 
+        count = 0
         scores = np.zeros(2)
         self.ac_model.eval()
 
-        while True: 
+        while True and count < MAX_EPISODES: 
 
             actions = self.act(state,both=True)
 
@@ -103,9 +103,13 @@ class Agent_PPO():
             scores += rewards  
             state = next_state
 
+            count +=1
+
             if np.any(dones):
                 break
-
+        
+        self.max = max(count, self.max)
+        print("\n",self.max)
         self.ac_model.train()
         return np.max(scores)
 
@@ -228,7 +232,8 @@ class Agent_PPO():
             
 
     def save(self):
-        torch.save(self.ac_model.state_dict(), "checkpoints/ac_model.pth")
+        print("a=saving...")
+        torch.save(self.ac_model.state_dict(), "ac_model.pth")
 
 
 

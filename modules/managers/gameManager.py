@@ -214,7 +214,6 @@ class GameManager(BasicManager):
     def updateBot(self):
         if not self._gameOver:
             action_idx = self._players[1].agent.act(self.getState())
-            print(action_idx)
             self._players[1].updateBot(action_idx)
 
     # Specifically for self-play Bot training
